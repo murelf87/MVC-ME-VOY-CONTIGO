@@ -171,3 +171,50 @@ export async function computeProvinceCompliantRoute(
     { provider: provider.name, candidatesChecked: directCandidates.length }
   );
 }
+
+
+export type ProvinceRouteSegmentPlan = {
+  route: RouteCandidate;
+  segments: RouteCandidate[];
+};
+
+export async function computeProvinceCompliantSegmentPlan(
+  pool: Pool,
+  provider: RouteProvider,
+  request: ProvinceRouteRequest
+): Promise<ProvinceRouteSegmentPlan> {
+  const points = [request.origin, ...(request.intermediates ?? []), request.destination];
+  await assertAllPointsInsideProvince(pool, request.provinceId, points);
+
+  const segments: RouteCandidate[] = [];
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const segmentRequest: RouteComputationRequest = {
+      origin: points[index]!,
+      destination: points[index + 1]!,
+      alternatives: true,
+      ...(index === 0 && request.departureTime ? { departureTime: request.departureTime } : {})
+    };
+    const candidates = await provider.computeRoutes(segmentRequest);
+    const selected = await firstCompliantCandidate(pool, request.provinceId, candidates);
+    if (!selected) {
+      throw new DomainError(
+        "NO_ROUTE_WITHIN_PROVINCE",
+        "At least one requested leg has no driving route that remains inside the selected province",
+        422,
+        { provider: provider.name, segmentIndex: index, candidatesChecked: candidates.length }
+      );
+    }
+    segments.push(selected);
+  }
+
+  const route = combineSegmentRoutes(provider.name, segments);
+  if (!await routeCoveredByProvince(pool, request.provinceId, route)) {
+    throw new DomainError(
+      "NO_ROUTE_WITHIN_PROVINCE",
+      "Combined route does not remain inside the selected province",
+      422,
+      { provider: provider.name }
+    );
+  }
+  return { route, segments };
+}

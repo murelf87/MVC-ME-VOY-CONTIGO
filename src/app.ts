@@ -11,6 +11,9 @@ import { registerMeRoutes } from "./routes/me-routes.js";
 import { registerProfileVehicleRoutes } from "./routes/profile-vehicle-routes.js";
 import { registerLiveTrackingRoutes } from "./routes/live-tracking-routes.js";
 import { registerRideRequestRoutes } from "./routes/ride-request-routes.js";
+import { GoogleMapsProvider } from "./maps/google-maps-provider.js";
+import type { RouteProvider } from "./maps/types.js";
+import { registerTripDraftRoutes } from "./routes/trip-draft-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
@@ -25,7 +28,7 @@ export async function buildApp() {
     openapi: {
       info: {
         title: "MVC - Me voy contigo API",
-        version: "0.6.0",
+        version: "0.7.0",
         description: "Backend core with provider-backed phone verification and revocable opaque sessions."
       },
       components: {
@@ -90,6 +93,11 @@ export async function buildApp() {
   });
 
   const smsProvider = buildSmsVerificationProvider(config);
+  let routeProvider: RouteProvider | null = null;
+  if (config.mapsProvider === "google") {
+    if (!config.googleMapsApiKey) throw new Error("GOOGLE_MAPS_API_KEY is required when MAPS_PROVIDER=google");
+    routeProvider = new GoogleMapsProvider(config.googleMapsApiKey);
+  }
   await registerAuthRoutes(app, pool, smsProvider, {
     challengeTtlSeconds: config.authChallengeTtlSeconds,
     sessionTtlSeconds: config.authSessionTtlSeconds,
@@ -100,6 +108,7 @@ export async function buildApp() {
   await registerProfileVehicleRoutes(app, pool);
   await registerLiveTrackingRoutes(app, pool);
   await registerRideRequestRoutes(app, pool);
+  await registerTripDraftRoutes(app, pool, routeProvider);
 
   return app;
 }
