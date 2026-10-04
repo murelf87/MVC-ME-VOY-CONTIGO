@@ -1,34 +1,44 @@
-# Evidencia de pruebas
+# Evidencia de pruebas — 2026-10-04
 
-## GitHub Actions — ejecución #8
-Commit probado: `41afd42d4fefc2dd8277fb628f41a33eef0c07ad`.
+GitHub Actions:
+https://github.com/murelf87/MVC-ME-VOY-CONTIGO/actions/runs/37204463106
 
-Entorno:
-- Node.js 24.
-- PostgreSQL 17 + PostGIS 3.5.
-- `NODE_ENV=test`.
-- SMS desactivado; la integración de autenticación usa exclusivamente un test double dentro de los tests, nunca como proveedor operativo.
+Resultado: **SUCCESS**
 
-Resultados:
-- Instalación de dependencias: PASS.
+## Fases verificadas
+- Install dependencies: PASS.
 - TypeScript strict typecheck: PASS.
 - Build: PASS.
-- Tests unitarios: 8/8 PASS.
-- Migración `001_core.sql`: PASS.
-- Migración `002_auth_sessions.sql`: PASS.
-- Tests de integración: 10/10 PASS.
-- Auditoría de dependencias de producción: 0 vulnerabilidades.
+- Unit tests: PASS.
+- PostgreSQL/PostGIS service: PASS.
+- Migraciones: PASS.
+- Integration tests: PASS.
+- Production dependency audit: PASS.
 
-## Cobertura de integración actual
-1. Ruta con extremos dentro pero geometría que abandona provincia -> rechazo.
-2. Ruta completamente contenida -> publicación.
-3. Concurrencia por un único asiento/segmento -> una sola reserva.
-4. Solicitudes en segmentos no solapados -> coexistencia correcta.
-5. Pago posterior a expiración del hold -> compensación, sin reserva.
-6. Confirmación de pago duplicada -> idempotencia.
-7. Verificación de teléfono -> usuario, roles permitidos y sesión revocable.
-8. Auto-registro administrativo -> rechazo antes de llamar al proveedor.
-9. Reenvío de OTP durante cooldown -> rechazo.
-10. Código OTP erróneo -> no crea usuario ni sesión.
+## Unit tests cubiertos
+- dinero y redondeo exacto;
+- utilidades OTP/sesión;
+- normalización de teléfono y roles self-service;
+- tokens de sesión;
+- adaptador Google Maps y serialización de rutas/geocoding.
 
-Las suites de integración se ejecutan con `--test-concurrency=1` porque comparten una base de datos temporal y realizan limpieza explícita de tablas entre casos.
+## Integration tests cubiertos
+- ruta con extremos dentro pero geometría fuera -> bloqueo;
+- ruta íntegramente dentro -> publicación;
+- concurrencia por último asiento;
+- ocupación por segmentos no solapados;
+- pago tardío tras expiración de hold;
+- idempotencia de pago;
+- autenticación/verificación con proveedor de test aislado;
+- restricción de roles administrativos en registro público;
+- cooldown de reenvío;
+- código de verificación incorrecto sin crear usuario/sesión;
+- importación provincial válida;
+- importación provincial atómica ante errores;
+- duplicados de dataset;
+- selección de alternativa de routing que permanezca dentro de provincia;
+- rechazo de puntos fuera de provincia;
+- fallback segmentado con paradas;
+- bloqueo cuando ninguna ruta permanece dentro de provincia.
+
+Las pruebas que usan proveedores externos reales siguen bloqueadas hasta configurar credenciales y entornos oficiales.
