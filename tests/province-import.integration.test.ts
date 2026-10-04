@@ -17,7 +17,8 @@ const metadata = {
   sourceVersion: "fixture-1",
   fileSha256: "a".repeat(64),
   codeField: "CODE",
-  nameField: "NAME"
+  nameField: "NAME",
+  codeMode: "two-digit" as const
 };
 
 function collection(features: Array<{ code: string; name: string; coordinates: unknown }>) {
