@@ -116,7 +116,7 @@ export async function verifyPickupCode(
     throw new DomainError("INVALID_PICKUP_CODE","Pickup code must contain exactly 6 digits");
   }
 
-  return tx(pool,async client=>{
+  const result=await tx(pool,async client=>{
     const q=await client.query(`
       select b.id,b.status,b.picked_up_at,r.trip_id,t.driver_user_id,t.status as trip_status
         from bookings b
@@ -137,7 +137,10 @@ export async function verifyPickupCode(
       throw new DomainError("BOOKING_NOT_PICKUP_ELIGIBLE","Booking is not eligible for pickup verification",409);
     }
     if(booking.picked_up_at){
-      return {bookingId,pickedUpAt:new Date(booking.picked_up_at).toISOString(),alreadyVerified:true};
+      return {
+        kind:"verified" as const,
+        value:{bookingId,pickedUpAt:new Date(booking.picked_up_at).toISOString(),alreadyVerified:true}
+      };
     }
 
     const codeQ=await client.query(`
@@ -146,7 +149,10 @@ export async function verifyPickupCode(
     const stored=codeQ.rows[0];
     if(!stored) throw new DomainError("PICKUP_CODE_NOT_GENERATED","Passenger has not generated a pickup code",409);
     if(stored.verified_at){
-      return {bookingId,pickedUpAt:new Date(stored.verified_at).toISOString(),alreadyVerified:true};
+      return {
+        kind:"verified" as const,
+        value:{bookingId,pickedUpAt:new Date(stored.verified_at).toISOString(),alreadyVerified:true}
+      };
     }
     if(stored.attempts>=stored.max_attempts){
       throw new DomainError("PICKUP_ATTEMPTS_EXCEEDED","Maximum pickup code attempts exceeded",429);
@@ -154,10 +160,17 @@ export async function verifyPickupCode(
 
     const actual=hashCode(stored.salt,code);
     if(!secureEqual(actual,stored.code_hash)){
-      await client.query(`
-        update booking_pickup_codes set attempts=attempts+1 where booking_id=$1
+      const failed=await client.query(`
+        update booking_pickup_codes
+           set attempts=attempts+1
+         where booking_id=$1
+         returning attempts,max_attempts
       `,[bookingId]);
-      throw new DomainError("PICKUP_CODE_INVALID","Pickup code is invalid",401);
+      return {
+        kind:"invalid" as const,
+        attempts:Number(failed.rows[0].attempts),
+        maxAttempts:Number(failed.rows[0].max_attempts)
+      };
     }
 
     const picked=await client.query(`
@@ -173,11 +186,24 @@ export async function verifyPickupCode(
     `,[principal.userId,bookingId,JSON.stringify({tripId:booking.trip_id})]);
 
     return {
-      bookingId,
-      pickedUpAt:new Date(picked.rows[0].picked_up_at).toISOString(),
-      alreadyVerified:false
+      kind:"verified" as const,
+      value:{
+        bookingId,
+        pickedUpAt:new Date(picked.rows[0].picked_up_at).toISOString(),
+        alreadyVerified:false
+      }
     };
   });
+
+  if(result.kind==="invalid"){
+    throw new DomainError(
+      "PICKUP_CODE_INVALID",
+      "Pickup code is invalid",
+      401,
+      {attempts:result.attempts,maxAttempts:result.maxAttempts}
+    );
+  }
+  return result.value;
 }
 
 export async function completeOwnedTrip(pool:Pool,principal:AuthPrincipal,tripId:string){
