@@ -3,12 +3,15 @@ import rateLimit from "@fastify/rate-limit";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { loadConfig } from "./config.js";
-import { checkDatabaseReadiness } from "./db/pool.js";
+import { checkDatabaseReadiness, pool } from "./db/pool.js";
 import { DomainError } from "./errors.js";
+import { buildSmsVerificationProvider } from "./auth/provider.js";
+import { registerAuthRoutes } from "./auth/routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
   const app = Fastify({ logger: true, trustProxy: config.trustProxy });
+  const smsProvider = buildSmsVerificationProvider(config);
 
   await app.register(rateLimit, {
     max: config.rateLimitMax,
@@ -19,8 +22,16 @@ export async function buildApp() {
     openapi: {
       info: {
         title: "MVC - Me voy contigo API",
-        version: "0.1.0",
-        description: "Backend core. Mutation APIs remain closed until authentication/authorization is implemented."
+        version: "0.2.0",
+        description: "Backend core with phone verification and revocable server-side sessions."
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer"
+          }
+        }
       }
     }
   });
@@ -72,6 +83,13 @@ export async function buildApp() {
     const db = await checkDatabaseReadiness();
     if (!db.ok) return reply.code(503).send({ status: "not_ready", error: db.error ?? "database_error" });
     return { status: "ready", postgis: db.postgis ?? "unknown" };
+  });
+
+  await registerAuthRoutes(app, pool, smsProvider, {
+    challengeTtlSeconds: config.authChallengeTtlSeconds,
+    sessionTtlSeconds: config.authSessionTtlSeconds,
+    maxCheckAttempts: config.authMaxCheckAttempts,
+    resendCooldownSeconds: config.authResendCooldownSeconds
   });
 
   return app;
