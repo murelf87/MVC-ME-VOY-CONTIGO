@@ -10,6 +10,7 @@ import { registerAuthRoutes } from "./auth/routes.js";
 import { registerMeRoutes } from "./routes/me-routes.js";
 import { registerProfileVehicleRoutes } from "./routes/profile-vehicle-routes.js";
 import { registerLiveTrackingRoutes } from "./routes/live-tracking-routes.js";
+import { registerRideRequestRoutes } from "./routes/ride-request-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
@@ -24,7 +25,7 @@ export async function buildApp() {
     openapi: {
       info: {
         title: "MVC - Me voy contigo API",
-        version: "0.5.0",
+        version: "0.6.0",
         description: "Backend core with provider-backed phone verification and revocable opaque sessions."
       },
       components: {
@@ -98,6 +99,7 @@ export async function buildApp() {
   await registerMeRoutes(app, pool);
   await registerProfileVehicleRoutes(app, pool);
   await registerLiveTrackingRoutes(app, pool);
+  await registerRideRequestRoutes(app, pool);
 
   return app;
 }
