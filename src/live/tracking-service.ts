@@ -272,3 +272,53 @@ export async function getTripLocationForViewer(
 
   return result;
 }
+
+
+export type PublicLiveTripLocation = {
+  tripId: string;
+  latitude: number;
+  longitude: number;
+  recordedAt: string;
+  stale: boolean;
+  ageSeconds: number;
+};
+
+export async function listApproximateLiveTrips(
+  pool: Pool,
+  provinceId: string,
+  staleAfterSeconds = 60
+): Promise<PublicLiveTripLocation[]> {
+  if (!Number.isInteger(staleAfterSeconds) || staleAfterSeconds < 5 || staleAfterSeconds > 3600) {
+    throw new DomainError("INVALID_STALE_THRESHOLD", "staleAfterSeconds must be between 5 and 3600");
+  }
+
+  const rows = await pool.query<{
+    trip_id: string;
+    latitude: number;
+    longitude: number;
+    recorded_at: Date;
+  }>(
+    `select t.id as trip_id,
+            ST_Y(ST_SnapToGrid(ls.geom,0.01,0.01)) as latitude,
+            ST_X(ST_SnapToGrid(ls.geom,0.01,0.01)) as longitude,
+            ls.recorded_at
+       from trips t
+       join trip_live_state ls on ls.trip_id=t.id
+      where t.province_id=$1
+        and t.status='active'
+      order by ls.recorded_at desc`,
+    [provinceId]
+  );
+
+  return rows.rows.map(row => {
+    const ageSeconds = Math.max(0, Math.floor((Date.now() - row.recorded_at.getTime()) / 1000));
+    return {
+      tripId: row.trip_id,
+      latitude: Number(row.latitude),
+      longitude: Number(row.longitude),
+      recordedAt: row.recorded_at.toISOString(),
+      stale: ageSeconds > staleAfterSeconds,
+      ageSeconds
+    };
+  });
+}
