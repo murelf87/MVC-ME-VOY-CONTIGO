@@ -1,0 +1,31 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MVC - Me voy contigo API",
+    "version": "0.1.0",
+    "description": "Contrato del bloque backend actual. Endpoints mutantes no expuestos todavía: se abrirán al implementar autenticación/autorización real."
+  },
+  "paths": {
+    "/health/live": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Process alive"
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Database/PostGIS ready"
+          },
+          "503": {
+            "description": "Database/PostGIS not ready"
+          }
+        }
+      }
+    }
+  }
+}
