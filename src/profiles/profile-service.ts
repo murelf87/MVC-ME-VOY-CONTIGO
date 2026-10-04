@@ -28,7 +28,7 @@ export async function updateOwnProfile(
 
   await pool.query(
     `insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)
-     values($1,'profile.updated','profile',$1,$2::jsonb)`,
+     values($1,'profile.updated','profile',$1::text,$2::jsonb)`,
     [principal.userId, JSON.stringify({ fields: ["display_name"] })]
   );
 

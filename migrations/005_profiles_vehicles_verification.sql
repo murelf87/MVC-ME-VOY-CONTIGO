@@ -1,14 +1,9 @@
 alter table vehicles
-  add column plate_normalized text,
+  add column plate_normalized text
+    generated always as (upper(regexp_replace(plate,'[^A-Za-z0-9]','','g'))) stored,
   add column review_reason text,
   add column reviewed_by_user_id uuid references app_users(id),
   add column reviewed_at timestamptz;
-
-update vehicles
-   set plate_normalized = upper(regexp_replace(plate,'[^A-Za-z0-9]','','g'));
-
-alter table vehicles
-  alter column plate_normalized set not null;
 
 create unique index vehicles_plate_normalized_uidx
   on vehicles(plate_normalized);
