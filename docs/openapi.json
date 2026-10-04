@@ -2,8 +2,16 @@
   "openapi": "3.0.3",
   "info": {
     "title": "MVC - Me voy contigo API",
-    "version": "0.1.0",
-    "description": "Contrato del bloque backend actual. Endpoints mutantes no expuestos todavía: se abrirán al implementar autenticación/autorización real."
+    "version": "0.2.0",
+    "description": "Backend core with phone verification and revocable server-side sessions."
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
   },
   "paths": {
     "/health/live": {
@@ -23,6 +31,94 @@
           },
           "503": {
             "description": "Database/PostGIS not ready"
+          }
+        }
+      }
+    },
+    "/v1/auth/phone/start": {
+      "post": {
+        "summary": "Start SMS phone verification",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "phone"
+                ],
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "passenger",
+                        "driver"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Verification challenge created"
+          },
+          "429": {
+            "description": "Resend throttled"
+          },
+          "503": {
+            "description": "SMS provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/auth/phone/verify": {
+      "post": {
+        "summary": "Verify SMS code and create session",
+        "responses": {
+          "200": {
+            "description": "Verified session token"
+          },
+          "401": {
+            "description": "Invalid or expired code"
+          }
+        }
+      }
+    },
+    "/v1/auth/session": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authenticated session"
+          },
+          "401": {
+            "description": "Invalid or expired session"
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session revoked"
           }
         }
       }
