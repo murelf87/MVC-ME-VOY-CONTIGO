@@ -59,11 +59,11 @@ export async function createVehicle(
   try {
     const result = await pool.query(
       `insert into vehicles(
-         driver_user_id,make,model,plate,plate_normalized,passenger_seats,
+         driver_user_id,make,model,plate,passenger_seats,
          review_status,documentation_status
-       ) values($1,$2,$3,$4,$5,$6,'pending','pending')
+       ) values($1,$2,$3,$4,$5,'pending','pending')
        returning id,make,model,plate,passenger_seats,review_status,documentation_status,created_at,updated_at`,
-      [principal.userId, make, model, plate.display, plate.normalized, passengerSeats]
+      [principal.userId, make, model, plate.display, passengerSeats]
     );
     const row = result.rows[0];
     await pool.query(
@@ -105,12 +105,12 @@ export async function updateOwnVehicle(
   try {
     const result = await pool.query(
       `update vehicles
-          set make=$2,model=$3,plate=$4,plate_normalized=$5,passenger_seats=$6,
+          set make=$2,model=$3,plate=$4,passenger_seats=$5,
               review_status='pending',documentation_status='pending',
               review_reason=null,reviewed_by_user_id=null,reviewed_at=null,updated_at=now()
         where id=$1
         returning id,make,model,plate,passenger_seats,review_status,documentation_status,created_at,updated_at`,
-      [vehicleId, make, model, plate.display, plate.normalized, passengerSeats]
+      [vehicleId, make, model, plate.display, passengerSeats]
     );
     await pool.query(
       `insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)
