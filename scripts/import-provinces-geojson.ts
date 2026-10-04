@@ -27,7 +27,8 @@ async function main(): Promise<void> {
     sourceVersion: process.env.PROVINCE_SOURCE_VERSION,
     fileSha256,
     codeField: env("PROVINCE_CODE_FIELD"),
-    nameField: env("PROVINCE_NAME_FIELD")
+    nameField: env("PROVINCE_NAME_FIELD"),
+    codeMode: env("PROVINCE_CODE_MODE") as "two-digit" | "natcode"
   });
 
   console.log(JSON.stringify({
