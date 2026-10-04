@@ -68,7 +68,7 @@ test("Google Routes disables alternatives when intermediate waypoints exist", as
 
 test("Google Geocoding v4 parses address results without exposing API key in URL", async () => {
   let capturedUrl = "";
-  let capturedHeaders: HeadersInit | undefined;
+  let capturedHeaders: RequestInit["headers"] | undefined;
 
   const fakeFetch = (async (input: string | URL | Request, init?: RequestInit) => {
     capturedUrl = String(input);
