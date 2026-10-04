@@ -1,20 +1,17 @@
 {
   "name": "mvc-me-voy-contigo-backend",
-  "version": "0.3.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=24 <25"
-  },
+  "engines": { "node": ">=24 <25" },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
-    "test": "node --import tsx --test --test-reporter=spec tests/money.test.ts tests/auth.test.ts tests/maps.test.ts",
-    "test:integration": "node --import tsx --test --test-concurrency=1 --test-reporter=spec tests/core.integration.test.ts tests/auth.integration.test.ts tests/province-import.integration.test.ts tests/route-provider.integration.test.ts",
-    "provinces:import": "tsx scripts/import-provinces-geojson.ts"
+    "test": "node --import tsx --test --test-reporter=spec tests/money.test.ts tests/auth-utils.test.ts",
+    "test:integration": "node --import tsx --test --test-reporter=spec tests/core.integration.test.ts"
   },
   "dependencies": {
     "@fastify/rate-limit": "11.2.0",
