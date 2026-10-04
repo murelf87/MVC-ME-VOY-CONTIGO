@@ -23,7 +23,7 @@ Backend transaccional y geoespacial para viajes compartidos interurbanos que per
 10. Ejecuta `npm run dev`.
 
 ## Seguridad
-No hay contraseñas reales, secretos ni credenciales en este repositorio.
+No hay contraseñas reales, secretos ni credenciales en este ZIP.
 Los endpoints mutantes todavía no están publicados porque falta el bloque de autenticación/autorización. Esto es deliberado.
 
 ## Economía
@@ -35,4 +35,4 @@ Lee `PROMPT_MAESTRO_MVC.md` antes de continuar el desarrollo. Contiene el funcio
 ## Estado
 Consulta `STATUS_2026-10-04.md`, `docs/TEST_EVIDENCE.md` y `docs/BLOCKERS.md`.
 
-**Este repositorio todavía no debe presentarse como producción lista.**
+**Este ZIP no debe presentarse como producción lista.**
