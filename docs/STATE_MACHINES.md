@@ -1,28 +1,42 @@
 # MVC — Máquinas de estado
 
 ## Solicitud de plaza
-`pending -> accepted | rejected | cancelled`
+pending -> accepted -> payment_pending -> confirmed
 
-`accepted -> payment_pending | cancelled | expired`
+Alternativas:
+- pending -> rejected
+- pending|accepted|payment_pending -> cancelled|expired
+- payment_pending -> payment_late
 
-`payment_pending -> confirmed | payment_late | cancelled | expired`
-
-Una solicitud pendiente o aceptada todavía no es una reserva confirmada.
+La aceptación del conductor y el hold se ejecutan de forma transaccional; el estado visible final de una aceptación correcta es payment_pending.
 
 ## Seat hold
-`active -> consumed | released`
+active -> consumed | released
 
-El hold es temporal y ocupa capacidad por segmento. Una confirmación de pago posterior a la expiración no crea una reserva: genera compensación/reembolso pendiente.
+Expira según la lógica de reserva. Un pago posterior a expiración no crea una reserva y pasa a compensación.
 
 ## Reserva
-`confirmed -> completed | cancelled | driver_cancelled`
+confirmed -> completed | no_show | cancelled | driver_cancelled
+
+- completed: hubo recogida verificada mediante código.
+- no_show: el viaje terminó sin recogida verificada.
+- La consecuencia económica de no_show aún no está definida.
 
 ## Viaje
-`draft -> published -> active -> completed`
+draft -> published -> active -> completed
 
-Cualquier estado operativo puede terminar en `cancelled` conforme a una política de cancelación versionada.
+También puede terminar en cancelled cuando exista política de cancelación versionada.
+
+## GPS
+- solo active acepta nuevas posiciones;
+- eventos duplicados son idempotentes;
+- un evento antiguo puede conservarse en histórico pero no sustituye al estado vivo más reciente;
+- al salir de active, la API no presenta el viaje como ubicación en directo.
+
+## Chat
+Solo existe acceso conductor ↔ pasajero con booking confirmado/completado y sin bloqueo entre ambos.
 
 ## Cambio de ruta
-`pending -> accepted | rejected | expired | cancelled`
+pending -> accepted | rejected | expired | cancelled
 
-Si el cambio altera materialmente precio o horario ya acordado, requiere aceptación de los pasajeros afectados antes de aplicarse.
+Los cambios materiales de precio/horario deben ser aceptados por pasajeros afectados antes de aplicarse. El flujo de consenso completo sigue pendiente.
