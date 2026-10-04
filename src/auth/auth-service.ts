@@ -90,8 +90,8 @@ export async function verifyOtp(
     challengeId: string;
     phoneE164: string;
     code: string;
-    userAgent?: string;
-    ipAddress?: string;
+    userAgent?: string | undefined;
+    ipAddress?: string | undefined;
   }
 ): Promise<{ accessToken: string; expiresAt: string; user: AuthenticatedUser }> {
   const phone = normalizePhoneE164(input.phoneE164);
