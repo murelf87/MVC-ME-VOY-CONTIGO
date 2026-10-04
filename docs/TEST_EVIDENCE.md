@@ -1,7 +1,7 @@
 # Evidencia de pruebas — 2026-10-04
 
-GitHub Actions:
-https://github.com/murelf87/MVC-ME-VOY-CONTIGO/actions/runs/37204463106
+Última ejecución:
+https://github.com/murelf87/MVC-ME-VOY-CONTIGO/actions/runs/37210090230
 
 Resultado: **SUCCESS**
 
@@ -17,28 +17,45 @@ Resultado: **SUCCESS**
 
 ## Unit tests cubiertos
 - dinero y redondeo exacto;
-- utilidades OTP/sesión;
-- normalización de teléfono y roles self-service;
-- tokens de sesión;
-- adaptador Google Maps y serialización de rutas/geocoding.
+- teléfono, roles y tokens de sesión;
+- Google Maps Routes/Geocoding con fetch aislado;
+- normalización de matrículas.
 
 ## Integration tests cubiertos
 - ruta con extremos dentro pero geometría fuera -> bloqueo;
 - ruta íntegramente dentro -> publicación;
 - concurrencia por último asiento;
-- ocupación por segmentos no solapados;
+- capacidad por segmentos no solapados;
 - pago tardío tras expiración de hold;
 - idempotencia de pago;
-- autenticación/verificación con proveedor de test aislado;
-- restricción de roles administrativos en registro público;
+- autenticación/verificación y restricción de roles;
 - cooldown de reenvío;
-- código de verificación incorrecto sin crear usuario/sesión;
-- importación provincial válida;
-- importación provincial atómica ante errores;
-- duplicados de dataset;
-- selección de alternativa de routing que permanezca dentro de provincia;
+- código de verificación erróneo sin crear usuario/sesión;
+- importación provincial válida/atómica y duplicados;
+- selección de alternativa de routing dentro de provincia;
 - rechazo de puntos fuera de provincia;
-- fallback segmentado con paradas;
-- bloqueo cuando ninguna ruta permanece dentro de provincia.
+- fallback segmentado;
+- perfiles, vehículos y autorización de revisión;
+- documentos privados sin exposición de claves;
+- identidad verificada solo por revisor autorizado;
+- GPS publicado solo por conductor real;
+- precisión GPS según autorización;
+- eventos GPS fuera de orden;
+- idempotencia de eventos GPS;
+- mapa público aproximado;
+- GPS obsoleto marcado;
+- solicitud de plaza por pasajero;
+- bloqueo del conductor sobre su propio viaje;
+- decisión exclusiva del conductor propietario;
+- aceptación + hold transaccional;
+- concurrencia del último asiento;
+- rechazo sin hold;
+- bloqueo de solicitud abierta duplicada;
+- creación de viaje con routing del servidor;
+- persistencia de paradas/segmentos/distancias;
+- bloqueo de vehículo ajeno;
+- bloqueo cuando Maps no está configurado;
+- publicación por propietario;
+- bloqueo de publicación por no propietario.
 
-Las pruebas que usan proveedores externos reales siguen bloqueadas hasta configurar credenciales y entornos oficiales.
+Las llamadas reales a SMS, Google Maps, storage y pagos siguen bloqueadas hasta configurar proveedores y credenciales oficiales.

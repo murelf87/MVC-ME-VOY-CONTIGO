@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "MVC - Me voy contigo API",
-    "version": "0.3.0",
-    "description": "Contrato estático del bloque actual. La autenticación usa verificación telefónica mediante proveedor configurable y sesiones opacas revocables."
+    "version": "0.7.0",
+    "description": "Contrato estático del backend actual. Proveedores externos permanecen desactivados sin credenciales reales."
   },
   "components": {
     "securitySchemes": {
@@ -17,21 +17,23 @@
   "paths": {
     "/health/live": {
       "get": {
+        "summary": "Liveness",
         "responses": {
           "200": {
-            "description": "Process alive"
+            "description": "Proceso activo"
           }
         }
       }
     },
     "/health/ready": {
       "get": {
+        "summary": "Readiness PostGIS",
         "responses": {
           "200": {
-            "description": "Database/PostGIS ready"
+            "description": "DB/PostGIS listo"
           },
           "503": {
-            "description": "Database/PostGIS not ready"
+            "description": "No listo"
           }
         }
       }
@@ -41,10 +43,10 @@
         "summary": "Inicia verificación telefónica",
         "responses": {
           "202": {
-            "description": "Challenge de verificación iniciado"
+            "description": "Challenge iniciado"
           },
           "429": {
-            "description": "Reenvío demasiado pronto"
+            "description": "Cooldown"
           },
           "503": {
             "description": "Proveedor SMS no configurado"
@@ -54,23 +56,20 @@
     },
     "/v1/auth/phone/verify": {
       "post": {
-        "summary": "Verifica el código con el proveedor y crea sesión",
+        "summary": "Verifica teléfono y crea sesión",
         "responses": {
           "200": {
             "description": "Sesión creada"
           },
           "401": {
-            "description": "Código inválido o expirado"
-          },
-          "429": {
-            "description": "Demasiados intentos"
+            "description": "Código inválido/expirado"
           }
         }
       }
     },
     "/v1/auth/session": {
       "get": {
-        "summary": "Devuelve la sesión autenticada",
+        "summary": "Sesión actual",
         "security": [
           {
             "bearerAuth": []
@@ -78,17 +77,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Sesión y roles"
-          },
-          "401": {
-            "description": "Sesión inválida o expirada"
+            "description": "Sesión"
           }
         }
       }
     },
     "/v1/auth/logout": {
       "post": {
-        "summary": "Revoca la sesión actual",
+        "summary": "Revoca sesión",
         "security": [
           {
             "bearerAuth": []
@@ -96,14 +92,14 @@
         ],
         "responses": {
           "204": {
-            "description": "Sesión revocada"
+            "description": "Revocada"
           }
         }
       }
     },
     "/me": {
       "get": {
-        "summary": "Perfil del usuario autenticado",
+        "summary": "Perfil autenticado",
         "security": [
           {
             "bearerAuth": []
@@ -111,10 +107,265 @@
         ],
         "responses": {
           "200": {
-            "description": "Perfil y roles"
+            "description": "Perfil"
+          }
+        }
+      }
+    },
+    "/v1/me/profile": {
+      "patch": {
+        "summary": "Actualiza perfil propio",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil actualizado"
+          }
+        }
+      }
+    },
+    "/v1/me/vehicles": {
+      "get": {
+        "summary": "Vehículos propios",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vehículos"
+          }
+        }
+      },
+      "post": {
+        "summary": "Registra vehículo propio",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Vehículo pendiente de revisión"
+          }
+        }
+      }
+    },
+    "/v1/me/vehicles/{vehicleId}": {
+      "put": {
+        "summary": "Actualiza vehículo y reinicia revisión",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vehículo actualizado"
           },
-          "401": {
-            "description": "Sesión ausente, inválida o expirada"
+          "403": {
+            "description": "No propietario"
+          }
+        }
+      }
+    },
+    "/v1/me/documents": {
+      "get": {
+        "summary": "Metadatos seguros de documentos propios",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos sin claves privadas"
+          }
+        }
+      }
+    },
+    "/v1/admin/vehicles/{vehicleId}/review": {
+      "post": {
+        "summary": "Revisión administrativa de vehículo/documentación",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revisado"
+          },
+          "403": {
+            "description": "Rol insuficiente"
+          }
+        }
+      }
+    },
+    "/v1/admin/documents/{documentId}/review": {
+      "post": {
+        "summary": "Revisión administrativa de documento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revisado"
+          },
+          "403": {
+            "description": "Rol insuficiente"
+          }
+        }
+      }
+    },
+    "/v1/me/trips": {
+      "get": {
+        "summary": "Viajes del conductor",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Viajes"
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea borrador con routing calculado en servidor",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Borrador creado"
+          },
+          "503": {
+            "description": "Maps no configurado"
+          }
+        }
+      }
+    },
+    "/v1/me/trips/{tripId}/publish": {
+      "post": {
+        "summary": "Publica viaje propio verificado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Publicado"
+          },
+          "403": {
+            "description": "No propietario"
+          }
+        }
+      }
+    },
+    "/v1/trips/{tripId}/requests": {
+      "post": {
+        "summary": "Pasajero solicita plaza",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Solicitud pendiente"
+          }
+        }
+      },
+      "get": {
+        "summary": "Conductor propietario lista solicitudes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Solicitudes"
+          }
+        }
+      }
+    },
+    "/v1/me/ride-requests": {
+      "get": {
+        "summary": "Solicitudes propias del pasajero",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Solicitudes"
+          }
+        }
+      }
+    },
+    "/v1/ride-requests/{requestId}/decision": {
+      "post": {
+        "summary": "Conductor acepta/rechaza; aceptación crea hold transaccional",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Decisión aplicada"
+          },
+          "409": {
+            "description": "Sin capacidad o estado incompatible"
+          }
+        }
+      }
+    },
+    "/v1/trips/{tripId}/location": {
+      "post": {
+        "summary": "Conductor publica GPS del viaje activo",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evento procesado"
+          },
+          "403": {
+            "description": "No es conductor"
+          }
+        }
+      },
+      "get": {
+        "summary": "Ubicación precisa o aproximada según autorización",
+        "responses": {
+          "200": {
+            "description": "Ubicación"
+          }
+        }
+      }
+    },
+    "/v1/live/map": {
+      "get": {
+        "summary": "Mapa público aproximado de viajes activos por provincia",
+        "responses": {
+          "200": {
+            "description": "Posiciones aproximadas"
           }
         }
       }
