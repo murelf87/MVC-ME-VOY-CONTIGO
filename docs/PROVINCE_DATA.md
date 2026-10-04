@@ -41,9 +41,10 @@ Variables requeridas:
 - `PROVINCE_SOURCE_LICENSE`
 - `PROVINCE_CODE_FIELD`
 - `PROVINCE_NAME_FIELD`
+- `PROVINCE_CODE_MODE`: `two-digit` para un campo ya normalizado a código provincial de dos dígitos, o `natcode` para BDLJE INSPIRE `NATCODE` (posiciones 5-6).
 - opcional: `PROVINCE_SOURCE_VERSION`
 
-Los nombres de campos se pasan explícitamente para no asumir silenciosamente un esquema que pueda cambiar entre publicaciones. En datos BDLJE se han observado atributos como `NAMEUNIT` y `NATCODE`, pero la importación operativa debe confirmar los campos en el fichero oficial descargado.
+Los nombres de campos y el modo de código se pasan explícitamente para no asumir silenciosamente un esquema que pueda cambiar entre publicaciones. En datos BDLJE se han observado atributos como `NAMEUNIT` y `NATCODE`; si se usa `NATCODE`, el importador extrae el código provincial de las posiciones 5-6 únicamente cuando `PROVINCE_CODE_MODE=natcode`. La importación operativa debe confirmar los campos en el fichero oficial descargado.
 
 ## Seguridad y trazabilidad
 - Un SHA-256 ya importado no puede activarse dos veces.
