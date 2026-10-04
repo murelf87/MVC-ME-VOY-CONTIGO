@@ -104,7 +104,7 @@ async function prepareVerification(
 ): Promise<{ mode: "finalize" } | { mode: "check"; challenge: ChallengeRow }> {
   return tx(pool, async client => {
     const result = await client.query<ChallengeRow>(
-      `select * from auth_challenges where id=$1 for update`,
+      `select id,phone_e164,requested_roles::text[] as requested_roles,provider,provider_challenge_id,status,check_attempts,expires_at\n         from auth_challenges where id=$1 for update`,
       [challengeId]
     );
     const row = result.rows[0];
