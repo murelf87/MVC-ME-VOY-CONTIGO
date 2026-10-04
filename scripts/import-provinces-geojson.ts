@@ -18,13 +18,14 @@ async function main(): Promise<void> {
   const bytes = await fs.readFile(filename);
   const fileSha256 = createHash("sha256").update(bytes).digest("hex");
   const data = JSON.parse(bytes.toString("utf8")) as unknown;
+  const sourceVersion = process.env.PROVINCE_SOURCE_VERSION?.trim();
 
   const result = await importProvinceFeatureCollection(pool, data, {
     sourceName: env("PROVINCE_SOURCE_NAME"),
     sourceUrl: env("PROVINCE_SOURCE_URL"),
     sourceDate: env("PROVINCE_SOURCE_DATE"),
     sourceLicense: env("PROVINCE_SOURCE_LICENSE"),
-    sourceVersion: process.env.PROVINCE_SOURCE_VERSION,
+    ...(sourceVersion ? { sourceVersion } : {}),
     fileSha256,
     codeField: env("PROVINCE_CODE_FIELD"),
     nameField: env("PROVINCE_NAME_FIELD"),
