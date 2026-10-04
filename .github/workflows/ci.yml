@@ -1,0 +1,49 @@
+name: MVC backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_DB: mvc
+          POSTGRES_USER: mvc
+          POSTGRES_PASSWORD: mvc_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mvc -d mvc"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://mvc:mvc_ci_only@127.0.0.1:5432/mvc
+      SMS_PROVIDER: disabled
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install
+      - name: Strict typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Unit tests
+        run: npm test
+      - name: Migrate PostGIS database
+        run: npm run db:migrate
+      - name: Integration tests
+        run: npm run test:integration
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
