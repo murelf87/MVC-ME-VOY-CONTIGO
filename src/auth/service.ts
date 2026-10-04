@@ -140,7 +140,7 @@ async function finalizeApprovedChallenge(
 ): Promise<{ token: string; expiresAt: string; user: { id: string; roles: SelfServiceRole[] } }> {
   return tx(pool, async client => {
     const result = await client.query<ChallengeRow>(
-      `select * from auth_challenges where id=$1 for update`,
+      `select id,phone_e164,requested_roles::text[] as requested_roles,provider,provider_challenge_id,status,check_attempts,expires_at\n         from auth_challenges where id=$1 for update`,
       [challengeId]
     );
     const challenge = result.rows[0];
