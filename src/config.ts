@@ -1,4 +1,5 @@
 export type SmsProviderName = "disabled" | "twilio";
+export type MapsProviderName = "disabled" | "google";
 
 export type AppConfig = {
   nodeEnv: string;
@@ -16,6 +17,8 @@ export type AppConfig = {
   authSessionTtlSeconds: number;
   authMaxCheckAttempts: number;
   authResendCooldownSeconds: number;
+  mapsProvider: MapsProviderName;
+  googleMapsApiKey: string | undefined;
 };
 
 function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_INTEGER): number {
@@ -24,6 +27,14 @@ function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_I
   const value = Number(raw);
   if (!Number.isInteger(value) || value < min || value > max) {
     throw new Error(`Invalid integer environment variable: ${name}`);
+  }
+  return value;
+}
+
+function mapsProviderEnv(): MapsProviderName {
+  const value = process.env.MAPS_PROVIDER ?? "disabled";
+  if (value !== "disabled" && value !== "google") {
+    throw new Error("MAPS_PROVIDER must be disabled or google");
   }
   return value;
 }
@@ -55,6 +66,8 @@ export function loadConfig(): AppConfig {
     authChallengeTtlSeconds: intEnv("AUTH_CHALLENGE_TTL_SECONDS", 600, 120, 86_400),
     authSessionTtlSeconds: intEnv("AUTH_SESSION_TTL_SECONDS", 2_592_000, 3_600, 31_536_000),
     authMaxCheckAttempts: intEnv("AUTH_MAX_CHECK_ATTEMPTS", 5, 1, 10),
-    authResendCooldownSeconds: intEnv("AUTH_RESEND_COOLDOWN_SECONDS", 60, 30, 3_600)
+    authResendCooldownSeconds: intEnv("AUTH_RESEND_COOLDOWN_SECONDS", 60, 30, 3_600),
+    mapsProvider: mapsProviderEnv(),
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
   };
 }
