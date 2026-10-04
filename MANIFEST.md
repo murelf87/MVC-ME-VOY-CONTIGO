@@ -1,22 +1,30 @@
 # MANIFEST
 
-Archivos incluidos:
+Archivos principales incluidos:
 
 - `.env.example`
+- `.github/workflows/ci.yml`
 - `.gitignore`
 - `PROMPT_MAESTRO_MVC.md`
 - `README.md`
 - `STATUS_2026-10-04.md`
 - `docker-compose.yml`
+- `docs/AUTH.md`
 - `docs/BLOCKERS.md`
 - `docs/INVENTORY.md`
 - `docs/STATE_MACHINES.md`
 - `docs/TEST_EVIDENCE.md`
 - `docs/openapi.json`
 - `migrations/001_core.sql`
+- `migrations/002_auth_sessions.sql`
 - `package.json`
 - `scripts/migrate.ts`
 - `src/app.ts`
+- `src/auth/phone.ts`
+- `src/auth/provider.ts`
+- `src/auth/routes.ts`
+- `src/auth/service.ts`
+- `src/auth/session.ts`
 - `src/config.ts`
 - `src/db/pool.ts`
 - `src/domain/money.ts`
@@ -24,6 +32,8 @@ Archivos incluidos:
 - `src/server.ts`
 - `src/services/reservation-service.ts`
 - `src/services/trip-service.ts`
+- `tests/auth.integration.test.ts`
+- `tests/auth.test.ts`
 - `tests/core.integration.test.ts`
 - `tests/money.test.ts`
 - `tsconfig.json`
