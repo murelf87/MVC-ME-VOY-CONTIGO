@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "MVC - Me voy contigo",
+    "slug": "mvc-me-voy-contigo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "mvc",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    }
+  }
+}
