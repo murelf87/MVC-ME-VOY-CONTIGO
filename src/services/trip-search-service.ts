@@ -147,7 +147,17 @@ export async function searchPublishedTrips(
         ST_SetSRID(ST_Point($4,$5),4326)::geography,
         $8
       )
-    order by t.id,pickup_distance_m+dropoff_distance_m,pickup.seq,dropoff.seq
+    order by t.id,
+      ST_Distance(
+        pickup.geom::geography,
+        ST_SetSRID(ST_Point($2,$3),4326)::geography
+      )
+      +
+      ST_Distance(
+        dropoff.geom::geography,
+        ST_SetSRID(ST_Point($4,$5),4326)::geography
+      ),
+      pickup.seq,dropoff.seq
     limit $9
   `,[
     input.provinceId,
