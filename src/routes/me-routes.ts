@@ -1,11 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import type { Pool } from "pg";
-import { requireSession } from "../auth/auth-service.js";
+import { readBearerToken, resolveSession } from "../auth/session.js";
 import { DomainError } from "../errors.js";
 
 export async function registerMeRoutes(app: FastifyInstance, pool: Pool): Promise<void> {
-  app.get("/me", async (request) => {
-    const auth = await requireSession(pool, request.headers.authorization);
+  app.get("/me", {
+    schema: { security: [{ bearerAuth: [] }] }
+  }, async (request) => {
+    const token = readBearerToken(request.headers.authorization);
+    const principal = await resolveSession(pool, token);
+
     const result = await pool.query(
       `select
          u.id,u.phone_e164,u.status,
@@ -16,7 +20,7 @@ export async function registerMeRoutes(app: FastifyInstance, pool: Pool): Promis
        left join user_roles ur on ur.user_id=u.id
       where u.id=$1
       group by u.id,p.user_id`,
-      [auth.userId]
+      [principal.userId]
     );
     const row = result.rows[0];
     if (!row) throw new DomainError("USER_NOT_FOUND", "User not found", 404);
