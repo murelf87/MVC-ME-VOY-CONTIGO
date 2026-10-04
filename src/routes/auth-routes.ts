@@ -40,10 +40,11 @@ export async function registerAuthRoutes(
     }
   }, async (request) => {
     const body = request.body as { challengeId: string; phoneE164: string; code: string };
+    const userAgent = request.headers["user-agent"];
     return verifyOtp(pool, {
       ...body,
-      userAgent: request.headers["user-agent"],
-      ipAddress: request.ip
+      ipAddress: request.ip,
+      ...(userAgent ? { userAgent } : {})
     });
   });
 
