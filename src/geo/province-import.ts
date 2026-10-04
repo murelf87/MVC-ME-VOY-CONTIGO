@@ -28,6 +28,7 @@ export type ProvinceDatasetMetadata = {
   fileSha256: string;
   codeField: string;
   nameField: string;
+  codeMode: "two-digit" | "natcode";
 };
 
 export type ProvinceImportResult = {
@@ -71,13 +72,22 @@ function validateSourceUrl(value: string): string {
   return url.toString();
 }
 
-function normalizeCode(value: unknown): string {
+function normalizeCode(value: unknown, mode: ProvinceDatasetMetadata["codeMode"]): string {
   const raw = requiredString(String(value ?? ""), "province code");
-  const digits = raw.match(/(?:^|\D)(\d{2})(?:\D|$)/)?.[1] ?? (raw.length === 2 && /^\d{2}$/.test(raw) ? raw : null);
-  if (!digits) {
-    throw new DomainError("PROVINCE_DATA_INVALID_CODE", `Cannot derive a two-digit province code from "${raw}"`);
+
+  if (mode === "two-digit") {
+    if (!/^\d{2}$/.test(raw)) {
+      throw new DomainError("PROVINCE_DATA_INVALID_CODE", `Expected a two-digit province code, received "${raw}"`);
+    }
+    return raw;
   }
-  return digits;
+
+  // BDLJE INSPIRE NATCODE uses positions 5-6 (zero-based slice 4..6)
+  // for the province code. Do not infer this layout for any other field.
+  if (!/^\d{6,}$/.test(raw)) {
+    throw new DomainError("PROVINCE_DATA_INVALID_CODE", `Invalid BDLJE NATCODE "${raw}"`);
+  }
+  return raw.slice(4, 6);
 }
 
 function validateFeatureCollection(input: unknown): ProvinceFeatureCollection {
@@ -120,6 +130,10 @@ export async function importProvinceFeatureCollection(
   const fileSha256 = validateSha256(metadata.fileSha256);
   const codeField = requiredString(metadata.codeField, "codeField");
   const nameField = requiredString(metadata.nameField, "nameField");
+  const codeMode = metadata.codeMode;
+  if (codeMode !== "two-digit" && codeMode !== "natcode") {
+    throw new DomainError("PROVINCE_DATA_INVALID_CODE_MODE", "codeMode must be two-digit or natcode");
+  }
 
   const prepared = collection.features.map((feature, index) => {
     if (!feature || feature.type !== "Feature" || !feature.properties || !feature.geometry) {
@@ -129,7 +143,7 @@ export async function importProvinceFeatureCollection(
       throw new DomainError("PROVINCE_DATA_INVALID_GEOMETRY", `Feature ${index} must be Polygon or MultiPolygon`);
     }
 
-    const code = normalizeCode(feature.properties[codeField]);
+    const code = normalizeCode(feature.properties[codeField], codeMode);
     const name = requiredString(feature.properties[nameField], `Feature ${index} province name`);
     return { code, name, geometry: feature.geometry };
   });
