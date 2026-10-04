@@ -5,13 +5,13 @@ import swaggerUi from "@fastify/swagger-ui";
 import { loadConfig } from "./config.js";
 import { checkDatabaseReadiness, pool } from "./db/pool.js";
 import { DomainError } from "./errors.js";
-import { buildSmsVerificationProvider } from "./auth/provider.js";
-import { registerAuthRoutes } from "./auth/routes.js";
+import { DisabledOtpProvider } from "./auth/disabled-otp-provider.js";
+import { registerAuthRoutes } from "./routes/auth-routes.js";
+import { registerMeRoutes } from "./routes/me-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
   const app = Fastify({ logger: true, trustProxy: config.trustProxy });
-  const smsProvider = buildSmsVerificationProvider(config);
 
   await app.register(rateLimit, {
     max: config.rateLimitMax,
@@ -23,15 +23,7 @@ export async function buildApp() {
       info: {
         title: "MVC - Me voy contigo API",
         version: "0.2.0",
-        description: "Backend core with phone verification and revocable server-side sessions."
-      },
-      components: {
-        securitySchemes: {
-          bearerAuth: {
-            type: "http",
-            scheme: "bearer"
-          }
-        }
+        description: "Backend core with secure session primitives. Real SMS delivery remains disabled until a provider is configured."
       }
     }
   });
@@ -85,12 +77,9 @@ export async function buildApp() {
     return { status: "ready", postgis: db.postgis ?? "unknown" };
   });
 
-  await registerAuthRoutes(app, pool, smsProvider, {
-    challengeTtlSeconds: config.authChallengeTtlSeconds,
-    sessionTtlSeconds: config.authSessionTtlSeconds,
-    maxCheckAttempts: config.authMaxCheckAttempts,
-    resendCooldownSeconds: config.authResendCooldownSeconds
-  });
+  const otpProvider = new DisabledOtpProvider();
+  await registerAuthRoutes(app, pool, otpProvider);
+  await registerMeRoutes(app, pool);
 
   return app;
 }
