@@ -1,0 +1,29 @@
+# MANIFEST
+
+Archivos incluidos:
+
+- `.env.example`
+- `.gitignore`
+- `PROMPT_MAESTRO_MVC.md`
+- `README.md`
+- `STATUS_2026-10-04.md`
+- `docker-compose.yml`
+- `docs/BLOCKERS.md`
+- `docs/INVENTORY.md`
+- `docs/STATE_MACHINES.md`
+- `docs/TEST_EVIDENCE.md`
+- `docs/openapi.json`
+- `migrations/001_core.sql`
+- `package.json`
+- `scripts/migrate.ts`
+- `src/app.ts`
+- `src/config.ts`
+- `src/db/pool.ts`
+- `src/domain/money.ts`
+- `src/errors.ts`
+- `src/server.ts`
+- `src/services/reservation-service.ts`
+- `src/services/trip-service.ts`
+- `tests/core.integration.test.ts`
+- `tests/money.test.ts`
+- `tsconfig.json`
