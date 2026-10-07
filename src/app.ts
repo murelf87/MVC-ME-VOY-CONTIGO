@@ -12,12 +12,13 @@ import { registerProfileVehicleRoutes } from "./routes/profile-vehicle-routes.js
 import { registerLiveTrackingRoutes } from "./routes/live-tracking-routes.js";
 import { registerRideRequestRoutes } from "./routes/ride-request-routes.js";
 import { GoogleMapsProvider } from "./maps/google-maps-provider.js";
-import type { RouteProvider } from "./maps/types.js";
+import type { GeocodingProvider, RouteProvider } from "./maps/types.js";
 import { registerTripDraftRoutes } from "./routes/trip-draft-routes.js";
 import { registerTripSearchRoutes } from "./routes/trip-search-routes.js";
 import { registerChatRoutes } from "./routes/chat-routes.js";
 import { registerTripExecutionRoutes } from "./routes/trip-execution-routes.js";
 import { registerProvinceRoutes } from "./routes/province-routes.js";
+import { registerGeocodingRoutes } from "./routes/geocoding-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
@@ -32,7 +33,7 @@ export async function buildApp() {
     openapi: {
       info: {
         title: "MVC - Me voy contigo API",
-        version: "0.10.0",
+        version: "0.12.0",
         description: "Backend core with provider-backed phone verification and revocable opaque sessions."
       },
       components: {
@@ -98,9 +99,12 @@ export async function buildApp() {
 
   const smsProvider = buildSmsVerificationProvider(config);
   let routeProvider: RouteProvider | null = null;
+  let geocodingProvider: GeocodingProvider | null = null;
   if (config.mapsProvider === "google") {
     if (!config.googleMapsApiKey) throw new Error("GOOGLE_MAPS_API_KEY is required when MAPS_PROVIDER=google");
-    routeProvider = new GoogleMapsProvider(config.googleMapsApiKey);
+    const googleMaps = new GoogleMapsProvider(config.googleMapsApiKey);
+    routeProvider = googleMaps;
+    geocodingProvider = googleMaps;
   }
   await registerAuthRoutes(app, pool, smsProvider, {
     challengeTtlSeconds: config.authChallengeTtlSeconds,
@@ -117,6 +121,7 @@ export async function buildApp() {
   await registerChatRoutes(app, pool);
   await registerTripExecutionRoutes(app, pool);
   await registerProvinceRoutes(app, pool);
+  await registerGeocodingRoutes(app, pool, geocodingProvider);
 
   return app;
 }
