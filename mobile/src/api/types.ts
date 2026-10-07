@@ -36,6 +36,51 @@ export type VerificationStart = {
   expiresAt: string;
 };
 
+export type Province = {
+  id: string;
+  code: string;
+  name: string;
+  sourceName?: string | null;
+  sourceUrl?: string | null;
+  sourceDate?: string | null;
+  sourceLicense?: string | null;
+};
+
+export type LatLng = {
+  latitude: number;
+  longitude: number;
+};
+
+export type GeocodeResult = {
+  provider: string;
+  placeId: string;
+  formattedAddress: string;
+  location: LatLng;
+  types: string[];
+};
+
+export type TripSearchParams = {
+  provinceId: string;
+  provinceName: string;
+  origin: GeocodeResult;
+  destination: GeocodeResult;
+};
+
+export type TripSearchResult = {
+  tripId: string;
+  category: string;
+  leg: string;
+  departureAt: string | null;
+  fromSegmentSeq: number;
+  toSegmentSeq: number;
+  pickupDistanceM: number;
+  dropoffDistanceM: number;
+  roadDistanceM: number;
+  estimatedDurationS: number;
+  availableSeats: number;
+  driverDisplayName: string | null;
+};
+
 export type Vehicle = {
   id: string;
   make: string;

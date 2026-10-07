@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import type { TripSearchParams } from "./src/api/types";
 import { BottomNav, Brand } from "./src/components/UI";
 import { AuthProvider, useAuth } from "./src/session/AuthContext";
 import { AccessScreen } from "./src/screens/AccessScreen";
@@ -44,6 +45,7 @@ function BootScreen() {
 
 function AuthenticatedApp() {
   const [screen, setScreen] = useState<Screen>("home");
+  const [searchParams, setSearchParams] = useState<TripSearchParams | null>(null);
   const main = ["home", "trips", "publish", "messages", "profile"].includes(screen);
   const navActive = main ? screen : screen === "route" ? "home" : "trips";
 
@@ -52,6 +54,11 @@ function AuthenticatedApp() {
       setScreen(next as Screen);
     }
   };
+
+  function runSearch(params: TripSearchParams) {
+    setSearchParams(params);
+    setScreen("trips");
+  }
 
   return (
     <SafeAreaView style={s.safe}>
@@ -70,14 +77,20 @@ function AuthenticatedApp() {
 
       <View style={s.body}>
         {screen === "home" && (
-          <HomeScreen onOpenRoute={() => setScreen("route")} />
+          <HomeScreen
+            onSearch={runSearch}
+            onOpenRoute={() => setScreen("route")}
+          />
         )}
         {screen === "route" && (
           <RouteScreen onLive={() => setScreen("live")} />
         )}
         {screen === "live" && <LiveScreen />}
         {screen === "trips" && (
-          <TripsScreen onLive={() => setScreen("live")} />
+          <TripsScreen
+            searchParams={searchParams}
+            onLive={() => setScreen("live")}
+          />
         )}
         {screen === "publish" && <PublishScreen />}
         {screen === "messages" && <MessagesScreen />}
