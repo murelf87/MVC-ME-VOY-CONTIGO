@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, ApiError } from "../api/client";
 import type { TripSearchParams, TripSearchResult } from "../api/types";
-import { Card, FieldRow, PrimaryButton } from "../components/UI";
+import { Card, PrimaryButton } from "../components/UI";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
 
@@ -216,35 +216,6 @@ export function TripsScreen({
           </Text>
         </Pressable>
       ) : null}
-    </ScrollView>
-  );
-}
-
-export function PublishScreen() {
-  return (
-    <ScrollView contentContainerStyle={s.wrap}>
-      <Text style={s.title}>Publicar viaje</Text>
-      <Text style={s.subtitle}>
-        Configura un recorrido. Los datos definitivos se calcularán en servidor.
-      </Text>
-      <Card style={{ paddingVertical: 0 }}>
-        <FieldRow icon="location" title="Provincia" value="Seleccionar" />
-        <FieldRow icon="navigate" title="Origen" value="Buscar origen" />
-        <FieldRow icon="flag" title="Destino" value="Buscar destino" />
-        <FieldRow icon="calendar" title="Fecha" value="Elegir" />
-        <FieldRow icon="time" title="Hora" value="Elegir" />
-        <FieldRow icon="people" title="Plazas" value="Configurar" />
-      </Card>
-      <View style={s.ok}>
-        <Ionicons name="shield-checkmark" size={23} color={C.mint} />
-        <Text style={s.okText}>
-          El backend bloqueará cualquier recorrido que abandone la provincia.
-        </Text>
-      </View>
-      <PrimaryButton title="Continuar con mi ruta" />
-      <Text style={s.pendingFeature}>
-        Conexión completa del formulario de publicación: siguiente bloque.
-      </Text>
     </ScrollView>
   );
 }

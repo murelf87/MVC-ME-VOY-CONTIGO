@@ -19,9 +19,9 @@ import { LiveScreen } from "./src/screens/LiveScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import {
   MessagesScreen,
-  PublishScreen,
   TripsScreen,
 } from "./src/screens/OtherScreens";
+import { PublishScreen } from "./src/screens/PublishScreen";
 import { C } from "./src/theme";
 
 type Screen =
