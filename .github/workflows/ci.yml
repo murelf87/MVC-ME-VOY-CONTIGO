@@ -1,4 +1,4 @@
-name: MVC backend CI
+name: MVC CI
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  backend:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -47,3 +47,32 @@ jobs:
         run: npm run test:integration
       - name: Production dependency audit
         run: npm audit --omit=dev --audit-level=high
+
+  mobile:
+    runs-on: ubuntu-latest
+    env:
+      CI: "1"
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_PUBLIC_API_URL: "https://api.invalid.example"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+          run_install: false
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: pnpm install --frozen-lockfile
+      - name: Mobile strict typecheck
+        working-directory: mobile
+        run: pnpm typecheck
+      - name: Export iOS bundle
+        working-directory: mobile
+        run: pnpm exec expo export --platform ios --output-dir dist-ios
+      - name: Export Android bundle
+        working-directory: mobile
+        run: pnpm exec expo export --platform android --output-dir dist-android

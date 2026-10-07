@@ -17,6 +17,7 @@ import { registerTripDraftRoutes } from "./routes/trip-draft-routes.js";
 import { registerTripSearchRoutes } from "./routes/trip-search-routes.js";
 import { registerChatRoutes } from "./routes/chat-routes.js";
 import { registerTripExecutionRoutes } from "./routes/trip-execution-routes.js";
+import { registerProvinceRoutes } from "./routes/province-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
@@ -115,6 +116,7 @@ export async function buildApp() {
   await registerTripSearchRoutes(app, pool);
   await registerChatRoutes(app, pool);
   await registerTripExecutionRoutes(app, pool);
+  await registerProvinceRoutes(app, pool);
 
   return app;
 }
