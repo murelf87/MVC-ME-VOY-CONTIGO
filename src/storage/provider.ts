@@ -22,6 +22,7 @@ class DisabledPrivateObjectStorage implements PrivateObjectStorage {
   async headObject():Promise<PrivateObjectInfo>{return this.fail()}
   async readObject():Promise<Uint8Array>{return this.fail()}
   async createDownloadUrl():Promise<string>{return this.fail()}
+  async deleteObject():Promise<void>{return this.fail()}
 }
 
 export function buildPrivateObjectStorage(config:AppConfig):PrivateObjectStorage{

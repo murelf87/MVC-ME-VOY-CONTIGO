@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import { DomainError } from "../errors.js";
-import type { SelfServiceRole } from "./phone.js";
+import type { SelfServiceRole } from "./roles.js";
 
 export type UserRole = SelfServiceRole | "admin" | "verification_admin" | "finance_admin" | "support_admin";
 
@@ -60,7 +60,7 @@ export async function resolveSession(pool: Pool, token: string): Promise<AuthPri
             s.user_id,
             s.expires_at,
             u.status as user_status,
-            coalesce(array_agg(ur.role) filter (where ur.role is not null),'{}') as roles
+            coalesce(array_agg(ur.role::text order by ur.role::text) filter (where ur.role is not null),'{}'::text[]) as roles
        from auth_sessions s
        join app_users u on u.id=s.user_id
        left join user_roles ur on ur.user_id=u.id

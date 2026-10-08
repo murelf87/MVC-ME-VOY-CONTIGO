@@ -5,18 +5,31 @@ import swaggerUi from "@fastify/swagger-ui";
 import { loadConfig } from "./config.js";
 import { checkDatabaseReadiness, pool } from "./db/pool.js";
 import { DomainError } from "./errors.js";
-import { buildSmsVerificationProvider } from "./auth/provider.js";
+import { buildEmailProvider } from "./email/provider.js";
 import { registerAuthRoutes } from "./auth/routes.js";
+import { readBearerToken, requireAnyRole, resolveSession } from "./auth/session.js";
 import { registerMeRoutes } from "./routes/me-routes.js";
 import { registerProfileVehicleRoutes } from "./routes/profile-vehicle-routes.js";
 import { registerLiveTrackingRoutes } from "./routes/live-tracking-routes.js";
 import { registerRideRequestRoutes } from "./routes/ride-request-routes.js";
 import { GoogleMapsProvider } from "./maps/google-maps-provider.js";
 import type { GeocodingProvider, RouteProvider } from "./maps/types.js";
+import { DevLocalMapsProvider } from "./dev/dev-maps-provider.js";
 import { registerTripDraftRoutes } from "./routes/trip-draft-routes.js";
 import { registerTripSearchRoutes } from "./routes/trip-search-routes.js";
 import { registerChatRoutes } from "./routes/chat-routes.js";
 import { registerTripExecutionRoutes } from "./routes/trip-execution-routes.js";
+import { registerFeedbackRoutes } from "./routes/feedback-routes.js";
+import { registerCancellationRoutes } from "./routes/cancellation-routes.js";
+import { registerNotificationRoutes } from "./routes/notification-routes.js";
+import { registerAdminRoutes } from "./routes/admin-routes.js";
+import { registerRecurringRoutes } from "./routes/recurring-routes.js";
+import { registerPaymentRoutes } from "./routes/payment-routes.js";
+import { registerRouteChangeRoutes } from "./routes/route-change-routes.js";
+import { registerTariffRoutes } from "./routes/tariff-routes.js";
+import { registerLegalRoutes } from "./routes/legal-routes.js";
+import { registerAccountRoutes } from "./routes/account-routes.js";
+import { registerPushRoutes } from "./routes/push-routes.js";
 import { registerProvinceRoutes } from "./routes/province-routes.js";
 import { registerGeocodingRoutes } from "./routes/geocoding-routes.js";
 import { buildPrivateObjectStorage } from "./storage/provider.js";
@@ -25,7 +38,15 @@ import { registerPrivateUploadRoutes } from "./routes/private-upload-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
-  const app = Fastify({ logger: true, trustProxy: config.trustProxy });
+  const app = Fastify({
+    // Query strings carry coordinates and typed addresses: log the path only.
+    logger: {
+      serializers: {
+        req: (req: any) => ({ method: req.method, url: String(req.url ?? "").split("?")[0] ?? "", id: req.id })
+      }
+    },
+    trustProxy: config.trustProxy
+  });
 
   await app.register(rateLimit, {
     max: config.rateLimitMax,
@@ -36,7 +57,7 @@ export async function buildApp() {
     openapi: {
       info: {
         title: "MVC - Me voy contigo API",
-        version: "0.14.0",
+        version: "0.21.0",
         description: "Backend core with provider-backed phone verification and revocable opaque sessions."
       },
       components: {
@@ -60,11 +81,36 @@ export async function buildApp() {
       });
     }
 
+    const fastifyError = error as { validation?: unknown; statusCode?: number; message?: string };
+    if (fastifyError.validation) {
+      return reply.code(400).send({
+        error: { code: "VALIDATION_ERROR", message: fastifyError.message ?? "Invalid request" },
+        requestId: request.id
+      });
+    }
+    if (typeof fastifyError.statusCode === "number" && fastifyError.statusCode >= 400 && fastifyError.statusCode < 500) {
+      return reply.code(fastifyError.statusCode).send({
+        error: {
+          code: fastifyError.statusCode === 429 ? "RATE_LIMITED" : "HTTP_ERROR",
+          message: fastifyError.message ?? "Request rejected"
+        },
+        requestId: request.id
+      });
+    }
+
     request.log.error(error);
     return reply.code(500).send({
       error: { code: "INTERNAL_ERROR", message: "Internal server error" },
       requestId: request.id
     });
+  });
+
+  // Staff-only surface: refuse anonymous and non-staff callers before any body is parsed or validated.
+  // Each handler still checks the specific role it needs (finance, verification, support).
+  app.addHook("onRequest", async request => {
+    if (!/^\/v1\/admin(\/|\?|$)/.test(request.url)) return;
+    const principal = await resolveSession(pool, readBearerToken(request.headers.authorization));
+    requireAnyRole(principal, ["admin", "verification_admin", "finance_admin", "support_admin"]);
   });
 
   app.get("/health/live", {
@@ -100,7 +146,7 @@ export async function buildApp() {
     return { status: "ready", postgis: db.postgis ?? "unknown" };
   });
 
-  const smsProvider = buildSmsVerificationProvider(config);
+  const emailProvider = buildEmailProvider(config);
   const privateStorage = buildPrivateObjectStorage(config);
   const insuranceOcr = buildInsuranceOcrProvider(config);
   let routeProvider: RouteProvider | null = null;
@@ -110,11 +156,19 @@ export async function buildApp() {
     const googleMaps = new GoogleMapsProvider(config.googleMapsApiKey);
     routeProvider = googleMaps;
     geocodingProvider = googleMaps;
+  } else if (config.mapsProvider === "dev_local") {
+    if (config.nodeEnv !== "development") {
+      throw new Error("MAPS_PROVIDER=dev_local is only allowed with NODE_ENV=development");
+    }
+    const devMaps = new DevLocalMapsProvider();
+    routeProvider = devMaps;
+    geocodingProvider = devMaps;
   }
-  await registerAuthRoutes(app, pool, smsProvider, {
-    challengeTtlSeconds: config.authChallengeTtlSeconds,
+  await registerAuthRoutes(app, pool, emailProvider, {
     sessionTtlSeconds: config.authSessionTtlSeconds,
-    maxCheckAttempts: config.authMaxCheckAttempts,
+    maxFailedLogins: config.authMaxFailedLogins,
+    lockMinutes: config.authLockMinutes,
+    codeTtlSeconds: config.authCodeTtlSeconds,
     resendCooldownSeconds: config.authResendCooldownSeconds
   });
   await registerMeRoutes(app, pool);
@@ -125,6 +179,24 @@ export async function buildApp() {
   await registerTripSearchRoutes(app, pool);
   await registerChatRoutes(app, pool);
   await registerTripExecutionRoutes(app, pool);
+  await registerFeedbackRoutes(app, pool);
+  await registerCancellationRoutes(app, pool);
+  await registerNotificationRoutes(app, pool);
+  await registerAdminRoutes(app, pool, {
+    email: config.emailProvider,
+    maps: config.mapsProvider,
+    storage: config.privateStorageProvider,
+    insuranceOcr: config.insuranceOcrProvider,
+    payments: config.paymentsProvider === "stripe" && config.stripeWebhookSecret ? "stripe" : "disabled",
+    push: "disabled"
+  });
+  await registerRecurringRoutes(app, pool);
+  await registerTariffRoutes(app, pool);
+  await registerLegalRoutes(app, pool);
+  await registerAccountRoutes(app, pool);
+  await registerPushRoutes(app, pool);
+  await registerRouteChangeRoutes(app, pool, routeProvider);
+  await registerPaymentRoutes(app, pool, config);
   await registerProvinceRoutes(app, pool);
   await registerGeocodingRoutes(app, pool, geocodingProvider);
   await registerPrivateUploadRoutes(

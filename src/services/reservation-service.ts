@@ -1,5 +1,7 @@
 import type { Pool, PoolClient } from "pg";
 import { DomainError } from "../errors.js";
+import { displayName, notify } from "./notification-service.js";
+import { postCapture } from "./ledger-service.js";
 
 type PaymentConfirmation =
   | { status: "confirmed"; bookingId: string }
@@ -50,7 +52,7 @@ export async function createSeatHold(pool: Pool, requestId: string, ttlSeconds =
     const tripQ = await client.query(`select * from trips where id=$1 for update`, [request.trip_id]);
     const trip = tripQ.rows[0];
     if (!trip || !["published", "active"].includes(trip.status)) {
-      throw new DomainError("TRIP_NOT_BOOKABLE", "Trip is not bookable");
+      throw new DomainError("TRIP_NOT_BOOKABLE", "Trip is not bookable", 409);
     }
 
     await releaseExpiredHolds(client, trip.id);
@@ -106,11 +108,19 @@ export async function confirmProviderPayment(
   pool: Pool,
   input: { requestId: string; providerPaymentId: string; amountCents: number }
 ): Promise<PaymentConfirmation> {
+  return tx(pool, client => confirmProviderPaymentTx(client, input));
+}
+
+/** Same as confirmProviderPayment, inside a caller's transaction (the webhook processor uses it). */
+export async function confirmProviderPaymentTx(
+  client: PoolClient,
+  input: { requestId: string; providerPaymentId: string; amountCents: number },
+  eventId: number | null = null
+): Promise<PaymentConfirmation> {
   if (!Number.isSafeInteger(input.amountCents) || input.amountCents < 0) {
     throw new DomainError("INVALID_PAYMENT_AMOUNT", "Payment amount must be exact integer cents");
   }
-
-  return tx(pool, async (client) => {
+  {
     const existingBooking = await client.query(
       `select id from bookings
         where request_id=$1 or provider_payment_id=$2
@@ -151,15 +161,31 @@ export async function confirmProviderPayment(
       return { status: "compensation_required", compensationId: comp.rows[0].id as string };
     }
 
+    const quote = await client.query(`select passenger_total_cents from quote_snapshots where request_id=$1`, [input.requestId]);
+    if (quote.rowCount && quote.rows[0].passenger_total_cents !== input.amountCents) {
+      throw new DomainError("PAYMENT_AMOUNT_MISMATCH", "Paid amount differs from the agreed quote", 409, {
+        expectedCents: quote.rows[0].passenger_total_cents
+      });
+    }
+
     const booking = await client.query(
-      `insert into bookings(request_id,provider_payment_id,amount_cents,status)
-       values($1,$2,$3,'confirmed')
+      `insert into bookings(request_id,provider_payment_id,amount_cents,status,cancellation_policy_version_id)
+       values($1,$2,$3,'confirmed',
+         (select id from cancellation_policy_versions where status='active'))
        returning id`,
       [input.requestId, input.providerPaymentId, input.amountCents]
     );
     await client.query(`update seat_holds set status='consumed', consumed_at=now() where id=$1`, [hold.id]);
     await client.query(`update ride_requests set status='confirmed', updated_at=now() where id=$1`, [input.requestId]);
+    const trip = await client.query(`select driver_user_id from trips where id=$1`, [request.trip_id]);
+    await notify(client, [request.passenger_user_id, trip.rows[0].driver_user_id], "booking.confirmed", request.trip_id, {
+      bookingId: booking.rows[0].id,
+      passengerName: await displayName(client, request.passenger_user_id),
+      driverName: await displayName(client, trip.rows[0].driver_user_id)
+    });
+
+    await postCapture(client, booking.rows[0].id as string, eventId);
 
     return { status: "confirmed", bookingId: booking.rows[0].id as string };
-  });
+  }
 }

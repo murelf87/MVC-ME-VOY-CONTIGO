@@ -1,7 +1,8 @@
-export type SmsProviderName = "disabled" | "twilio";
-export type MapsProviderName = "disabled" | "google";
+export type EmailProviderName = "disabled" | "dev_console";
+export type MapsProviderName = "disabled" | "google" | "dev_local";
 export type PrivateStorageProviderName = "disabled" | "s3";
 export type InsuranceOcrProviderName = "disabled" | "google_vision";
+export type PaymentsProviderName = "disabled" | "stripe";
 
 export type AppConfig = {
   nodeEnv: string;
@@ -11,13 +12,11 @@ export type AppConfig = {
   trustProxy: boolean;
   rateLimitMax: number;
   rateLimitWindow: string;
-  smsProvider: SmsProviderName;
-  twilioApiKeySid: string | undefined;
-  twilioApiKeySecret: string | undefined;
-  twilioVerifyServiceSid: string | undefined;
-  authChallengeTtlSeconds: number;
+  emailProvider: EmailProviderName;
   authSessionTtlSeconds: number;
-  authMaxCheckAttempts: number;
+  authCodeTtlSeconds: number;
+  authMaxFailedLogins: number;
+  authLockMinutes: number;
   authResendCooldownSeconds: number;
   mapsProvider: MapsProviderName;
   googleMapsApiKey: string | undefined;
@@ -31,6 +30,8 @@ export type AppConfig = {
   privateUploadTtlSeconds: number;
   insuranceOcrProvider: InsuranceOcrProviderName;
   googleVisionApiKey: string | undefined;
+  paymentsProvider: PaymentsProviderName;
+  stripeWebhookSecret: string | undefined;
 };
 
 function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_INTEGER): number {
@@ -45,8 +46,8 @@ function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_I
 
 function mapsProviderEnv(): MapsProviderName {
   const value = process.env.MAPS_PROVIDER ?? "disabled";
-  if (value !== "disabled" && value !== "google") {
-    throw new Error("MAPS_PROVIDER must be disabled or google");
+  if (value !== "disabled" && value !== "google" && value !== "dev_local") {
+    throw new Error("MAPS_PROVIDER must be disabled, google or dev_local");
   }
   return value;
 }
@@ -67,10 +68,18 @@ function insuranceOcrProviderEnv(): InsuranceOcrProviderName {
   return value;
 }
 
-function smsProviderEnv(): SmsProviderName {
-  const value = process.env.SMS_PROVIDER ?? "disabled";
-  if (value !== "disabled" && value !== "twilio") {
-    throw new Error("SMS_PROVIDER must be disabled or twilio");
+function paymentsProviderEnv(): PaymentsProviderName {
+  const value = process.env.PAYMENTS_PROVIDER ?? "disabled";
+  if (value !== "disabled" && value !== "stripe") {
+    throw new Error("PAYMENTS_PROVIDER must be disabled or stripe");
+  }
+  return value;
+}
+
+function emailProviderEnv(): EmailProviderName {
+  const value = process.env.EMAIL_PROVIDER ?? "disabled";
+  if (value !== "disabled" && value !== "dev_console") {
+    throw new Error("EMAIL_PROVIDER must be disabled or dev_console");
   }
   return value;
 }
@@ -87,13 +96,11 @@ export function loadConfig(): AppConfig {
     trustProxy: process.env.TRUST_PROXY === "true",
     rateLimitMax: intEnv("RATE_LIMIT_MAX", 120, 1, 100_000),
     rateLimitWindow: process.env.RATE_LIMIT_WINDOW ?? "1 minute",
-    smsProvider: smsProviderEnv(),
-    twilioApiKeySid: process.env.TWILIO_API_KEY_SID,
-    twilioApiKeySecret: process.env.TWILIO_API_KEY_SECRET,
-    twilioVerifyServiceSid: process.env.TWILIO_VERIFY_SERVICE_SID,
-    authChallengeTtlSeconds: intEnv("AUTH_CHALLENGE_TTL_SECONDS", 600, 120, 86_400),
+    emailProvider: emailProviderEnv(),
     authSessionTtlSeconds: intEnv("AUTH_SESSION_TTL_SECONDS", 2_592_000, 3_600, 31_536_000),
-    authMaxCheckAttempts: intEnv("AUTH_MAX_CHECK_ATTEMPTS", 5, 1, 10),
+    authCodeTtlSeconds: intEnv("AUTH_CODE_TTL_SECONDS", 1_800, 300, 86_400),
+    authMaxFailedLogins: intEnv("AUTH_MAX_FAILED_LOGINS", 5, 3, 20),
+    authLockMinutes: intEnv("AUTH_LOCK_MINUTES", 15, 1, 1_440),
     authResendCooldownSeconds: intEnv("AUTH_RESEND_COOLDOWN_SECONDS", 60, 30, 3_600),
     mapsProvider: mapsProviderEnv(),
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
@@ -106,6 +113,8 @@ export function loadConfig(): AppConfig {
     s3ForcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
     privateUploadTtlSeconds: intEnv("PRIVATE_UPLOAD_TTL_SECONDS", 600, 60, 3600),
     insuranceOcrProvider: insuranceOcrProviderEnv(),
-    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY
+    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY,
+    paymentsProvider: paymentsProviderEnv(),
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET
   };
 }

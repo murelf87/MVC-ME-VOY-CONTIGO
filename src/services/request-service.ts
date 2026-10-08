@@ -2,6 +2,10 @@ import type { Pool, PoolClient } from "pg";
 import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
+import { displayName, notify } from "./notification-service.js";
+import { snapshotQuoteForRequest } from "./tariff-service.js";
+import { assertStopAhead } from "./trip-progress-service.js";
+import { assertLegalAccepted } from "./legal-service.js";
 
 async function tx<T>(pool: Pool, fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
@@ -88,6 +92,7 @@ export async function createRideRequest(
 ) {
   requireAnyRole(principal, ["passenger"]);
   validateRange(input.fromSegmentSeq, input.toSegmentSeq);
+  await assertLegalAccepted(pool, principal.userId);
 
   return tx(pool, async client => {
     const tripQ = await client.query(
@@ -103,6 +108,7 @@ export async function createRideRequest(
       throw new DomainError("DRIVER_CANNOT_REQUEST_OWN_TRIP", "Driver cannot request a seat on their own trip", 409);
     }
 
+    if (trip.status==="active") await assertStopAhead(client,input.tripId,input.fromSegmentSeq);
     const segments = await lockRequestedSegments(
       client,input.tripId,input.fromSegmentSeq,input.toSegmentSeq
     );
@@ -126,6 +132,9 @@ export async function createRideRequest(
           toSegmentSeq: input.toSegmentSeq
         })]
       );
+      await notify(client,trip.driver_user_id,"ride_request.received",input.tripId,{
+        requestId:row.id,passengerName:await displayName(client,principal.userId)
+      });
       return row;
     } catch (error: any) {
       if (error?.code==="23505") {
@@ -140,9 +149,22 @@ export async function listOwnRideRequests(pool: Pool, principal: AuthPrincipal) 
   requireAnyRole(principal, ["passenger"]);
   return (await pool.query(
     `select r.id,r.trip_id,r.from_segment_seq,r.to_segment_seq,r.status,
-            r.requested_at,r.updated_at,h.expires_at as hold_expires_at
+            r.requested_at,r.updated_at,h.expires_at as hold_expires_at,
+            t.driver_user_id,dp.display_name as driver_display_name,
+            t.status as trip_status,t.departure_at,
+            b.id as booking_id,b.status as booking_status,b.picked_up_at,
+            mr.score as my_rating_score,
+            bc.refund_cents,bc.refund_status,r.weekly_group_id,
+            qs.passenger_total_cents as quote_total_cents,qs.contribution_cents as quote_contribution_cents,
+            qs.road_distance_m as quote_road_distance_m
        from ride_requests r
+       join trips t on t.id=r.trip_id
+       left join profiles dp on dp.user_id=t.driver_user_id
        left join seat_holds h on h.request_id=r.id and h.status='active'
+       left join bookings b on b.request_id=r.id
+       left join trip_ratings mr on mr.booking_id=b.id and mr.rater_user_id=r.passenger_user_id
+       left join booking_cancellations bc on bc.booking_id=b.id
+       left join quote_snapshots qs on qs.request_id=r.id
       where r.passenger_user_id=$1
       order by r.requested_at desc`,
     [principal.userId]
@@ -161,11 +183,17 @@ export async function listTripRideRequests(
     throw new DomainError("TRIP_NOT_OWNED","Only the trip driver can view its requests",403);
   }
   return (await pool.query(
-    `select id,passenger_user_id,from_segment_seq,to_segment_seq,status,requested_at,updated_at
-       from ride_requests
-      where trip_id=$1
-      order by requested_at asc`,
-    [tripId]
+    `select r.id,r.passenger_user_id,pp.display_name as passenger_display_name,
+            r.from_segment_seq,r.to_segment_seq,r.status,r.requested_at,r.updated_at,
+            b.id as booking_id,b.status as booking_status,b.picked_up_at,
+            mr.score as my_rating_score,r.weekly_group_id
+       from ride_requests r
+       left join profiles pp on pp.user_id=r.passenger_user_id
+       left join bookings b on b.request_id=r.id
+       left join trip_ratings mr on mr.booking_id=b.id and mr.rater_user_id=$2
+      where r.trip_id=$1
+      order by r.requested_at asc`,
+    [tripId,principal.userId]
   )).rows;
 }
 
@@ -214,6 +242,9 @@ export async function decideRideRequest(
          values($1,'ride_request.rejected','ride_request',$2,'{}'::jsonb)`,
         [principal.userId,requestId]
       );
+      await notify(client,request.passenger_user_id,"ride_request.rejected",request.trip_id,{
+        requestId,driverName:await displayName(client,principal.userId)
+      });
       return { request:rejected.rows[0],hold:null };
     }
 
@@ -221,6 +252,7 @@ export async function decideRideRequest(
       throw new DomainError("TRIP_NOT_BOOKABLE","Trip is not bookable",409);
     }
 
+    if (trip.status==="active") await assertStopAhead(client,trip.id,request.from_segment_seq);
     const segments=await lockRequestedSegments(
       client,trip.id,request.from_segment_seq,request.to_segment_seq
     );
@@ -247,7 +279,13 @@ export async function decideRideRequest(
        values($1,'ride_request.accepted_with_hold','ride_request',$2,$3::jsonb)`,
       [principal.userId,requestId,JSON.stringify({holdId:hold.rows[0].id})]
     );
+    const quote=await snapshotQuoteForRequest(client,requestId);
+    await notify(client,request.passenger_user_id,"ride_request.accepted",request.trip_id,{
+      requestId,driverName:await displayName(client,principal.userId),
+      holdExpiresAt:new Date(hold.rows[0].expires_at).toISOString()
+    });
     return {
+      quote,
       request:accepted.rows[0],
       hold:{
         id:hold.rows[0].id,

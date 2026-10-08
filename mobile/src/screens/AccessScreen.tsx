@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -17,15 +17,32 @@ import { Card, PrimaryButton } from "../components/UI";
 import { OfficialLogo } from "../components/OfficialLogo";
 import { useAuth } from "../session/AuthContext";
 import { C, shadow } from "../theme";
+import { previewAccessMode, reportScreen } from "../previewHook";
+
+type Mode = "login" | "register" | "forgot" | "reset";
+
+const MODE_LABEL: Record<Mode, string> = {
+  login: "Entrar",
+  register: "Crear cuenta",
+  forgot: "Recuperar contraseña",
+  reset: "Nueva contraseña"
+};
 
 export function AccessScreen() {
-  const { startVerification, verifyCode } = useAuth();
+  const { login, register, forgotPassword, resetPassword } = useAuth();
+  const [mode, setMode] = useState<Mode>(() => (previewAccessMode() === "register" ? "register" : "login"));
+
+  useEffect(() => {
+    reportScreen(MODE_LABEL[mode]);
+  }, [mode]);
   const [roles, setRoles] = useState<Role[]>(["passenger"]);
-  const [phone, setPhone] = useState("+34");
-  const [challengeId, setChallengeId] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   const hasDriver = roles.includes("driver");
   const subtitle = useMemo(() => {
@@ -40,42 +57,64 @@ export function AccessScreen() {
       }
       return [...current, role];
     });
-    setChallengeId(null);
+    setError("");
+  }
+
+  function go(next: Mode) {
+    setMode(next);
+    setError("");
+    setNotice("");
+    setPassword("");
     setCode("");
-    setError("");
   }
 
-  async function begin() {
+  async function run(action: () => Promise<void>, fallback: string) {
     setBusy(true);
     setError("");
     try {
-      const result = await startVerification(phone.trim(), roles);
-      setChallengeId(result.challengeId);
+      await action();
     } catch (e) {
-      setError(
-        e instanceof ApiError
-          ? e.message
-          : "No se pudo iniciar la verificación por teléfono."
-      );
+      setError(e instanceof ApiError ? explain(e) : fallback);
     } finally {
       setBusy(false);
     }
   }
 
-  async function verify() {
-    if (!challengeId) return;
-    setBusy(true);
-    setError("");
-    try {
-      await verifyCode(challengeId, code.trim());
-    } catch (e) {
-      setError(
-        e instanceof ApiError ? e.message : "No se pudo verificar el código."
-      );
-    } finally {
-      setBusy(false);
+  function submit() {
+    const address = email.trim();
+    if (mode === "login") return void run(() => login(address, password), "No se pudo entrar.");
+    if (mode === "register") return void run(() => register(address, password, roles), "No se pudo crear la cuenta.");
+    if (mode === "forgot") {
+      return void run(async () => {
+        await forgotPassword(address);
+        setMode("reset");
+        setNotice("Si hay una cuenta con ese correo, te hemos enviado un código de 6 cifras.");
+      }, "No se pudo enviar el código.");
     }
+    return void run(() => resetPassword(address, code.trim(), password), "No se pudo cambiar la contraseña.");
   }
+
+  const title = { login: "Entrar", register: "Crear cuenta", forgot: "Recuperar contraseña", reset: "Nueva contraseña" }[mode];
+  const meta = {
+    login: "Entra con tu correo y tu contraseña.",
+    register: hasDriver
+      ? "Crea tu cuenta y después completa el registro del coche."
+      : `${subtitle}. Crea tu cuenta con tu correo.`,
+    forgot: "Te enviaremos un código a tu correo para elegir otra contraseña.",
+    reset: "Escribe el código que te hemos enviado y tu nueva contraseña.",
+  }[mode];
+  const action = {
+    login: busy ? "Entrando…" : "Entrar",
+    register: busy ? "Creando…" : "Crear cuenta",
+    forgot: busy ? "Enviando…" : "Enviar código",
+    reset: busy ? "Guardando…" : "Guardar y entrar",
+  }[mode];
+  const ready = email.includes("@") && (
+    mode === "forgot" ||
+    (mode === "login" && password.length > 0) ||
+    (mode === "register" && password.length >= 10) ||
+    (mode === "reset" && password.length >= 10 && code.trim().length === 6)
+  );
 
   return (
     <KeyboardAvoidingView
@@ -97,12 +136,16 @@ export function AccessScreen() {
 
         <View style={s.hero}>
           <Text style={s.eyebrow}>BIENVENIDO A MVC</Text>
-          <Text style={s.title}>¿Cómo quieres viajar?</Text>
+          <Text style={s.title}>{mode === "register" ? "¿Cómo quieres viajar?" : "Viaja con quien va a tu destino"}</Text>
           <Text style={s.subtitle}>
-            Entra como pasajero, conductor o activa ambos perfiles.
+            {mode === "register"
+              ? "Elige pasajero, conductor o activa ambos perfiles."
+              : "Comparte trayectos dentro de tu provincia."}
           </Text>
         </View>
 
+        {mode === "register" ? (
+        <>
         <View style={s.roles}>
           <Pressable
             onPress={() => toggle("passenger")}
@@ -155,79 +198,98 @@ export function AccessScreen() {
           <Ionicons name="people-circle-outline" size={21} color={C.blue} />
           <Text style={s.bothText}>Puedes activar ambos perfiles en una sola cuenta.</Text>
         </View>
+        </>
+        ) : null}
 
         <Card style={s.form}>
           <View style={s.formHeader}>
             <View style={s.phoneIcon}>
-              <Ionicons name="phone-portrait-outline" size={23} color={C.blue} />
+              <Ionicons name={mode === "login" ? "log-in-outline" : mode === "register" ? "person-add-outline" : "key-outline"} size={23} color={C.blue} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.formTitle}>
-                {challengeId ? "Introduce el código" : "Acceso con teléfono"}
-              </Text>
-              <Text style={s.formMeta}>
-                {challengeId
-                  ? "Introduce el código enviado a tu móvil para continuar."
-                  : hasDriver
-                    ? "Verifica tu móvil y después completa el registro del coche."
-                    : subtitle + ". Verifica tu móvil para entrar en MVC."}
-              </Text>
+              <Text style={s.formTitle}>{title}</Text>
+              <Text style={s.formMeta}>{meta}</Text>
             </View>
           </View>
 
-          {!challengeId ? (
+          <Text style={s.label}>Correo electrónico</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+            textContentType="emailAddress"
+            style={s.input}
+            placeholder="tu@correo.es"
+            placeholderTextColor="#91A0BC"
+            editable={mode !== "reset"}
+          />
+
+          {mode === "reset" ? (
             <>
-              <Text style={s.label}>Número de móvil</Text>
-              <TextInput
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                autoCapitalize="none"
-                style={s.input}
-                placeholder="+34 600 000 000"
-                placeholderTextColor="#91A0BC"
-              />
-              <PrimaryButton
-                title={busy ? "Enviando…" : "Verificar móvil"}
-                onPress={() => void begin()}
-                disabled={busy}
-              />
-            </>
-          ) : (
-            <>
-              <Text style={s.label}>Código de verificación</Text>
+              <Text style={[s.label, s.gap]}>Código del correo</Text>
               <TextInput
                 value={code}
-                onChangeText={setCode}
+                onChangeText={v => setCode(v.replace(/\D/g, ""))}
                 keyboardType="number-pad"
                 style={[s.input, s.codeInput]}
                 placeholder="000000"
                 placeholderTextColor="#91A0BC"
-                maxLength={10}
+                maxLength={6}
               />
-              <PrimaryButton
-                title={busy ? "Comprobando…" : "Continuar"}
-                onPress={() => void verify()}
-                disabled={busy || code.trim().length < 4}
-              />
-              <Pressable
-                style={s.restart}
-                onPress={() => {
-                  setChallengeId(null);
-                  setCode("");
-                  setError("");
-                }}
-              >
-                <Text style={s.restartText}>Cambiar número</Text>
-              </Pressable>
             </>
-          )}
+          ) : null}
+
+          {mode !== "forgot" ? (
+            <>
+              <Text style={[s.label, s.gap]}>{mode === "login" ? "Contraseña" : "Nueva contraseña"}</Text>
+              <View>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  textContentType={mode === "login" ? "password" : "newPassword"}
+                  style={[s.input, { paddingRight: 48 }]}
+                  placeholder={mode === "login" ? "Tu contraseña" : "Al menos 10 caracteres"}
+                  placeholderTextColor="#91A0BC"
+                  onSubmitEditing={() => ready && submit()}
+                />
+                <Pressable onPress={() => setShowPassword(v => !v)} style={s.eye} accessibilityLabel={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                  <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={21} color={C.muted} />
+                </Pressable>
+              </View>
+              {mode !== "login" ? <Text style={s.hint}>Mínimo 10 caracteres. Una frase de varias palabras es fácil de recordar y difícil de adivinar.</Text> : null}
+            </>
+          ) : null}
+
+          <View style={s.gap}>
+            <PrimaryButton title={action} onPress={submit} disabled={busy || !ready} />
+          </View>
+
+          {mode === "login" ? (
+            <Pressable style={s.restart} onPress={() => go("forgot")}>
+              <Text style={s.restartText}>He olvidado mi contraseña</Text>
+            </Pressable>
+          ) : null}
 
           {busy ? <ActivityIndicator style={s.spinner} color={C.blue} /> : null}
+          {notice ? <Text style={s.notice}>{notice}</Text> : null}
           {error ? <Text style={s.error}>{error}</Text> : null}
         </Card>
 
-        {hasDriver ? (
+        <Pressable style={s.switch} onPress={() => go(mode === "login" ? "register" : "login")}>
+          <Text style={s.switchText}>
+            {mode === "login" ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
+            <Text style={s.switchLink}>{mode === "login" ? "Crear cuenta" : "Entrar"}</Text>
+          </Text>
+        </Pressable>
+
+        {mode === "register" && hasDriver ? (
           <View style={s.driverInfo}>
             <Ionicons name="shield-checkmark-outline" size={22} color={C.blue} />
             <Text style={s.driverInfoText}>
@@ -240,8 +302,8 @@ export function AccessScreen() {
           <View style={s.trust}>
             <Ionicons name="shield-checkmark-outline" size={21} color={C.blue} />
             <Text style={s.trustText}>
-              Acceso sin contraseña maestra ni códigos universales. La sesión la
-              valida el backend de MVC.
+              Tu contraseña se guarda cifrada y nadie de MVC puede verla. No
+              existen contraseñas maestras.
             </Text>
           </View>
         )}
@@ -250,7 +312,30 @@ export function AccessScreen() {
   );
 }
 
+/** Server codes in plain Spanish; anything else shows the server message. */
+function explain(e: ApiError): string {
+  const text: Record<string, string> = {
+    INVALID_CREDENTIALS: "El correo o la contraseña no son correctos.",
+    AUTH_TEMPORARILY_LOCKED: "Demasiados intentos fallidos. Espera 15 minutos y vuelve a probar, o cambia la contraseña.",
+    EMAIL_ALREADY_REGISTERED: "Ya hay una cuenta con ese correo. Entra o recupera la contraseña.",
+    PASSWORD_TOO_WEAK: "La contraseña es demasiado corta o fácil de adivinar. Usa al menos 10 caracteres.",
+    INVALID_EMAIL: "Revisa el correo: no parece válido.",
+    AUTH_CODE_INVALID_OR_EXPIRED: "El código no es correcto o ha caducado. Pide otro.",
+    EMAIL_PROVIDER_UNAVAILABLE: "Ahora mismo no podemos enviar correos. Inténtalo más tarde.",
+    ACCOUNT_NOT_ACTIVE: "Esta cuenta está suspendida. Escribe a soporte.",
+    RATE_LIMITED: "Demasiados intentos seguidos. Espera un minuto.",
+  };
+  return text[e.code] ?? e.message;
+}
+
 const s = StyleSheet.create({
+  gap: { marginTop: 12 },
+  eye: { position: "absolute", right: 6, top: 0, height: 54, width: 40, alignItems: "center", justifyContent: "center" },
+  hint: { fontSize: 10, lineHeight: 15, color: C.muted, marginTop: 6 },
+  notice: { marginTop: 12, color: C.navy, backgroundColor: C.pale, borderRadius: 12, padding: 11, fontSize: 11, lineHeight: 16 },
+  switch: { alignItems: "center", paddingVertical: 16 },
+  switchText: { fontSize: 13, color: C.muted, fontWeight: "700" },
+  switchLink: { color: C.blue, fontWeight: "900" },
   root: { flex: 1, backgroundColor: "#fff" },
   wrap: {
     paddingHorizontal: 20,

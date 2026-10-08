@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -84,5 +85,9 @@ export class S3PrivateObjectStorage implements PrivateObjectStorage {
       new GetObjectCommand({Bucket:this.bucket,Key:key}),
       {expiresIn:expiresInSeconds}
     );
+  }
+
+  async deleteObject(key:string):Promise<void>{
+    await this.client.send(new DeleteObjectCommand({Bucket:this.bucket,Key:key}));
   }
 }

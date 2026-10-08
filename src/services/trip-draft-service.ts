@@ -5,6 +5,7 @@ import { DomainError } from "../errors.js";
 import type { LatLng, RouteProvider } from "../maps/types.js";
 import { computeProvinceCompliantSegmentPlan } from "../maps/province-route-service.js";
 import { publishTrip } from "./trip-service.js";
+import { assertLegalAccepted } from "./legal-service.js";
 
 export type CreateTripDraftInput = {
   vehicleId: string;
@@ -155,11 +156,13 @@ export async function createTripDraftWithServerRoute(
 export async function listOwnDriverTrips(pool:Pool,principal:AuthPrincipal){
   requireAnyRole(principal,["driver"]);
   return (await pool.query(
-    `select id,vehicle_id,province_id,category,kind,leg,status,departure_at,
-            flexibility_minutes,max_detour_m,offered_seats,
-            route_distance_m,route_duration_s,route_provider,route_provider_ref,
-            route_version,created_at,updated_at
-       from trips where driver_user_id=$1 order by created_at desc`,
+    `select t.id,t.vehicle_id,t.province_id,t.category,t.kind,t.leg,t.status,t.departure_at,
+            t.flexibility_minutes,t.max_detour_m,t.offered_seats,
+            t.route_distance_m,t.route_duration_s,t.route_provider,t.route_provider_ref,
+            t.route_version,t.created_at,t.updated_at,
+            t.series_id,ts.weekdays::int[] as series_weekdays,ts.status as series_status
+       from trips t left join trip_series ts on ts.id=t.series_id
+      where t.driver_user_id=$1 order by t.created_at desc,t.departure_at asc`,
     [principal.userId]
   )).rows;
 }
@@ -170,6 +173,7 @@ export async function publishOwnedTrip(
   tripId:string
 ):Promise<void>{
   requireAnyRole(principal,["driver"]);
+  await assertLegalAccepted(pool,principal.userId);
   const trip=await pool.query(`select driver_user_id,kind from trips where id=$1`,[tripId]);
   if(!trip.rowCount) throw new DomainError("TRIP_NOT_FOUND","Trip not found",404);
   if(trip.rows[0].driver_user_id!==principal.userId){

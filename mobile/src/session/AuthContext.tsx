@@ -7,7 +7,6 @@ import type {
   Role,
   SessionInfo,
   SessionPayload,
-  VerificationStart,
 } from "../api/types";
 
 const TOKEN_KEY = "mvc.session.token";
@@ -42,8 +41,10 @@ type AuthContextValue = {
   token: string | null;
   profile: MeProfile | null;
   roles: Role[];
-  startVerification(phone: string, roles: Role[]): Promise<VerificationStart>;
-  verifyCode(challengeId: string, code: string): Promise<void>;
+  login(email: string, password: string): Promise<void>;
+  register(email: string, password: string, roles: Role[]): Promise<void>;
+  forgotPassword(email: string): Promise<void>;
+  resetPassword(email: string, code: string, newPassword: string): Promise<void>;
   refreshProfile(): Promise<void>;
   logout(): Promise<void>;
 };
@@ -86,24 +87,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  async function startVerification(
-    phone: string,
-    requestedRoles: Role[]
-  ): Promise<VerificationStart> {
-    return apiRequest<VerificationStart>("/v1/auth/phone/start", {
-      method: "POST",
-      body: { phone, roles: requestedRoles },
-    });
-  }
-
-  async function verifyCode(challengeId: string, code: string): Promise<void> {
-    const result = await apiRequest<SessionPayload>("/v1/auth/phone/verify", {
-      method: "POST",
-      body: { challengeId, code },
-    });
+  async function adopt(result: SessionPayload): Promise<void> {
     await writeStoredToken(result.token);
     setToken(result.token);
     await loadProfile(result.token);
+  }
+
+  async function login(email: string, password: string): Promise<void> {
+    await adopt(await apiRequest<SessionPayload>("/v1/auth/login", { method: "POST", body: { email, password } }));
+  }
+
+  async function register(email: string, password: string, requestedRoles: Role[]): Promise<void> {
+    await adopt(await apiRequest<SessionPayload>("/v1/auth/register", {
+      method: "POST", body: { email, password, roles: requestedRoles },
+    }));
+  }
+
+  async function forgotPassword(email: string): Promise<void> {
+    await apiRequest("/v1/auth/password/forgot", { method: "POST", body: { email } });
+  }
+
+  async function resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+    await adopt(await apiRequest<SessionPayload>("/v1/auth/password/reset", {
+      method: "POST", body: { email, code, newPassword },
+    }));
   }
 
   async function refreshProfile(): Promise<void> {
@@ -130,8 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       profile,
       roles: profile?.roles ?? [],
-      startVerification,
-      verifyCode,
+      login,
+      register,
+      forgotPassword,
+      resetPassword,
       refreshProfile,
       logout,
     }),

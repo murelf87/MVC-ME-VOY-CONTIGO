@@ -31,6 +31,7 @@ class FakeStorage implements PrivateObjectStorage {
     return value.bytes;
   }
   async createDownloadUrl(key:string):Promise<string>{return `https://download.invalid/${key}`;}
+  async deleteObject(key:string):Promise<void>{this.objects.delete(key);}
 }
 
 class FakeOcr implements InsuranceOcrProvider {

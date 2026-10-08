@@ -2,30 +2,15 @@ import { DomainError } from "../errors.js";
 
 export type SelfServiceRole = "passenger" | "driver";
 
-const E164 = /^\+[1-9][0-9]{7,14}$/;
-
-export function normalizeE164(input: string): string {
-  const value = input.trim().replace(/[\s()-]/g, "");
-  if (!E164.test(value)) {
-    throw new DomainError(
-      "INVALID_PHONE_E164",
-      "Phone number must be supplied in E.164 format, for example +34600111222"
-    );
-  }
-  return value;
-}
-
 export function normalizeRequestedRoles(input: unknown): SelfServiceRole[] {
   if (input === undefined) return ["passenger"];
   if (!Array.isArray(input)) {
     throw new DomainError("INVALID_SELF_SERVICE_ROLES", "roles must be an array");
   }
-
   const roles = [...new Set(input)];
   if (roles.length < 1 || roles.length > 2) {
     throw new DomainError("INVALID_SELF_SERVICE_ROLES", "Select passenger, driver, or both");
   }
-
   for (const role of roles) {
     if (role !== "passenger" && role !== "driver") {
       throw new DomainError(
@@ -34,6 +19,5 @@ export function normalizeRequestedRoles(input: unknown): SelfServiceRole[] {
       );
     }
   }
-
   return roles as SelfServiceRole[];
 }

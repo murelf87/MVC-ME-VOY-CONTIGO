@@ -5,13 +5,16 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "preview:build": "node preview/build.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.0",
     "@expo/vector-icons": "15.1.1",
     "expo": "~57.0.26",
+    "expo-crypto": "~57.0.3",
     "expo-image-picker": "~57.0.20",
+    "expo-location": "~57.0.20",
     "expo-secure-store": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",

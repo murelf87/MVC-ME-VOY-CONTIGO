@@ -61,7 +61,7 @@ before(async()=>{await pool.query("select 1 from booking_pickup_codes limit 1")}
 beforeEach(async()=>{
   await pool.query(`
     truncate table booking_pickup_codes,trip_direct_messages,user_blocks,trip_live_state,
-      trip_location_events,private_documents,audit_events,route_change_acceptances,
+      trip_location_events,private_documents,audit_events,route_change_responses,
       route_change_proposals,quote_snapshots,tariff_versions,payment_compensations,
       bookings,seat_holds,ride_requests,trip_segments,trip_stops,trips,vehicles,
       profiles,user_roles,auth_sessions,auth_challenges,app_users,province_dataset_imports,

@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+dist-web/
+
+# vista previa
+dist-web/
+dist-preview/

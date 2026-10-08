@@ -59,7 +59,7 @@ before(async()=>{await pool.query("select 1 from trip_direct_messages limit 1")}
 beforeEach(async()=>{
   await pool.query(`
     truncate table trip_direct_messages,user_blocks,trip_live_state,trip_location_events,
-      private_documents,audit_events,route_change_acceptances,route_change_proposals,
+      private_documents,audit_events,route_change_responses,route_change_proposals,
       quote_snapshots,tariff_versions,payment_compensations,bookings,seat_holds,ride_requests,
       trip_segments,trip_stops,trips,vehicles,profiles,user_roles,auth_sessions,auth_challenges,
       app_users,province_dataset_imports,provinces restart identity cascade`);
@@ -77,6 +77,19 @@ test("confirmed passenger and driver can exchange direct trip messages",async()=
   });
   assert.equal(messages.length,1);
   assert.equal(messages[0].body,"Estoy en el punto de recogida");
+});
+
+test("chat history with a limit returns the newest messages in chronological order",async()=>{
+  const s=await seed();
+  for(let i=1;i<=5;i++){
+    await sendTripDirectMessage(pool,auth(s.passenger,["passenger"]),{
+      tripId:s.trip,peerUserId:s.driver,clientMessageId:crypto.randomUUID(),body:`mensaje ${i}`
+    });
+  }
+  const messages=await listTripDirectMessages(pool,auth(s.driver,["driver"]),{
+    tripId:s.trip,peerUserId:s.passenger,limit:2
+  });
+  assert.deepEqual(messages.map(m=>m.body),["mensaje 4","mensaje 5"]);
 });
 
 test("pending passenger cannot access trip chat",async()=>{

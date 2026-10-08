@@ -6,9 +6,9 @@
 - Bloque backend reconstruido con Node.js + TypeScript + Fastify + PostgreSQL/PostGIS.
 
 ## No encontrado en el material recuperado
-- Código fuente móvil/frontend aprobado.
+- Código fuente móvil/frontend aprobado (la app de `mobile/` se construyó a partir de las maquetas; falta la validación final de Marina).
 - Contrato API previo del frontend.
-- Credenciales reales de SMS, KYC/identidad, almacenamiento, routing/geocoding, pagos o push.
+- Credenciales reales de correo, KYC/identidad, almacenamiento, routing/geocoding, pagos o push.
 - Dataset oficial de límites provinciales ya aprobado/importado.
 
 ## Regla
