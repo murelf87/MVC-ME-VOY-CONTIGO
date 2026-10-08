@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -17,6 +17,7 @@ import { HomeScreen } from "./src/screens/HomeScreen";
 import { RouteScreen } from "./src/screens/RouteScreen";
 import { LiveScreen } from "./src/screens/LiveScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
+import { DriverOnboardingScreen } from "./src/screens/DriverOnboardingScreen";
 import {
   MessagesScreen,
   TripsScreen,
@@ -103,9 +104,24 @@ function AuthenticatedApp() {
 }
 
 function Root() {
-  const { booting, token } = useAuth();
+  const { booting, token, roles } = useAuth();
+  const [driverSetupDone, setDriverSetupDone] = useState(false);
+
+  useEffect(() => {
+    setDriverSetupDone(false);
+  }, [token]);
+
   if (booting) return <BootScreen />;
   if (!token) return <AccessScreen />;
+
+  if (roles.includes("driver") && !driverSetupDone) {
+    return (
+      <DriverOnboardingScreen
+        onComplete={() => setDriverSetupDone(true)}
+      />
+    );
+  }
+
   return <AuthenticatedApp />;
 }
 
