@@ -140,9 +140,15 @@ export async function listOwnRideRequests(pool: Pool, principal: AuthPrincipal) 
   requireAnyRole(principal, ["passenger"]);
   return (await pool.query(
     `select r.id,r.trip_id,r.from_segment_seq,r.to_segment_seq,r.status,
-            r.requested_at,r.updated_at,h.expires_at as hold_expires_at
+            r.requested_at,r.updated_at,h.expires_at as hold_expires_at,
+            t.driver_user_id,dp.display_name as driver_display_name,
+            t.status as trip_status,t.departure_at,
+            b.id as booking_id,b.status as booking_status,b.picked_up_at
        from ride_requests r
+       join trips t on t.id=r.trip_id
+       left join profiles dp on dp.user_id=t.driver_user_id
        left join seat_holds h on h.request_id=r.id and h.status='active'
+       left join bookings b on b.request_id=r.id
       where r.passenger_user_id=$1
       order by r.requested_at desc`,
     [principal.userId]
@@ -161,10 +167,14 @@ export async function listTripRideRequests(
     throw new DomainError("TRIP_NOT_OWNED","Only the trip driver can view its requests",403);
   }
   return (await pool.query(
-    `select id,passenger_user_id,from_segment_seq,to_segment_seq,status,requested_at,updated_at
-       from ride_requests
-      where trip_id=$1
-      order by requested_at asc`,
+    `select r.id,r.passenger_user_id,pp.display_name as passenger_display_name,
+            r.from_segment_seq,r.to_segment_seq,r.status,r.requested_at,r.updated_at,
+            b.id as booking_id,b.status as booking_status,b.picked_up_at
+       from ride_requests r
+       left join profiles pp on pp.user_id=r.passenger_user_id
+       left join bookings b on b.request_id=r.id
+      where r.trip_id=$1
+      order by r.requested_at asc`,
     [tripId]
   )).rows;
 }

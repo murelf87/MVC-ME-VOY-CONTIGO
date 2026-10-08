@@ -69,6 +69,10 @@ test("verified phone creates only requested self-service roles and a revocable s
   assert.equal(stored.rows[0].token_hash.length, 64);
   assert.notEqual(stored.rows[0].token_hash, verified.token);
 
+  const principal = await resolveSession(pool, verified.token);
+  assert.ok(Array.isArray(principal.roles), "session roles must be a real array, not a Postgres array literal");
+  assert.deepEqual(new Set(principal.roles), new Set(["passenger", "driver"]));
+
   await revokeSession(pool, verified.token);
   await assert.rejects(() => resolveSession(pool, verified.token), /Session is invalid or expired/);
 });

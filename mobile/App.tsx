@@ -9,19 +9,16 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import type { TripSearchParams } from "./src/api/types";
+import type { Conversation, TripSearchParams } from "./src/api/types";
 import { BottomNav, Brand } from "./src/components/UI";
 import { AuthProvider, useAuth } from "./src/session/AuthContext";
 import { AccessScreen } from "./src/screens/AccessScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
-import { RouteScreen } from "./src/screens/RouteScreen";
 import { LiveScreen } from "./src/screens/LiveScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { DriverOnboardingScreen } from "./src/screens/DriverOnboardingScreen";
-import {
-  MessagesScreen,
-  TripsScreen,
-} from "./src/screens/OtherScreens";
+import { TripsScreen } from "./src/screens/OtherScreens";
+import { MessagesScreen } from "./src/screens/MessagesScreen";
 import { PublishScreen } from "./src/screens/PublishScreen";
 import { C } from "./src/theme";
 
@@ -31,7 +28,6 @@ type Screen =
   | "publish"
   | "messages"
   | "profile"
-  | "route"
   | "live";
 
 function BootScreen() {
@@ -47,11 +43,14 @@ function BootScreen() {
 function AuthenticatedApp() {
   const [screen, setScreen] = useState<Screen>("home");
   const [searchParams, setSearchParams] = useState<TripSearchParams | null>(null);
+  const [liveTarget, setLiveTarget] = useState<{ tripId?: string; provinceId?: string }>({});
+  const [conversation, setConversation] = useState<Conversation | null>(null);
   const main = ["home", "trips", "publish", "messages", "profile"].includes(screen);
-  const navActive = main ? screen : screen === "route" ? "home" : "trips";
+  const navActive = main ? screen : "trips";
 
   const goMain = (next: string) => {
     if (["home", "trips", "publish", "messages", "profile"].includes(next)) {
+      if (next === "messages") setConversation(null);
       setScreen(next as Screen);
     }
   };
@@ -61,15 +60,22 @@ function AuthenticatedApp() {
     setScreen("trips");
   }
 
+  function openLive(target: { tripId?: string; provinceId?: string }) {
+    setLiveTarget(target);
+    setScreen("live");
+  }
+
+  function openChat(next: Conversation) {
+    setConversation(next);
+    setScreen("messages");
+  }
+
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       {!main ? (
         <View style={s.subHeader}>
-          <Pressable
-            onPress={() => setScreen(screen === "live" ? "trips" : "home")}
-            style={s.back}
-          >
+          <Pressable onPress={() => setScreen("trips")} style={s.back}>
             <Ionicons name="chevron-back" size={22} color={C.navy} />
             <Text style={s.backText}>Volver</Text>
           </Pressable>
@@ -80,21 +86,21 @@ function AuthenticatedApp() {
         {screen === "home" && (
           <HomeScreen
             onSearch={runSearch}
-            onOpenRoute={() => setScreen("route")}
+            onOpenRoute={() => setScreen("publish")}
           />
         )}
-        {screen === "route" && (
-          <RouteScreen onLive={() => setScreen("live")} />
-        )}
-        {screen === "live" && <LiveScreen />}
+        {screen === "live" && <LiveScreen {...liveTarget} />}
         {screen === "trips" && (
           <TripsScreen
             searchParams={searchParams}
-            onLive={() => setScreen("live")}
+            onLive={openLive}
+            onChat={openChat}
           />
         )}
         {screen === "publish" && <PublishScreen />}
-        {screen === "messages" && <MessagesScreen />}
+        {screen === "messages" && (
+          <MessagesScreen open={conversation} onOpen={setConversation} />
+        )}
         {screen === "profile" && <ProfileScreen />}
       </View>
 

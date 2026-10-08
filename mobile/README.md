@@ -62,14 +62,16 @@ GitHub Actions ejecuta estas comprobaciones en cada push.
 ## Estado de producción
 **Todavía no está listo para producción.**
 
-Pendientes principales del móvil:
-- selector provincial alimentado por backend;
-- geocodificación real de origen/destino;
-- búsqueda de viajes real;
-- solicitudes y decisiones reales;
+Conectado a endpoints reales:
+- provincias, geocodificación, búsqueda, solicitudes y decisiones;
 - publicación de viaje;
-- mapa real y ubicación;
-- chat real;
+- reservas del pasajero con código de recogida;
+- viajes del conductor: iniciar, compartir GPS, verificar recogida y finalizar;
+- chat entre conductor y pasajero confirmado;
+- seguimiento del coche (exacto para el pasajero del viaje, aproximado para el resto).
+
+Pendientes principales del móvil:
+- mapa con teselas (ahora abre la posición en Google Maps);
 - fotos/documentos;
 - notificaciones push;
 - pagos;

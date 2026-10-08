@@ -156,3 +156,86 @@ export type CompletePrivateUpload = {
   analysis?: InsuranceAnalysis | null;
   alreadyCompleted: boolean;
 };
+
+export type PassengerRideRequest = {
+  id: string;
+  trip_id: string;
+  from_segment_seq: number;
+  to_segment_seq: number;
+  status: string;
+  requested_at: string;
+  updated_at: string;
+  hold_expires_at?: string | null;
+  driver_user_id: string;
+  driver_display_name: string | null;
+  trip_status: string;
+  departure_at: string | null;
+  booking_id: string | null;
+  booking_status: string | null;
+  picked_up_at: string | null;
+};
+
+export type OwnTrip = {
+  id: string;
+  province_id: string;
+  status: string;
+  departure_at: string | null;
+  category: string;
+  offered_seats: number;
+  route_distance_m?: number | null;
+  route_duration_s?: number | null;
+};
+
+export type DriverRideRequest = {
+  id: string;
+  tripId: string;
+  passenger_user_id: string;
+  passenger_display_name: string | null;
+  from_segment_seq: number;
+  to_segment_seq: number;
+  status: string;
+  requested_at: string;
+  updated_at: string;
+  booking_id: string | null;
+  booking_status: string | null;
+  picked_up_at: string | null;
+};
+
+export type ChatMessage = {
+  id: string;
+  trip_id?: string;
+  sender_user_id: string;
+  recipient_user_id?: string;
+  body: string;
+  created_at: string;
+};
+
+export type Conversation = {
+  tripId: string;
+  peerUserId: string;
+  peerName: string;
+  departureAt: string | null;
+  tripStatus: string;
+};
+
+export type TripLocation = {
+  tripId: string;
+  precision: "precise" | "approximate";
+  latitude: number;
+  longitude: number;
+  recordedAt: string;
+  receivedAt: string;
+  stale: boolean;
+  ageSeconds: number;
+  accuracyM?: number;
+  speedMps?: number;
+};
+
+export type PublicLiveTrip = {
+  tripId: string;
+  latitude: number;
+  longitude: number;
+  recordedAt: string;
+  stale: boolean;
+  ageSeconds: number;
+};

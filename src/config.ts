@@ -1,5 +1,5 @@
-export type SmsProviderName = "disabled" | "twilio";
-export type MapsProviderName = "disabled" | "google";
+export type SmsProviderName = "disabled" | "twilio" | "dev_console";
+export type MapsProviderName = "disabled" | "google" | "dev_local";
 export type PrivateStorageProviderName = "disabled" | "s3";
 export type InsuranceOcrProviderName = "disabled" | "google_vision";
 
@@ -45,8 +45,8 @@ function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_I
 
 function mapsProviderEnv(): MapsProviderName {
   const value = process.env.MAPS_PROVIDER ?? "disabled";
-  if (value !== "disabled" && value !== "google") {
-    throw new Error("MAPS_PROVIDER must be disabled or google");
+  if (value !== "disabled" && value !== "google" && value !== "dev_local") {
+    throw new Error("MAPS_PROVIDER must be disabled, google or dev_local");
   }
   return value;
 }
@@ -69,8 +69,8 @@ function insuranceOcrProviderEnv(): InsuranceOcrProviderName {
 
 function smsProviderEnv(): SmsProviderName {
   const value = process.env.SMS_PROVIDER ?? "disabled";
-  if (value !== "disabled" && value !== "twilio") {
-    throw new Error("SMS_PROVIDER must be disabled or twilio");
+  if (value !== "disabled" && value !== "twilio" && value !== "dev_console") {
+    throw new Error("SMS_PROVIDER must be disabled, twilio or dev_console");
   }
   return value;
 }

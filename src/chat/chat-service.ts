@@ -120,16 +120,19 @@ export async function listTripDirectMessages(
     throw new DomainError("INVALID_CHAT_LIMIT","Chat limit must be between 1 and 100");
   }
   return (await pool.query(`
-    select id,trip_id,sender_user_id,recipient_user_id,client_message_id,body,created_at
-      from trip_direct_messages
-     where trip_id=$1
-       and (
-         (sender_user_id=$2 and recipient_user_id=$3)
-         or
-         (sender_user_id=$3 and recipient_user_id=$2)
-       )
+    select * from (
+      select id,trip_id,sender_user_id,recipient_user_id,client_message_id,body,created_at
+        from trip_direct_messages
+       where trip_id=$1
+         and (
+           (sender_user_id=$2 and recipient_user_id=$3)
+           or
+           (sender_user_id=$3 and recipient_user_id=$2)
+         )
+       order by created_at desc,id desc
+       limit $4
+    ) latest
      order by created_at asc,id asc
-     limit $4
   `,[input.tripId,principal.userId,input.peerUserId,limit])).rows;
 }
 

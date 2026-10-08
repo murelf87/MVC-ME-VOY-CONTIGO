@@ -13,6 +13,7 @@ import { registerLiveTrackingRoutes } from "./routes/live-tracking-routes.js";
 import { registerRideRequestRoutes } from "./routes/ride-request-routes.js";
 import { GoogleMapsProvider } from "./maps/google-maps-provider.js";
 import type { GeocodingProvider, RouteProvider } from "./maps/types.js";
+import { DevLocalMapsProvider } from "./dev/dev-maps-provider.js";
 import { registerTripDraftRoutes } from "./routes/trip-draft-routes.js";
 import { registerTripSearchRoutes } from "./routes/trip-search-routes.js";
 import { registerChatRoutes } from "./routes/chat-routes.js";
@@ -56,6 +57,23 @@ export async function buildApp() {
     if (error instanceof DomainError) {
       return reply.code(error.statusCode).send({
         error: { code: error.code, message: error.message, details: error.details },
+        requestId: request.id
+      });
+    }
+
+    const fastifyError = error as { validation?: unknown; statusCode?: number; message?: string };
+    if (fastifyError.validation) {
+      return reply.code(400).send({
+        error: { code: "VALIDATION_ERROR", message: fastifyError.message ?? "Invalid request" },
+        requestId: request.id
+      });
+    }
+    if (typeof fastifyError.statusCode === "number" && fastifyError.statusCode >= 400 && fastifyError.statusCode < 500) {
+      return reply.code(fastifyError.statusCode).send({
+        error: {
+          code: fastifyError.statusCode === 429 ? "RATE_LIMITED" : "HTTP_ERROR",
+          message: fastifyError.message ?? "Request rejected"
+        },
         requestId: request.id
       });
     }
@@ -110,6 +128,13 @@ export async function buildApp() {
     const googleMaps = new GoogleMapsProvider(config.googleMapsApiKey);
     routeProvider = googleMaps;
     geocodingProvider = googleMaps;
+  } else if (config.mapsProvider === "dev_local") {
+    if (config.nodeEnv !== "development") {
+      throw new Error("MAPS_PROVIDER=dev_local is only allowed with NODE_ENV=development");
+    }
+    const devMaps = new DevLocalMapsProvider();
+    routeProvider = devMaps;
+    geocodingProvider = devMaps;
   }
   await registerAuthRoutes(app, pool, smsProvider, {
     challengeTtlSeconds: config.authChallengeTtlSeconds,

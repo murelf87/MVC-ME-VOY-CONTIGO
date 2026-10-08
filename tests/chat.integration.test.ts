@@ -79,6 +79,19 @@ test("confirmed passenger and driver can exchange direct trip messages",async()=
   assert.equal(messages[0].body,"Estoy en el punto de recogida");
 });
 
+test("chat history with a limit returns the newest messages in chronological order",async()=>{
+  const s=await seed();
+  for(let i=1;i<=5;i++){
+    await sendTripDirectMessage(pool,auth(s.passenger,["passenger"]),{
+      tripId:s.trip,peerUserId:s.driver,clientMessageId:crypto.randomUUID(),body:`mensaje ${i}`
+    });
+  }
+  const messages=await listTripDirectMessages(pool,auth(s.driver,["driver"]),{
+    tripId:s.trip,peerUserId:s.passenger,limit:2
+  });
+  assert.deepEqual(messages.map(m=>m.body),["mensaje 4","mensaje 5"]);
+});
+
 test("pending passenger cannot access trip chat",async()=>{
   const s=await seed();
   await assert.rejects(

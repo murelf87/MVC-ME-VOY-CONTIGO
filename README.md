@@ -45,6 +45,9 @@ No se usan proveedores falsos para declarar operaciones reales.
 8. npm run test:integration
 9. npm run dev
 
+## Entorno local completo
+Ver docs/DEV_LOCAL.md para recorrer la app de punta a punta con proveedores de desarrollo.
+
 ## CI
 Último run verde:
 https://github.com/murelf87/MVC-ME-VOY-CONTIGO/actions/runs/37210934637

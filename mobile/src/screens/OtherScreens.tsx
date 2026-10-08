@@ -5,46 +5,31 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, ApiError } from "../api/client";
-import type { TripSearchParams, TripSearchResult } from "../api/types";
+import {
+  formatDeparture,
+  loadDriverTrips,
+  loadPassengerRequests,
+  tripStatusLabel,
+} from "../api/trips";
+import type {
+  Conversation,
+  DriverRideRequest,
+  OwnTrip,
+  PassengerRideRequest,
+  TripSearchParams,
+  TripSearchResult,
+} from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
+import { startSharingLocation, type LocationSharing } from "../live/shareLocation";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
 
 type Mode = "available" | "mine" | "driver";
-
-type PassengerRequest = {
-  id: string;
-  trip_id: string;
-  from_segment_seq: number;
-  to_segment_seq: number;
-  status: string;
-  requested_at: string;
-  updated_at: string;
-  hold_expires_at?: string | null;
-};
-
-type OwnTrip = {
-  id: string;
-  status: string;
-  departure_at: string | null;
-  category: string;
-  offered_seats: number;
-};
-
-type DriverRequest = {
-  id: string;
-  tripId: string;
-  passenger_user_id: string;
-  from_segment_seq: number;
-  to_segment_seq: number;
-  status: string;
-  requested_at: string;
-  updated_at: string;
-};
 
 function km(meters: number): string {
   return meters >= 1000
@@ -60,7 +45,9 @@ function duration(seconds: number): string {
   return rest ? `${hours} h ${rest} min` : `${hours} h`;
 }
 
-function requestStatus(status: string): { label: string; tone: "blue" | "green" | "amber" | "red" } {
+function requestStatus(status: string, bookingStatus?: string | null): { label: string; tone: "blue" | "green" | "amber" | "red" } {
+  if (bookingStatus === "completed") return { label: "Viaje realizado", tone: "green" };
+  if (bookingStatus === "no_show") return { label: "No presentado", tone: "red" };
   switch (status) {
     case "pending":
       return { label: "Pendiente del conductor", tone: "amber" };
@@ -80,22 +67,33 @@ function requestStatus(status: string): { label: string; tone: "blue" | "green" 
   }
 }
 
+function errorText(e: unknown, fallback: string): string {
+  return e instanceof ApiError || e instanceof Error ? e.message : fallback;
+}
+
 export function TripsScreen({
   searchParams,
   onLive,
+  onChat,
 }: {
   searchParams: TripSearchParams | null;
-  onLive: () => void;
+  onLive: (target: { tripId?: string; provinceId?: string }) => void;
+  onChat: (conversation: Conversation) => void;
 }) {
   const { token, roles } = useAuth();
+  const isDriver = roles.includes("driver");
   const [mode, setMode] = useState<Mode>("available");
   const [trips, setTrips] = useState<TripSearchResult[]>([]);
-  const [mine, setMine] = useState<PassengerRequest[]>([]);
-  const [driverRequests, setDriverRequests] = useState<DriverRequest[]>([]);
+  const [mine, setMine] = useState<PassengerRideRequest[]>([]);
+  const [ownTrips, setOwnTrips] = useState<OwnTrip[]>([]);
+  const [driverRequests, setDriverRequests] = useState<DriverRideRequest[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [requested, setRequested] = useState<Record<string, boolean>>({});
-  const isDriver = roles.includes("driver");
+  const [pickupCodes, setPickupCodes] = useState<Record<string, string>>({});
+  const [codeInputs, setCodeInputs] = useState<Record<string, string>>({});
+  const [sharing, setSharing] = useState<{ tripId: string; handle: LocationSharing } | null>(null);
+  const [sharingNote, setSharingNote] = useState("");
 
   const routeLabel = useMemo(() => {
     if (!searchParams) return "";
@@ -124,7 +122,7 @@ export function TripsScreen({
       );
       setTrips(response.trips);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No se pudieron buscar viajes.");
+      setError(errorText(e, "No se pudieron buscar viajes."));
     } finally {
       setBusy(false);
     }
@@ -135,39 +133,24 @@ export function TripsScreen({
     setBusy(true);
     setError("");
     try {
-      const response = await apiRequest<{ requests: PassengerRequest[] }>(
-        "/v1/me/ride-requests",
-        { token }
-      );
-      setMine(response.requests);
+      setMine(await loadPassengerRequests(token));
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No se pudieron cargar tus solicitudes.");
+      setError(errorText(e, "No se pudieron cargar tus solicitudes."));
     } finally {
       setBusy(false);
     }
   }, [token]);
 
-  const loadDriverRequests = useCallback(async () => {
+  const loadDriver = useCallback(async () => {
     if (!token || !isDriver) return;
     setBusy(true);
     setError("");
     try {
-      const tripsResponse = await apiRequest<{ trips: OwnTrip[] }>(
-        "/v1/me/trips",
-        { token }
-      );
-      const batches = await Promise.all(
-        tripsResponse.trips.map(async trip => {
-          const response = await apiRequest<{ requests: Omit<DriverRequest, "tripId">[] }>(
-            `/v1/trips/${trip.id}/requests`,
-            { token }
-          );
-          return response.requests.map(request => ({ ...request, tripId: trip.id }));
-        })
-      );
-      setDriverRequests(batches.flat());
+      const result = await loadDriverTrips(token);
+      setOwnTrips(result.trips);
+      setDriverRequests(result.requests);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No se pudieron cargar las solicitudes del conductor.");
+      setError(errorText(e, "No se pudieron cargar tus viajes de conductor."));
     } finally {
       setBusy(false);
     }
@@ -176,53 +159,115 @@ export function TripsScreen({
   useEffect(() => {
     if (mode === "available") void loadSearch();
     if (mode === "mine") void loadMine();
-    if (mode === "driver") void loadDriverRequests();
-  }, [mode, loadSearch, loadMine, loadDriverRequests]);
+    if (mode === "driver") void loadDriver();
+  }, [mode, loadSearch, loadMine, loadDriver]);
 
-  async function requestSeat(trip: TripSearchResult) {
-    if (!token) return;
+  useEffect(() => () => sharing?.handle.stop(), [sharing]);
+
+  async function run(action: () => Promise<void>, fallback: string) {
     setBusy(true);
     setError("");
     try {
-      await apiRequest(
-        `/v1/trips/${trip.tripId}/requests`,
-        {
-          method: "POST",
-          token,
-          body: {
-            fromSegmentSeq: trip.fromSegmentSeq,
-            toSegmentSeq: trip.toSegmentSeq,
-          },
-        }
-      );
-      setRequested(current => ({ ...current, [trip.tripId]: true }));
-      await loadMine();
+      await action();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No se pudo enviar la solicitud de plaza.");
+      setError(errorText(e, fallback));
     } finally {
       setBusy(false);
     }
   }
 
-  async function decide(requestId: string, decision: "accept" | "reject") {
+  function requestSeat(trip: TripSearchResult) {
     if (!token) return;
-    setBusy(true);
-    setError("");
-    try {
-      await apiRequest(
-        `/v1/ride-requests/${requestId}/decision`,
-        {
-          method: "POST",
-          token,
-          body: { decision },
-        }
-      );
-      await loadDriverRequests();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No se pudo registrar la decisión.");
-    } finally {
-      setBusy(false);
+    void run(async () => {
+      await apiRequest(`/v1/trips/${trip.tripId}/requests`, {
+        method: "POST",
+        token,
+        body: { fromSegmentSeq: trip.fromSegmentSeq, toSegmentSeq: trip.toSegmentSeq },
+      });
+      setRequested(current => ({ ...current, [trip.tripId]: true }));
+    }, "No se pudo enviar la solicitud de plaza.");
+  }
+
+  function decide(requestId: string, decision: "accept" | "reject") {
+    if (!token) return;
+    void run(async () => {
+      await apiRequest(`/v1/ride-requests/${requestId}/decision`, {
+        method: "POST",
+        token,
+        body: { decision },
+      });
+      await loadDriver();
+    }, "No se pudo registrar la decisión.");
+  }
+
+  function showPickupCode(bookingId: string) {
+    if (!token) return;
+    void run(async () => {
+      const result = await apiRequest<{ code: string }>(`/v1/bookings/${bookingId}/pickup-code`, {
+        method: "POST",
+        token,
+      });
+      setPickupCodes(current => ({ ...current, [bookingId]: result.code }));
+    }, "No se pudo generar el código de recogida.");
+  }
+
+  function verifyPickup(bookingId: string) {
+    if (!token) return;
+    const code = (codeInputs[bookingId] ?? "").trim();
+    if (!/^[0-9]{6}$/.test(code)) {
+      setError("El código de recogida tiene 6 cifras.");
+      return;
     }
+    void run(async () => {
+      await apiRequest(`/v1/bookings/${bookingId}/pickup-verify`, {
+        method: "POST",
+        token,
+        body: { code },
+      });
+      setCodeInputs(current => ({ ...current, [bookingId]: "" }));
+      await loadDriver();
+    }, "No se pudo verificar el código.");
+  }
+
+  function startTrip(tripId: string) {
+    if (!token) return;
+    void run(async () => {
+      await apiRequest(`/v1/me/trips/${tripId}/start`, { method: "POST", token });
+      await loadDriver();
+    }, "No se pudo iniciar el viaje.");
+  }
+
+  function completeTrip(tripId: string) {
+    if (!token) return;
+    void run(async () => {
+      if (sharing?.tripId === tripId) {
+        sharing.handle.stop();
+        setSharing(null);
+      }
+      await apiRequest(`/v1/me/trips/${tripId}/complete`, { method: "POST", token });
+      await loadDriver();
+    }, "No se pudo finalizar el viaje.");
+  }
+
+  function toggleSharing(tripId: string) {
+    if (!token) return;
+    if (sharing) {
+      sharing.handle.stop();
+      setSharing(null);
+      setSharingNote("");
+      if (sharing.tripId === tripId) return;
+    }
+    void run(async () => {
+      const handle = await startSharingLocation(token, tripId, state => {
+        setSharingNote(
+          "error" in state
+            ? state.error
+            : `Ubicación enviada a las ${new Date(state.sentAt).toLocaleTimeString("es-ES")}`
+        );
+      });
+      setSharing({ tripId, handle });
+      setSharingNote("Esperando la primera posición GPS…");
+    }, "No se pudo activar la ubicación.");
   }
 
   return (
@@ -234,11 +279,11 @@ export function TripsScreen({
           <Text style={[s.tabText, mode === "available" && s.tabTextActive]}>Disponibles</Text>
         </Pressable>
         <Pressable onPress={() => setMode("mine")} style={[s.tab, mode === "mine" && s.tabActive]}>
-          <Text style={[s.tabText, mode === "mine" && s.tabTextActive]}>Mis solicitudes</Text>
+          <Text style={[s.tabText, mode === "mine" && s.tabTextActive]}>Mis reservas</Text>
         </Pressable>
         {isDriver ? (
           <Pressable onPress={() => setMode("driver")} style={[s.tab, mode === "driver" && s.tabActive]}>
-            <Text style={[s.tabText, mode === "driver" && s.tabTextActive]}>Conductor</Text>
+            <Text style={[s.tabText, mode === "driver" && s.tabTextActive]}>Conduzco</Text>
           </Pressable>
         ) : null}
       </View>
@@ -277,9 +322,7 @@ export function TripsScreen({
                 <View style={s.avatar}><Ionicons name="person" size={28} color="#fff" /></View>
                 <View style={{ flex: 1 }}>
                   <Text style={s.tripName}>{trip.driverDisplayName || "Conductor MVC"}</Text>
-                  <Text style={s.tripMeta}>
-                    {trip.departureAt ? new Date(trip.departureAt).toLocaleString() : "Salida por confirmar"}
-                  </Text>
+                  <Text style={s.tripMeta}>{formatDeparture(trip.departureAt)}</Text>
                 </View>
                 <View style={s.badge}><Text style={s.badgeText}>{trip.availableSeats} {trip.availableSeats === 1 ? "plaza" : "plazas"}</Text></View>
               </View>
@@ -292,7 +335,7 @@ export function TripsScreen({
 
               <PrimaryButton
                 title={requested[trip.tripId] ? "Solicitud enviada" : "Solicitar plaza"}
-                onPress={() => void requestSeat(trip)}
+                onPress={() => requestSeat(trip)}
                 disabled={busy || requested[trip.tripId]}
               />
               {requested[trip.tripId] ? (
@@ -301,10 +344,10 @@ export function TripsScreen({
             </Card>
           ))}
 
-          {trips.length ? (
-            <Pressable style={s.liveLink} onPress={onLive}>
+          {searchParams ? (
+            <Pressable style={s.liveLink} onPress={() => onLive({ provinceId: searchParams.provinceId })}>
               <Ionicons name="map-outline" size={19} color={C.blue} />
-              <Text style={s.liveLinkText}>Ver diseño del seguimiento en directo</Text>
+              <Text style={s.liveLinkText}>Ver coches en marcha en {searchParams.provinceName}</Text>
             </Pressable>
           ) : null}
         </>
@@ -312,7 +355,7 @@ export function TripsScreen({
 
       {mode === "mine" ? (
         <>
-          <Text style={s.subtitle}>Estados reales de tus solicitudes de plaza.</Text>
+          <Text style={s.subtitle}>Estados reales de tus solicitudes y reservas.</Text>
           {!busy && !mine.length ? (
             <Card style={s.emptyCard}>
               <Ionicons name="document-text-outline" size={36} color={C.blue} />
@@ -320,19 +363,61 @@ export function TripsScreen({
             </Card>
           ) : null}
           {mine.map(item => {
-            const status = requestStatus(item.status);
+            const status = requestStatus(item.status, item.booking_status);
+            const bookingActive = item.booking_status === "confirmed";
+            const code = item.booking_id ? pickupCodes[item.booking_id] : undefined;
             return (
               <Card key={item.id} style={s.tripCard}>
                 <View style={s.requestHeader}>
                   <View style={[s.statusDot, status.tone === "green" && s.green, status.tone === "amber" && s.amber, status.tone === "red" && s.red]} />
                   <View style={{ flex: 1 }}>
                     <Text style={s.tripName}>{status.label}</Text>
-                    <Text style={s.tripMeta}>Solicitud {item.id.slice(0, 8)} · viaje {item.trip_id.slice(0, 8)}</Text>
+                    <Text style={s.tripMeta}>
+                      {item.driver_display_name || "Conductor MVC"} · {formatDeparture(item.departure_at)}
+                    </Text>
                   </View>
+                  <View style={s.badge}><Text style={s.badgeText}>{tripStatusLabel(item.trip_status)}</Text></View>
                 </View>
-                <Text style={s.requestMeta}>Tramos {item.from_segment_seq} → {item.to_segment_seq}</Text>
                 {item.hold_expires_at ? (
-                  <Text style={s.pending}>La plaza está retenida temporalmente hasta {new Date(item.hold_expires_at).toLocaleTimeString()}.</Text>
+                  <Text style={s.pending}>La plaza está retenida hasta las {new Date(item.hold_expires_at).toLocaleTimeString("es-ES")} a la espera del pago.</Text>
+                ) : null}
+                {item.picked_up_at && item.booking_status === "confirmed" ? (
+                  <Text style={s.okNote}>Recogida verificada por el conductor.</Text>
+                ) : null}
+
+                {bookingActive || item.booking_status === "completed" ? (
+                  <View style={s.actions}>
+                    <Pressable
+                      style={s.action}
+                      onPress={() => onChat({
+                        tripId: item.trip_id,
+                        peerUserId: item.driver_user_id,
+                        peerName: item.driver_display_name || "Conductor MVC",
+                        departureAt: item.departure_at,
+                        tripStatus: item.trip_status,
+                      })}
+                    >
+                      <Ionicons name="chatbubble-ellipses-outline" size={18} color={C.blue} />
+                      <Text style={s.actionText}>Chat</Text>
+                    </Pressable>
+                    {item.trip_status === "active" ? (
+                      <Pressable style={s.action} onPress={() => onLive({ tripId: item.trip_id })}>
+                        <Ionicons name="navigate-outline" size={18} color={C.blue} />
+                        <Text style={s.actionText}>Seguir coche</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                {bookingActive && item.trip_status === "active" && !item.picked_up_at && item.booking_id ? (
+                  code ? (
+                    <View style={s.codeBox}>
+                      <Text style={s.codeLabel}>Enseña este código al conductor al subir</Text>
+                      <Text style={s.code}>{code.slice(0, 3)} {code.slice(3)}</Text>
+                    </View>
+                  ) : (
+                    <PrimaryButton title="Mostrar código de recogida" onPress={() => showPickupCode(item.booking_id!)} disabled={busy} />
+                  )
                 ) : null}
               </Card>
             );
@@ -342,50 +427,118 @@ export function TripsScreen({
 
       {mode === "driver" ? (
         <>
-          <Text style={s.subtitle}>Acepta o rechaza solicitudes de tus viajes. Aceptar crea un hold temporal, no una reserva pagada.</Text>
-          {!busy && !driverRequests.length ? (
+          <Text style={s.subtitle}>Tus viajes publicados. Aceptar crea una retención temporal de plaza, no una reserva pagada.</Text>
+          {!busy && !ownTrips.length ? (
             <Card style={s.emptyCard}>
-              <Ionicons name="people-outline" size={36} color={C.blue} />
-              <Text style={s.emptyTitle}>No hay solicitudes pendientes</Text>
+              <Ionicons name="car-outline" size={36} color={C.blue} />
+              <Text style={s.emptyTitle}>No tienes viajes publicados</Text>
+              <Text style={s.emptyText}>Publica un trayecto desde la pestaña Publicar.</Text>
             </Card>
           ) : null}
-          {driverRequests.map(item => (
-            <Card key={item.id} style={s.tripCard}>
-              <Text style={s.tripName}>Solicitud de pasajero</Text>
-              <Text style={s.tripMeta}>Usuario {item.passenger_user_id.slice(0, 8)} · viaje {item.tripId.slice(0, 8)}</Text>
-              <Text style={s.requestMeta}>Tramos {item.from_segment_seq} → {item.to_segment_seq} · estado {item.status}</Text>
-              {item.status === "pending" ? (
-                <View style={s.decisions}>
-                  <Pressable onPress={() => void decide(item.id, "accept")} style={s.accept}>
-                    <Ionicons name="checkmark" size={19} color="#fff" />
-                    <Text style={s.acceptText}>Aceptar</Text>
-                  </Pressable>
-                  <Pressable onPress={() => void decide(item.id, "reject")} style={s.reject}>
-                    <Ionicons name="close" size={19} color={C.blue} />
-                    <Text style={s.rejectText}>Rechazar</Text>
-                  </Pressable>
+          {ownTrips.map(trip => {
+            const requests = driverRequests.filter(item => item.tripId === trip.id);
+            const isSharing = sharing?.tripId === trip.id;
+            return (
+              <Card key={trip.id} style={s.tripCard}>
+                <View style={s.requestHeader}>
+                  <Ionicons name="car-sport" size={22} color={C.blue} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.tripName}>{formatDeparture(trip.departure_at)}</Text>
+                    <Text style={s.tripMeta}>
+                      {trip.offered_seats} plazas{trip.route_distance_m ? ` · ${km(trip.route_distance_m)}` : ""}
+                    </Text>
+                  </View>
+                  <View style={s.badge}><Text style={s.badgeText}>{tripStatusLabel(trip.status)}</Text></View>
                 </View>
-              ) : (
-                <Text style={s.pending}>{requestStatus(item.status).label}</Text>
-              )}
-            </Card>
-          ))}
+
+                {trip.status === "published" ? (
+                  <PrimaryButton title="Iniciar viaje" onPress={() => startTrip(trip.id)} disabled={busy} />
+                ) : null}
+                {trip.status === "active" ? (
+                  <>
+                    <Pressable style={[s.shareButton, isSharing && s.shareOn]} onPress={() => toggleSharing(trip.id)}>
+                      <Ionicons name={isSharing ? "radio" : "radio-outline"} size={19} color={isSharing ? "#fff" : C.blue} />
+                      <Text style={[s.shareText, isSharing && { color: "#fff" }]}>
+                        {isSharing ? "Compartiendo ubicación · Parar" : "Compartir mi ubicación"}
+                      </Text>
+                    </Pressable>
+                    {isSharing && sharingNote ? <Text style={s.requestMeta}>{sharingNote}</Text> : null}
+                  </>
+                ) : null}
+
+                {requests.map(item => {
+                  const status = requestStatus(item.status, item.booking_status);
+                  const awaitingPickup = trip.status === "active" && item.booking_status === "confirmed" && !item.picked_up_at;
+                  return (
+                    <View key={item.id} style={s.passengerRow}>
+                      <View style={s.requestHeader}>
+                        <View style={[s.statusDot, status.tone === "green" && s.green, status.tone === "amber" && s.amber, status.tone === "red" && s.red]} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={s.passengerName}>{item.passenger_display_name || "Pasajero MVC"}</Text>
+                          <Text style={s.tripMeta}>
+                            {item.picked_up_at && item.booking_status === "confirmed" ? "A bordo" : status.label}
+                          </Text>
+                        </View>
+                        {item.booking_status === "confirmed" || item.booking_status === "completed" ? (
+                          <Pressable
+                            onPress={() => onChat({
+                              tripId: trip.id,
+                              peerUserId: item.passenger_user_id,
+                              peerName: item.passenger_display_name || "Pasajero MVC",
+                              departureAt: trip.departure_at,
+                              tripStatus: trip.status,
+                            })}
+                            style={s.iconButton}
+                            accessibilityLabel="Abrir chat"
+                          >
+                            <Ionicons name="chatbubble-ellipses-outline" size={20} color={C.blue} />
+                          </Pressable>
+                        ) : null}
+                      </View>
+
+                      {item.status === "pending" ? (
+                        <View style={s.decisions}>
+                          <Pressable onPress={() => decide(item.id, "accept")} style={s.accept}>
+                            <Ionicons name="checkmark" size={19} color="#fff" />
+                            <Text style={s.acceptText}>Aceptar</Text>
+                          </Pressable>
+                          <Pressable onPress={() => decide(item.id, "reject")} style={s.reject}>
+                            <Ionicons name="close" size={19} color={C.blue} />
+                            <Text style={s.rejectText}>Rechazar</Text>
+                          </Pressable>
+                        </View>
+                      ) : null}
+
+                      {awaitingPickup && item.booking_id ? (
+                        <View style={s.verifyRow}>
+                          <TextInput
+                            value={codeInputs[item.booking_id] ?? ""}
+                            onChangeText={value => setCodeInputs(current => ({ ...current, [item.booking_id!]: value.replace(/\D/g, "").slice(0, 6) }))}
+                            placeholder="Código de 6 cifras"
+                            keyboardType="number-pad"
+                            style={s.codeInput}
+                            maxLength={6}
+                          />
+                          <Pressable onPress={() => verifyPickup(item.booking_id!)} style={s.verifyButton}>
+                            <Text style={s.acceptText}>Verificar</Text>
+                          </Pressable>
+                        </View>
+                      ) : null}
+                    </View>
+                  );
+                })}
+
+                {trip.status === "active" ? (
+                  <Pressable style={s.finish} onPress={() => completeTrip(trip.id)} disabled={busy}>
+                    <Ionicons name="flag" size={18} color={C.navy} />
+                    <Text style={s.finishText}>Finalizar viaje</Text>
+                  </Pressable>
+                ) : null}
+              </Card>
+            );
+          })}
         </>
       ) : null}
-    </ScrollView>
-  );
-}
-
-export function MessagesScreen() {
-  return (
-    <ScrollView contentContainerStyle={s.wrap}>
-      <Text style={s.title}>Mensajes</Text>
-      <Text style={s.subtitle}>Solo aparecerán conversaciones autorizadas por una reserva o viaje real.</Text>
-      <Card style={s.emptyCard}>
-        <Ionicons name="chatbubbles-outline" size={38} color={C.blue} />
-        <Text style={s.emptyTitle}>Sin conversaciones cargadas</Text>
-        <Text style={s.emptyText}>MVC no muestra chats ficticios. Cuando tengas una reserva confirmada, el chat se vinculará al viaje correspondiente.</Text>
-      </Card>
     </ScrollView>
   );
 }
@@ -397,14 +550,14 @@ const s = StyleSheet.create({
   tabs: { flexDirection: "row", gap: 7, marginBottom: 14 },
   tab: { flex: 1, minHeight: 40, borderWidth: 1, borderColor: C.border, borderRadius: 12, alignItems: "center", justifyContent: "center", paddingHorizontal: 5 },
   tabActive: { backgroundColor: C.blue, borderColor: C.blue },
-  tabText: { fontSize: 10, fontWeight: "900", color: C.navy, textAlign: "center" },
+  tabText: { fontSize: 11, fontWeight: "900", color: C.navy, textAlign: "center" },
   tabTextActive: { color: "#fff" },
   searchSummary: { marginBottom: 12 },
   tripCard: { marginBottom: 12 },
   tripTop: { flexDirection: "row", alignItems: "center", gap: 10 },
   avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: "#78B89F", alignItems: "center", justifyContent: "center" },
   tripName: { fontSize: 15, fontWeight: "900", color: C.navy },
-  tripMeta: { fontSize: 10, color: C.muted, marginTop: 2 },
+  tripMeta: { fontSize: 11, color: C.muted, marginTop: 2 },
   badge: { backgroundColor: C.pale, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   badgeText: { fontSize: 10, fontWeight: "900", color: C.blue },
   routeLine: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -413,22 +566,40 @@ const s = StyleSheet.create({
   dataItem: { flex: 1, backgroundColor: "#F7FAFF", borderRadius: 12, padding: 10 },
   dataLabel: { fontSize: 9, fontWeight: "800", color: C.muted, textTransform: "uppercase" },
   dataValue: { fontSize: 12, fontWeight: "900", color: C.navy, marginTop: 3 },
-  pending: { fontSize: 10, lineHeight: 15, color: "#966112", backgroundColor: "#FFF6E8", padding: 9, borderRadius: 10, marginTop: 8 },
+  pending: { fontSize: 11, lineHeight: 16, color: "#966112", backgroundColor: "#FFF6E8", padding: 9, borderRadius: 10, marginTop: 10 },
+  okNote: { fontSize: 11, lineHeight: 16, color: "#0E7A55", backgroundColor: C.mintPale, padding: 9, borderRadius: 10, marginTop: 10 },
   error: { marginBottom: 12, color: "#9E302D", backgroundColor: "#FFF0EF", padding: 11, borderRadius: 12, fontSize: 12 },
   emptyCard: { alignItems: "center", paddingVertical: 26, marginTop: 8 },
   emptyTitle: { fontSize: 16, fontWeight: "900", color: C.navy, marginTop: 10 },
   emptyText: { fontSize: 12, lineHeight: 18, color: C.muted, textAlign: "center", marginTop: 5 },
-  liveLink: { minHeight: 48, borderWidth: 1, borderColor: C.border, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  liveLink: { minHeight: 48, borderWidth: 1, borderColor: C.border, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 4 },
   liveLinkText: { fontSize: 12, fontWeight: "800", color: C.blue },
   requestHeader: { flexDirection: "row", alignItems: "center", gap: 9 },
-  requestMeta: { fontSize: 11, color: C.muted, marginTop: 10 },
+  requestMeta: { fontSize: 11, color: C.muted, marginTop: 8 },
   statusDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: C.blue },
   green: { backgroundColor: C.mint },
   amber: { backgroundColor: "#EAA43A" },
   red: { backgroundColor: "#D84A4A" },
+  actions: { flexDirection: "row", gap: 8, marginTop: 12 },
+  action: { flex: 1, height: 42, borderRadius: 12, borderWidth: 1, borderColor: C.border, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+  actionText: { fontSize: 12, fontWeight: "900", color: C.blue },
+  codeBox: { marginTop: 12, backgroundColor: C.navy, borderRadius: 14, padding: 14, alignItems: "center" },
+  codeLabel: { fontSize: 11, color: "#BFD0F2", fontWeight: "700" },
+  code: { fontSize: 34, letterSpacing: 6, color: "#fff", fontWeight: "900", marginTop: 4, fontVariant: ["tabular-nums"] },
+  passengerRow: { borderTopWidth: 1, borderTopColor: C.border, marginTop: 12, paddingTop: 12 },
+  passengerName: { fontSize: 14, fontWeight: "900", color: C.navy },
+  iconButton: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: C.border, alignItems: "center", justifyContent: "center" },
   decisions: { flexDirection: "row", gap: 9, marginTop: 12 },
   accept: { flex: 1, height: 46, borderRadius: 13, backgroundColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 },
   acceptText: { color: "#fff", fontSize: 12, fontWeight: "900" },
   reject: { flex: 1, height: 46, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 },
   rejectText: { color: C.blue, fontSize: 12, fontWeight: "900" },
+  verifyRow: { flexDirection: "row", gap: 8, marginTop: 12 },
+  codeInput: { flex: 1, minWidth: 0, height: 46, borderWidth: 1, borderColor: C.border, borderRadius: 13, paddingHorizontal: 12, fontSize: 16, letterSpacing: 3, color: C.navy },
+  verifyButton: { width: 96, flexShrink: 0, height: 46, borderRadius: 13, backgroundColor: C.blue, alignItems: "center", justifyContent: "center" },
+  shareButton: { marginTop: 12, minHeight: 46, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  shareOn: { backgroundColor: "#10A66A", borderColor: "#10A66A" },
+  shareText: { fontSize: 13, fontWeight: "900", color: C.blue },
+  finish: { marginTop: 14, minHeight: 46, borderRadius: 13, backgroundColor: C.pale, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  finishText: { fontSize: 13, fontWeight: "900", color: C.navy },
 });

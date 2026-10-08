@@ -82,8 +82,15 @@ export function DriverOnboardingScreen({
     ? latestDocument(documents, activeVehicle.id, "vehicle_insurance")
     : null;
 
-  const hasVehiclePhoto = Boolean(vehiclePhotoDocument);
-  const hasInsurance = Boolean(insuranceDocument);
+  const today = new Date().toISOString().slice(0, 10);
+  const hasVehiclePhoto =
+    Boolean(vehiclePhotoDocument) ||
+    activeVehicle?.vehicle_photo_status === "approved";
+  const hasInsurance =
+    Boolean(insuranceDocument) ||
+    (activeVehicle?.insurance_status === "approved" &&
+      Boolean(activeVehicle.insurance_expires_on) &&
+      String(activeVehicle.insurance_expires_on).slice(0, 10) >= today);
   const insuranceExpired = insuranceIsDetectedExpired(insuranceDocument);
 
   const onboardingReady =

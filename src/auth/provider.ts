@@ -1,5 +1,6 @@
 import { DomainError } from "../errors.js";
 import type { AppConfig } from "../config.js";
+import { DevConsoleSmsProvider } from "../dev/dev-sms-provider.js";
 
 export type VerificationStart = {
   providerChallengeId: string;
@@ -122,6 +123,13 @@ export function buildSmsVerificationProvider(config: AppConfig): SmsVerification
       throw new Error("SMS_PROVIDER must be configured for production");
     }
     return new DisabledSmsVerificationProvider();
+  }
+
+  if (config.smsProvider === "dev_console") {
+    if (config.nodeEnv !== "development") {
+      throw new Error("SMS_PROVIDER=dev_console is only allowed with NODE_ENV=development");
+    }
+    return new DevConsoleSmsProvider();
   }
 
   if (!config.twilioApiKeySid || !config.twilioApiKeySecret || !config.twilioVerifyServiceSid) {
