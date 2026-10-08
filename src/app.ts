@@ -7,6 +7,7 @@ import { checkDatabaseReadiness, pool } from "./db/pool.js";
 import { DomainError } from "./errors.js";
 import { buildSmsVerificationProvider } from "./auth/provider.js";
 import { registerAuthRoutes } from "./auth/routes.js";
+import { readBearerToken, requireAnyRole, resolveSession } from "./auth/session.js";
 import { registerMeRoutes } from "./routes/me-routes.js";
 import { registerProfileVehicleRoutes } from "./routes/profile-vehicle-routes.js";
 import { registerLiveTrackingRoutes } from "./routes/live-tracking-routes.js";
@@ -99,6 +100,14 @@ export async function buildApp() {
       error: { code: "INTERNAL_ERROR", message: "Internal server error" },
       requestId: request.id
     });
+  });
+
+  // Staff-only surface: refuse anonymous and non-staff callers before any body is parsed or validated.
+  // Each handler still checks the specific role it needs (finance, verification, support).
+  app.addHook("onRequest", async request => {
+    if (!/^\/v1\/admin(\/|\?|$)/.test(request.url)) return;
+    const principal = await resolveSession(pool, readBearerToken(request.headers.authorization));
+    requireAnyRole(principal, ["admin", "verification_admin", "finance_admin", "support_admin"]);
   });
 
   app.get("/health/live", {

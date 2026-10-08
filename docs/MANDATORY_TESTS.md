@@ -1,0 +1,26 @@
+# Pruebas obligatorias (prompt maestro, sección 18)
+
+Cada prueba obligatoria y dónde está la prueba automática que la cubre. Todas corren contra
+PostgreSQL 16 + PostGIS reales (`npm run test:integration`), sin mocks que oculten errores
+transaccionales o geoespaciales. Resultado de la última ejecución: ver `docs/TEST_EVIDENCE.md`.
+
+| # | Prueba | Estado | Dónde |
+|---|--------|--------|-------|
+| 1 | Ruta con extremos dentro pero geometría que sale de provincia, bloquear | Implementado y probado | `core.integration` "whole route leaving province is rejected even if endpoints are inside"; `route-provider.integration` "blocks the trip when no route candidate remains inside the province" |
+| 2 | Ruta completamente dentro, permitir | Implementado y probado | `core.integration` "fully contained routed geometry can publish"; `route-provider.integration` "selects a provider alternative whose full geometry stays inside province" |
+| 3 | Concurrencia por último asiento, una sola reserva | Implementado y probado | `core.integration` "concurrent overlapping requests cannot oversell a one-seat segment"; `request-flow.integration` "concurrent driver acceptance cannot oversell last seat" |
+| 4 | Capacidad por segmentos no solapados | Implementado y probado | `core.integration` "non-overlapping segment requests may coexist"; `trip-search.integration` "search reports minimum remaining seats across all requested segments" |
+| 5 | Hold expirado y pago tardío, sin overbooking y con compensación | Implementado y probado | `core.integration` "late provider payment creates compensation and no booking" |
+| 6 | Webhook de pago duplicado, idempotente | Implementado y probado | `core.integration` "repeated provider payment is idempotent"; `payments.integration` "a captured payment books the seat ...; a repeat delivery does nothing" |
+| 7 | Webhooks tardíos o fuera de orden | Implementado y probado | `payments.integration` "a refund that arrives before the cancellation waits, then settles ..."; "dispute events applied out of order end in the newest state ..." |
+| 8 | Cobro semanal con incidencias y no-show | Parcial, bloqueado por decisión | La reserva semanal sin overbooking está probada (`recurring.integration` "passenger books a whole week; full days are reported, not overbooked") y el no-show se marca al cerrar el viaje (`trip-execution.integration` "completing trip marks picked passenger completed and unpicked passenger no_show"). Falta decidir si el pasajero paga la semana de una vez o por día, y qué pasa con el dinero de un no-show (BLOCKERS 11). Hasta entonces el dinero de un no-show queda retenido en `driver_pending`, sin liberarse ni devolverse. |
+| 9 | Cancelación y reembolso según política versionada | Implementado y probado | `cancellation.integration` "booking keeps the policy version accepted at payment and refund follows it"; "driver cancels the trip: every passenger is refunded under the driver rule" |
+| 10 | Payout mensual | Implementado y probado (sin orden real al proveedor) | `payments.integration` "monthly payouts reserve the available balance once and settle when the provider confirms"; "a failed payout returns the money ..." |
+| 11 | Solicitud de recogida con viaje activo | Implementado y probado | `route-change.integration` "while moving: needs a fresh position and a pickup the car has not reached"; "an on-route stop already passed by the moving car cannot be booked" |
+| 12 | Recálculo de ruta aceptado | Implementado y probado | `route-change.integration` "with nobody else on board the driver's yes applies the new route ..."; "when every affected passenger accepts, their own booking is renumbered onto the new route" |
+| 13 | Recálculo rechazado | Implementado y probado | `route-change.integration` "a confirmed passenger delayed beyond the flexibility must accept, and one no blocks the change"; "a detour longer than the driver's maximum is refused ..." |
+| 14 | Pérdida y reconexión GPS | Implementado y probado | `live-tracking.integration` "after losing signal, the reconnecting phone's buffered fixes restore live state in order"; "stale GPS is explicitly marked"; "older out-of-order GPS event ..."; "duplicate event id is idempotent" |
+| 15 | Acceso no autorizado a ubicación | Implementado y probado | `live-tracking.integration` "confirmed passenger and driver see precise location while stranger sees approximate location"; "only the actual driver can publish live location"; `route-change.integration` ETA restringido a conductor y pasajeros confirmados |
+| 16 | Acceso no autorizado a chat | Implementado y probado | `chat.integration` "pending passenger cannot access trip chat"; "passengers cannot open direct trip chat with each other" |
+| 17 | Acceso no autorizado a administración | Implementado y probado | `access-control.integration` recorre por HTTP todas las rutas `/v1/admin` de la app real: sin sesión 401, pasajero o conductor 403, antes de leer el cuerpo. `admin.integration` comprueba la separación entre administración, verificación, finanzas y soporte. |
+| 18 | Restauración real de backup | Implementado y probado (manual) | `npm run db:backup-check` (`scripts/backup-restore-check.sh`): pg_dump, restauración en una base nueva y comparación tabla a tabla. Última ejecución en `docs/TEST_EVIDENCE.md`. No corre en CI porque necesita una base con datos. |

@@ -60,6 +60,7 @@ Lee PROMPT_MAESTRO_MVC.md.
 ## Estado detallado
 - STATUS_2026-10-04.md
 - docs/TEST_EVIDENCE.md
+- docs/MANDATORY_TESTS.md
 - docs/BLOCKERS.md
 - docs/STATE_MACHINES.md
 - docs/openapi.json

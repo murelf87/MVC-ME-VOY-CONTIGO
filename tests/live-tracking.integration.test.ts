@@ -165,3 +165,34 @@ test("stale GPS is explicitly marked", async () => {
   assert.equal(location?.stale,true);
   assert.ok((location?.ageSeconds ?? 0) >= 119);
 });
+
+test("after losing signal, the reconnecting phone's buffered fixes restore live state in order", async () => {
+  const s=await seed();
+  const now=Date.now();
+  // Last fix before the tunnel: three minutes old, so the trip shows as stale.
+  await recordDriverLocation(pool,{
+    eventId:crypto.randomUUID(),tripId:s.trip,driverUserId:s.driver,
+    recordedAt:new Date(now-180000).toISOString(),latitude:37.38,longitude:-5.99
+  });
+  assert.equal((await getTripLocationForViewer(pool,s.trip,s.passenger,60))?.stale,true);
+
+  // On reconnection the phone uploads its buffer newest first; the oldest buffered fix must not win.
+  const buffered=[
+    {at:now-2000,lat:37.41,lng:-5.92},
+    {at:now-60000,lat:37.40,lng:-5.95},
+    {at:now-120000,lat:37.39,lng:-5.97}
+  ];
+  const results=[];
+  for(const b of buffered){
+    results.push(await recordDriverLocation(pool,{
+      eventId:crypto.randomUUID(),tripId:s.trip,driverUserId:s.driver,
+      recordedAt:new Date(b.at).toISOString(),latitude:b.lat,longitude:b.lng
+    }));
+  }
+  assert.deepEqual(results.map(r=>r.acceptedAsCurrent),[true,false,false]);
+  const visible=await getTripLocationForViewer(pool,s.trip,s.passenger,60);
+  assert.equal(visible?.stale,false);
+  assert.equal(visible?.latitude,37.41);
+  const stored=await pool.query(`select count(*)::int as n from trip_location_events where trip_id=$1`,[s.trip]);
+  assert.equal(stored.rows[0].n,4);
+});
