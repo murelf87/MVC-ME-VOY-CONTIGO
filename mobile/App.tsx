@@ -20,6 +20,7 @@ import { DriverOnboardingScreen } from "./src/screens/DriverOnboardingScreen";
 import { TripsScreen } from "./src/screens/OtherScreens";
 import { MessagesScreen } from "./src/screens/MessagesScreen";
 import { PublishScreen } from "./src/screens/PublishScreen";
+import { AdminScreen } from "./src/screens/AdminScreen";
 import { NotificationsScreen, useUnreadNotifications, type AppNotification } from "./src/screens/NotificationsScreen";
 import { C } from "./src/theme";
 
@@ -30,7 +31,8 @@ type Screen =
   | "messages"
   | "profile"
   | "live"
-  | "notifications";
+  | "notifications"
+  | "admin";
 
 function BootScreen() {
   return (
@@ -51,7 +53,7 @@ function AuthenticatedApp() {
   const { token } = useAuth();
   const { unread, refresh: refreshUnread } = useUnreadNotifications(token);
   const main = ["home", "trips", "publish", "messages", "profile"].includes(screen);
-  const navActive = main ? screen : "trips";
+  const navActive = main ? screen : screen === "admin" ? "profile" : screen === "notifications" ? "home" : "trips";
 
   const goMain = (next: string) => {
     if (["home", "trips", "publish", "messages", "profile"].includes(next)) {
@@ -93,7 +95,7 @@ function AuthenticatedApp() {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       {!main ? (
         <View style={s.subHeader}>
-          <Pressable onPress={() => { void refreshUnread(); setScreen(screen === "notifications" ? "home" : "trips"); }} style={s.back}>
+          <Pressable onPress={() => { void refreshUnread(); setScreen(screen === "notifications" ? "home" : screen === "admin" ? "profile" : "trips"); }} style={s.back}>
             <Ionicons name="chevron-back" size={22} color={C.navy} />
             <Text style={s.backText}>Volver</Text>
           </Pressable>
@@ -124,7 +126,8 @@ function AuthenticatedApp() {
         {screen === "messages" && (
           <MessagesScreen open={conversation} onOpen={setConversation} />
         )}
-        {screen === "profile" && <ProfileScreen />}
+        {screen === "profile" && <ProfileScreen onOpenAdmin={() => setScreen("admin")} />}
+        {screen === "admin" && <AdminScreen />}
       </View>
 
       <BottomNav active={navActive} onChange={goMain} />

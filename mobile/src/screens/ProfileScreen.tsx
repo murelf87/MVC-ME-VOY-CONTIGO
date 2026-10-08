@@ -13,6 +13,7 @@ import { apiRequest, ApiError } from "../api/client";
 import type { Vehicle } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
 import { BlockedPeople } from "../components/TripFeedback";
+import { isStaff } from "./AdminScreen";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
 
@@ -32,7 +33,7 @@ function statusLabel(value: string | null | undefined): string {
   }
 }
 
-export function ProfileScreen() {
+export function ProfileScreen({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const { profile, roles, token, refreshProfile, logout } = useAuth();
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -347,6 +348,14 @@ export function ProfileScreen() {
         onPress={() => void refresh()}
         disabled={busy}
       />
+      {onOpenAdmin && isStaff(roles as readonly string[]) ? (
+        <Pressable style={s.adminLink} onPress={onOpenAdmin}>
+          <Ionicons name="shield-half-outline" size={20} color="#fff" />
+          <Text style={s.adminLinkText}>Panel de administración</Text>
+          <Ionicons name="chevron-forward" size={18} color="#fff" />
+        </Pressable>
+      ) : null}
+
       {token ? <Card style={{ marginTop: 12 }}><BlockedPeople token={token} /></Card> : null}
 
       <Pressable style={s.logout} onPress={() => void closeSession()} disabled={busy}>
@@ -400,6 +409,8 @@ const s = StyleSheet.create({
   reviewReason: { fontSize: 10, lineHeight: 15, color: "#9E302D", marginTop: 7 },
   error: { marginTop: 10, color: "#9E302D", backgroundColor: "#FFF0EF", padding: 10, borderRadius: 12, fontSize: 11, lineHeight: 16 },
   notice: { marginTop: 10, color: "#166C4B", backgroundColor: C.mintPale, padding: 10, borderRadius: 12, fontSize: 11, lineHeight: 16 },
+  adminLink: { marginTop: 12, minHeight: 50, borderRadius: 15, backgroundColor: C.navy, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16 },
+  adminLinkText: { flex: 1, color: "#fff", fontWeight: "900", fontSize: 14 },
   logout: { height: 50, marginTop: 10, borderWidth: 1, borderColor: "#F0CACA", borderRadius: 15, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   logoutText: { color: "#A73535", fontWeight: "900", fontSize: 13 },
 });
