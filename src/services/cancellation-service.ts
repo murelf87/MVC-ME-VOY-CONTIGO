@@ -3,6 +3,7 @@ import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
 import { computeRefund, parseCancellationRules } from "../domain/cancellation-policy.js";
+import { displayName, notify } from "./notification-service.js";
 
 async function tx<T>(pool:Pool,fn:(c:PoolClient)=>Promise<T>):Promise<T>{
   const client=await pool.connect();
@@ -67,7 +68,7 @@ export async function cancelOwnRideRequest(
     const r=(await client.query(`select * from ride_requests where id=$1 for update`,[input.requestId])).rows[0];
     if(!r) throw new DomainError("REQUEST_NOT_FOUND","Ride request not found",404);
     if(r.passenger_user_id!==principal.userId) throw new DomainError("REQUEST_NOT_OWNED","Not your request",403);
-    const trip=(await client.query(`select status,departure_at from trips where id=$1 for update`,[r.trip_id])).rows[0];
+    const trip=(await client.query(`select status,departure_at,driver_user_id from trips where id=$1 for update`,[r.trip_id])).rows[0];
 
     let cancellation=null;
     if(["pending","accepted","payment_pending"].includes(r.status)){
@@ -82,6 +83,9 @@ export async function cancelOwnRideRequest(
       cancellation=await cancelBooking(client,b,{
         actor:"passenger",userId:principal.userId,reason,tripStarted:trip.status==="active",
         departureAt:trip.departure_at?new Date(trip.departure_at):null,bookingStatus:"cancelled"
+      });
+      await notify(client,trip.driver_user_id,"booking.cancelled_by_passenger",r.trip_id,{
+        passengerName:await displayName(client,principal.userId)
       });
     }else{
       throw new DomainError("REQUEST_NOT_CANCELLABLE","This request can no longer be cancelled",409);
@@ -130,6 +134,9 @@ export async function cancelOwnTrip(
        where trip_id=$1 and status in ('pending','accepted','payment_pending','confirmed')
        returning passenger_user_id`,[trip.id]);
     await client.query(`update trips set status='cancelled' where id=$1`,[trip.id]);
+    await notify(client,affected.rows.map(r=>r.passenger_user_id as string),"trip.cancelled",trip.id,{
+      driverName:await displayName(client,principal.userId),reason,forceMajeure:Boolean(input.forceMajeure)
+    });
     await client.query(`
       insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)
       values($1,'trip.cancelled','trip',$2,$3)`,

@@ -4,6 +4,7 @@ import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
 import { assertVehicleCanDrive } from "../vehicles/compliance-service.js";
+import { displayName, notify } from "./notification-service.js";
 
 async function tx<T>(pool:Pool,fn:(client:PoolClient)=>Promise<T>):Promise<T>{
   const client=await pool.connect();
@@ -51,6 +52,11 @@ export async function startOwnedTrip(pool:Pool,principal:AuthPrincipal,tripId:st
       insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)
       values($1,'trip.started','trip',$2,'{}'::jsonb)
     `,[principal.userId,tripId]);
+    const riders=await client.query(`select r.passenger_user_id from bookings b join ride_requests r on r.id=b.request_id
+       where r.trip_id=$1 and b.status='confirmed'`,[tripId]);
+    await notify(client,riders.rows.map(r=>r.passenger_user_id as string),"trip.started",tripId,{
+      driverName:await displayName(client,principal.userId)
+    });
     return result.rows[0];
   });
 }
@@ -236,6 +242,11 @@ export async function completeOwnedTrip(pool:Pool,principal:AuthPrincipal,tripId
       insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)
       values($1,'trip.completed','trip',$2,'{}'::jsonb)
     `,[principal.userId,tripId]);
+    const riders=await client.query(`select r.passenger_user_id from bookings b join ride_requests r on r.id=b.request_id
+       where r.trip_id=$1 and b.status in ('completed','no_show')`,[tripId]);
+    await notify(client,riders.rows.map(r=>r.passenger_user_id as string),"trip.completed",tripId,{
+      driverName:await displayName(client,principal.userId)
+    });
     return done.rows[0];
   });
 }

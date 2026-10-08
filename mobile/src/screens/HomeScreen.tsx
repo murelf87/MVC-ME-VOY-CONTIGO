@@ -25,9 +25,13 @@ type PickerMode = "province" | "origin" | "destination" | null;
 export function HomeScreen({
   onSearch,
   onOpenRoute,
+  onOpenNotifications,
+  unread = 0,
 }: {
   onSearch: (params: TripSearchParams) => void;
   onOpenRoute: () => void;
+  onOpenNotifications: () => void;
+  unread?: number;
 }) {
   const { token } = useAuth();
   const [role, setRole] = useState<"passenger" | "driver">("passenger");
@@ -168,7 +172,14 @@ export function HomeScreen({
       >
         <View style={s.top}>
           <Brand />
-          <Ionicons name="notifications-outline" size={24} color={C.navy} />
+          <Pressable onPress={onOpenNotifications} accessibilityLabel={unread ? `Avisos, ${unread} sin leer` : "Avisos"} hitSlop={8}>
+            <Ionicons name="notifications-outline" size={24} color={C.navy} />
+            {unread ? (
+              <View style={s.bellBadge}>
+                <Text style={s.bellBadgeText}>{unread > 9 ? "9+" : unread}</Text>
+              </View>
+            ) : null}
+          </Pressable>
         </View>
 
         <Text style={s.title}>¿A dónde vamos?</Text>
@@ -437,4 +448,6 @@ const s = StyleSheet.create({
   results: { paddingTop: 12, paddingBottom: 50 },
   resultRow: { minHeight: 62, borderBottomWidth: 1, borderBottomColor: C.border, flexDirection: "row", alignItems: "center", gap: 10 },
   resultText: { flex: 1, fontSize: 13, lineHeight: 18, color: C.navy, fontWeight: "700" },
+  bellBadge: { position: "absolute", top: -5, right: -7, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: "#E63F4C", alignItems: "center", justifyContent: "center", paddingHorizontal: 4 },
+  bellBadgeText: { color: "#fff", fontSize: 10, fontWeight: "900" },
 });

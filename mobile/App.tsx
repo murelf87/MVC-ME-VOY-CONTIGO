@@ -20,6 +20,7 @@ import { DriverOnboardingScreen } from "./src/screens/DriverOnboardingScreen";
 import { TripsScreen } from "./src/screens/OtherScreens";
 import { MessagesScreen } from "./src/screens/MessagesScreen";
 import { PublishScreen } from "./src/screens/PublishScreen";
+import { NotificationsScreen, useUnreadNotifications, type AppNotification } from "./src/screens/NotificationsScreen";
 import { C } from "./src/theme";
 
 type Screen =
@@ -28,7 +29,8 @@ type Screen =
   | "publish"
   | "messages"
   | "profile"
-  | "live";
+  | "live"
+  | "notifications";
 
 function BootScreen() {
   return (
@@ -45,12 +47,16 @@ function AuthenticatedApp() {
   const [searchParams, setSearchParams] = useState<TripSearchParams | null>(null);
   const [liveTarget, setLiveTarget] = useState<{ tripId?: string; provinceId?: string }>({});
   const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [tripsMode, setTripsMode] = useState<"available" | "mine" | "driver" | undefined>(undefined);
+  const { token } = useAuth();
+  const { unread, refresh: refreshUnread } = useUnreadNotifications(token);
   const main = ["home", "trips", "publish", "messages", "profile"].includes(screen);
   const navActive = main ? screen : "trips";
 
   const goMain = (next: string) => {
     if (["home", "trips", "publish", "messages", "profile"].includes(next)) {
       if (next === "messages") setConversation(null);
+      if (next === "trips") setTripsMode(undefined);
       setScreen(next as Screen);
     }
   };
@@ -65,6 +71,13 @@ function AuthenticatedApp() {
     setScreen("live");
   }
 
+  function openNotification(n: AppNotification) {
+    void refreshUnread();
+    if (n.kind === "report.closed") return setScreen("profile");
+    setTripsMode(n.as_driver ? "driver" : "mine");
+    setScreen("trips");
+  }
+
   function openChat(next: Conversation) {
     setConversation(next);
     setScreen("messages");
@@ -75,7 +88,7 @@ function AuthenticatedApp() {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       {!main ? (
         <View style={s.subHeader}>
-          <Pressable onPress={() => setScreen("trips")} style={s.back}>
+          <Pressable onPress={() => { void refreshUnread(); setScreen(screen === "notifications" ? "home" : "trips"); }} style={s.back}>
             <Ionicons name="chevron-back" size={22} color={C.navy} />
             <Text style={s.backText}>Volver</Text>
           </Pressable>
@@ -87,12 +100,17 @@ function AuthenticatedApp() {
           <HomeScreen
             onSearch={runSearch}
             onOpenRoute={() => setScreen("publish")}
+            onOpenNotifications={() => setScreen("notifications")}
+            unread={unread}
           />
         )}
         {screen === "live" && <LiveScreen {...liveTarget} />}
+        {screen === "notifications" && <NotificationsScreen onOpen={openNotification} />}
         {screen === "trips" && (
           <TripsScreen
+            key={tripsMode ?? "default"}
             searchParams={searchParams}
+            initialMode={tripsMode}
             onLive={openLive}
             onChat={openChat}
           />

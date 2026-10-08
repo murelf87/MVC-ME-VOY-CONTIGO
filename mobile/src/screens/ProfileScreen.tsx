@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, ApiError } from "../api/client";
 import type { Vehicle } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
+import { BlockedPeople } from "../components/TripFeedback";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
 
@@ -346,6 +347,8 @@ export function ProfileScreen() {
         onPress={() => void refresh()}
         disabled={busy}
       />
+      {token ? <Card style={{ marginTop: 12 }}><BlockedPeople token={token} /></Card> : null}
+
       <Pressable style={s.logout} onPress={() => void closeSession()} disabled={busy}>
         <Ionicons name="log-out-outline" size={20} color="#A73535" />
         <Text style={s.logoutText}>Cerrar sesión</Text>

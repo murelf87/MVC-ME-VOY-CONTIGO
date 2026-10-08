@@ -1,5 +1,6 @@
 import type { Pool, PoolClient } from "pg";
 import { DomainError } from "../errors.js";
+import { displayName, notify } from "./notification-service.js";
 
 type PaymentConfirmation =
   | { status: "confirmed"; bookingId: string }
@@ -160,6 +161,12 @@ export async function confirmProviderPayment(
     );
     await client.query(`update seat_holds set status='consumed', consumed_at=now() where id=$1`, [hold.id]);
     await client.query(`update ride_requests set status='confirmed', updated_at=now() where id=$1`, [input.requestId]);
+    const trip = await client.query(`select driver_user_id from trips where id=$1`, [request.trip_id]);
+    await notify(client, [request.passenger_user_id, trip.rows[0].driver_user_id], "booking.confirmed", request.trip_id, {
+      bookingId: booking.rows[0].id,
+      passengerName: await displayName(client, request.passenger_user_id),
+      driverName: await displayName(client, trip.rows[0].driver_user_id)
+    });
 
     return { status: "confirmed", bookingId: booking.rows[0].id as string };
   });

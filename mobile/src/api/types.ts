@@ -173,6 +173,9 @@ export type PassengerRideRequest = {
   booking_id: string | null;
   booking_status: string | null;
   picked_up_at: string | null;
+  my_rating_score?: number | null;
+  refund_cents?: number | null;
+  refund_status?: string | null;
 };
 
 export type OwnTrip = {
@@ -199,6 +202,7 @@ export type DriverRideRequest = {
   booking_id: string | null;
   booking_status: string | null;
   picked_up_at: string | null;
+  my_rating_score?: number | null;
 };
 
 export type ChatMessage = {

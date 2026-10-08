@@ -2,6 +2,7 @@ import type { Pool } from "pg";
 import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
+import { notify } from "./notification-service.js";
 
 export const REPORT_CATEGORIES=["safety","behaviour","no_show","vehicle","route","payment","other"] as const;
 export type ReportCategory=typeof REPORT_CATEGORIES[number];
@@ -166,7 +167,7 @@ export async function adminUpdateReport(
   const client=await pool.connect();
   try{
     await client.query("begin");
-    const cur=await client.query(`select status from incident_reports where id=$1 for update`,[input.reportId]);
+    const cur=await client.query(`select status,reporter_user_id,trip_id from incident_reports where id=$1 for update`,[input.reportId]);
     if(!cur.rowCount) throw new DomainError("REPORT_NOT_FOUND","Report not found",404);
     if(["resolved","dismissed"].includes(cur.rows[0].status)){
       throw new DomainError("REPORT_CLOSED","Report is already closed",409);
@@ -185,6 +186,11 @@ export async function adminUpdateReport(
       insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)
       values($1,'incident_report.status_changed','incident_report',$2,$3)`,
       [principal.userId,input.reportId,{from:cur.rows[0].status,to:input.status}]);
+    if(closing){
+      await notify(client,cur.rows[0].reporter_user_id,"report.closed",cur.rows[0].trip_id,{
+        reportId:input.reportId,status:input.status,note
+      });
+    }
     await client.query("commit");
     return r.rows[0];
   }catch(e){

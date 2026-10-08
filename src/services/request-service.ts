@@ -2,6 +2,7 @@ import type { Pool, PoolClient } from "pg";
 import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
+import { displayName, notify } from "./notification-service.js";
 
 async function tx<T>(pool: Pool, fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
@@ -126,6 +127,9 @@ export async function createRideRequest(
           toSegmentSeq: input.toSegmentSeq
         })]
       );
+      await notify(client,trip.driver_user_id,"ride_request.received",input.tripId,{
+        requestId:row.id,passengerName:await displayName(client,principal.userId)
+      });
       return row;
     } catch (error: any) {
       if (error?.code==="23505") {
@@ -230,6 +234,9 @@ export async function decideRideRequest(
          values($1,'ride_request.rejected','ride_request',$2,'{}'::jsonb)`,
         [principal.userId,requestId]
       );
+      await notify(client,request.passenger_user_id,"ride_request.rejected",request.trip_id,{
+        requestId,driverName:await displayName(client,principal.userId)
+      });
       return { request:rejected.rows[0],hold:null };
     }
 
@@ -263,6 +270,10 @@ export async function decideRideRequest(
        values($1,'ride_request.accepted_with_hold','ride_request',$2,$3::jsonb)`,
       [principal.userId,requestId,JSON.stringify({holdId:hold.rows[0].id})]
     );
+    await notify(client,request.passenger_user_id,"ride_request.accepted",request.trip_id,{
+      requestId,driverName:await displayName(client,principal.userId),
+      holdExpiresAt:new Date(hold.rows[0].expires_at).toISOString()
+    });
     return {
       request:accepted.rows[0],
       hold:{

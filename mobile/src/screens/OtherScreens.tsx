@@ -25,6 +25,7 @@ import type {
   TripSearchResult,
 } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
+import { CancelPanel, RatingPanel, ReportPanel, refundText } from "../components/TripFeedback";
 import { startSharingLocation, type LocationSharing } from "../live/shareLocation";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
@@ -48,6 +49,7 @@ function duration(seconds: number): string {
 function requestStatus(status: string, bookingStatus?: string | null): { label: string; tone: "blue" | "green" | "amber" | "red" } {
   if (bookingStatus === "completed") return { label: "Viaje realizado", tone: "green" };
   if (bookingStatus === "no_show") return { label: "No presentado", tone: "red" };
+  if (bookingStatus === "driver_cancelled") return { label: "Cancelada por el conductor", tone: "red" };
   switch (status) {
     case "pending":
       return { label: "Pendiente del conductor", tone: "amber" };
@@ -67,22 +69,29 @@ function requestStatus(status: string, bookingStatus?: string | null): { label: 
   }
 }
 
+function canCancel(item: PassengerRideRequest): boolean {
+  if (["pending", "accepted", "payment_pending"].includes(item.status)) return true;
+  return item.status === "confirmed" && item.booking_status === "confirmed" && !item.picked_up_at && item.trip_status !== "completed";
+}
+
 function errorText(e: unknown, fallback: string): string {
   return e instanceof ApiError || e instanceof Error ? e.message : fallback;
 }
 
 export function TripsScreen({
   searchParams,
+  initialMode,
   onLive,
   onChat,
 }: {
   searchParams: TripSearchParams | null;
+  initialMode?: Mode;
   onLive: (target: { tripId?: string; provinceId?: string }) => void;
   onChat: (conversation: Conversation) => void;
 }) {
   const { token, roles } = useAuth();
   const isDriver = roles.includes("driver");
-  const [mode, setMode] = useState<Mode>("available");
+  const [mode, setMode] = useState<Mode>(initialMode ?? "available");
   const [trips, setTrips] = useState<TripSearchResult[]>([]);
   const [mine, setMine] = useState<PassengerRideRequest[]>([]);
   const [ownTrips, setOwnTrips] = useState<OwnTrip[]>([]);
@@ -94,6 +103,8 @@ export function TripsScreen({
   const [codeInputs, setCodeInputs] = useState<Record<string, string>>({});
   const [sharing, setSharing] = useState<{ tripId: string; handle: LocationSharing } | null>(null);
   const [sharingNote, setSharingNote] = useState("");
+  const [panel, setPanel] = useState<string | null>(null);
+  const [notice, setNotice] = useState("");
 
   const routeLabel = useMemo(() => {
     if (!searchParams) return "";
@@ -249,6 +260,33 @@ export function TripsScreen({
     }, "No se pudo finalizar el viaje.");
   }
 
+  async function cancelRequest(requestId: string, reason: string) {
+    if (!token) return;
+    await apiRequest(`/v1/ride-requests/${requestId}/cancel`, { method: "POST", token, body: { reason: reason || null } });
+    setPanel(null);
+    setNotice("Reserva cancelada.");
+    await loadMine();
+  }
+
+  async function cancelTrip(tripId: string, reason: string, forceMajeure: boolean) {
+    if (!token) return;
+    const result = await apiRequest<{ affectedPassengers: number }>(`/v1/me/trips/${tripId}/cancel`, {
+      method: "POST",
+      token,
+      body: { reason, forceMajeure },
+    });
+    setPanel(null);
+    setNotice(result.affectedPassengers
+      ? `Viaje cancelado. Avisamos a ${result.affectedPassengers} ${result.affectedPassengers === 1 ? "pasajero" : "pasajeros"}.`
+      : "Viaje cancelado.");
+    await loadDriver();
+  }
+
+  function closeReport(sent: boolean) {
+    setPanel(null);
+    if (sent) setNotice("Reporte enviado. Soporte lo revisará.");
+  }
+
   function toggleSharing(tripId: string) {
     if (!token) return;
     if (sharing) {
@@ -290,6 +328,7 @@ export function TripsScreen({
 
       {busy ? <ActivityIndicator color={C.blue} style={{ marginBottom: 12 }} /> : null}
       {error ? <Text style={s.error}>{error}</Text> : null}
+      {notice ? <Pressable onPress={() => setNotice("")}><Text style={s.okNote}>{notice}</Text></Pressable> : null}
 
       {mode === "available" ? (
         <>
@@ -384,6 +423,9 @@ export function TripsScreen({
                 {item.picked_up_at && item.booking_status === "confirmed" ? (
                   <Text style={s.okNote}>Recogida verificada por el conductor.</Text>
                 ) : null}
+                {refundText(item.refund_cents, item.refund_status) ? (
+                  <Text style={s.pending}>{refundText(item.refund_cents, item.refund_status)}</Text>
+                ) : null}
 
                 {bookingActive || item.booking_status === "completed" ? (
                   <View style={s.actions}>
@@ -406,7 +448,49 @@ export function TripsScreen({
                         <Text style={s.actionText}>Seguir coche</Text>
                       </Pressable>
                     ) : null}
+                    <Pressable style={[s.action, s.actionNarrow]} onPress={() => setPanel(`report:${item.id}`)} accessibilityLabel="Reportar">
+                      <Ionicons name="flag-outline" size={18} color="#C93A3A" />
+                    </Pressable>
                   </View>
+                ) : null}
+
+                {panel === `report:${item.id}` && token ? (
+                  <ReportPanel
+                    token={token}
+                    tripId={item.trip_id}
+                    reportedUserId={item.driver_user_id}
+                    peerName={item.driver_display_name || "el conductor"}
+                    onClose={closeReport}
+                  />
+                ) : null}
+
+                {(item.booking_status === "completed" || item.booking_status === "no_show") && item.trip_status === "completed" && item.booking_id && token ? (
+                  <RatingPanel
+                    token={token}
+                    bookingId={item.booking_id}
+                    peerName={item.driver_display_name || "tu conductor"}
+                    existing={item.my_rating_score}
+                    onDone={() => { setNotice("Gracias por tu valoración."); void loadMine(); }}
+                  />
+                ) : null}
+
+                {canCancel(item) ? (
+                  panel === `cancel:${item.id}` ? (
+                    <CancelPanel
+                      title={item.booking_status === "confirmed" ? "Cancelar reserva" : "Retirar solicitud"}
+                      explanation={item.booking_status === "confirmed"
+                        ? "Se aplica la política de cancelación que aceptaste al pagar. El reembolso depende de cuánto falte para la salida."
+                        : "Todavía no has pagado, así que no hay ningún cargo."}
+                      requireReason={false}
+                      confirmLabel="Sí, cancelar"
+                      onConfirm={reason => cancelRequest(item.id, reason)}
+                      onClose={() => setPanel(null)}
+                    />
+                  ) : (
+                    <Pressable style={s.cancelLink} onPress={() => setPanel(`cancel:${item.id}`)}>
+                      <Text style={s.cancelLinkText}>{item.booking_status === "confirmed" ? "Cancelar reserva" : "Retirar solicitud"}</Text>
+                    </Pressable>
+                  )
                 ) : null}
 
                 {bookingActive && item.trip_status === "active" && !item.picked_up_at && item.booking_id ? (
@@ -452,7 +536,24 @@ export function TripsScreen({
                 </View>
 
                 {trip.status === "published" ? (
-                  <PrimaryButton title="Iniciar viaje" onPress={() => startTrip(trip.id)} disabled={busy} />
+                  <>
+                    <PrimaryButton title="Iniciar viaje" onPress={() => startTrip(trip.id)} disabled={busy} />
+                    {panel === `canceltrip:${trip.id}` ? (
+                      <CancelPanel
+                        title="Cancelar viaje"
+                        explanation="Se cancelan todas las solicitudes y reservas. Los pasajeros que ya pagaron reciben el reembolso que marque la política vigente."
+                        requireReason
+                        allowForceMajeure
+                        confirmLabel="Cancelar el viaje"
+                        onConfirm={(reason, force) => cancelTrip(trip.id, reason, force)}
+                        onClose={() => setPanel(null)}
+                      />
+                    ) : (
+                      <Pressable style={s.cancelLink} onPress={() => setPanel(`canceltrip:${trip.id}`)}>
+                        <Text style={s.cancelLinkText}>Cancelar viaje</Text>
+                      </Pressable>
+                    )}
+                  </>
                 ) : null}
                 {trip.status === "active" ? (
                   <>
@@ -494,7 +595,32 @@ export function TripsScreen({
                             <Ionicons name="chatbubble-ellipses-outline" size={20} color={C.blue} />
                           </Pressable>
                         ) : null}
+                        {item.booking_id ? (
+                          <Pressable onPress={() => setPanel(`dreport:${item.id}`)} style={s.iconButton} accessibilityLabel="Reportar">
+                            <Ionicons name="flag-outline" size={19} color="#C93A3A" />
+                          </Pressable>
+                        ) : null}
                       </View>
+
+                      {panel === `dreport:${item.id}` && token ? (
+                        <ReportPanel
+                          token={token}
+                          tripId={trip.id}
+                          reportedUserId={item.passenger_user_id}
+                          peerName={item.passenger_display_name || "el pasajero"}
+                          onClose={closeReport}
+                        />
+                      ) : null}
+
+                      {trip.status === "completed" && (item.booking_status === "completed" || item.booking_status === "no_show") && item.booking_id && token ? (
+                        <RatingPanel
+                          token={token}
+                          bookingId={item.booking_id}
+                          peerName={item.passenger_display_name || "tu pasajero"}
+                          existing={item.my_rating_score}
+                          onDone={() => { setNotice("Valoración enviada."); void loadDriver(); }}
+                        />
+                      ) : null}
 
                       {item.status === "pending" ? (
                         <View style={s.decisions}>
@@ -600,6 +726,9 @@ const s = StyleSheet.create({
   shareButton: { marginTop: 12, minHeight: 46, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   shareOn: { backgroundColor: "#10A66A", borderColor: "#10A66A" },
   shareText: { fontSize: 13, fontWeight: "900", color: C.blue },
+  actionNarrow: { flex: 0, width: 46 },
+  cancelLink: { marginTop: 10, alignSelf: "center", paddingVertical: 8, paddingHorizontal: 12 },
+  cancelLinkText: { fontSize: 12, fontWeight: "900", color: "#C93A3A" },
   finish: { marginTop: 14, minHeight: 46, borderRadius: 13, backgroundColor: C.pale, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   finishText: { fontSize: 13, fontWeight: "900", color: C.navy },
 });
