@@ -1,5 +1,6 @@
 import type { Pool, PoolClient } from "pg";
 import { DomainError } from "../errors.js";
+import { notifyArrivals } from "../services/trip-progress-service.js";
 
 export type LocationEventInput = {
   eventId: string;
@@ -178,10 +179,13 @@ export async function recordDriverLocation(
       [input.tripId]
     );
 
+    const acceptedAsCurrent = current.rows[0]?.event_row_id === eventRowId;
+    if (acceptedAsCurrent && !duplicate) await notifyArrivals(client, input.tripId);
+
     return {
       eventRowId,
       duplicate,
-      acceptedAsCurrent: current.rows[0]?.event_row_id === eventRowId
+      acceptedAsCurrent
     };
   });
 }

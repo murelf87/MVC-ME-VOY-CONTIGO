@@ -64,7 +64,7 @@ beforeEach(async () => {
   await pool.query(`
     truncate table
       trip_live_state,trip_location_events,private_documents,audit_events,
-      route_change_acceptances,route_change_proposals,quote_snapshots,tariff_versions,
+      route_change_responses,route_change_proposals,quote_snapshots,tariff_versions,
       payment_compensations,bookings,seat_holds,ride_requests,trip_segments,trip_stops,
       trips,vehicles,profiles,user_roles,auth_sessions,auth_challenges,app_users,
       province_dataset_imports,provinces

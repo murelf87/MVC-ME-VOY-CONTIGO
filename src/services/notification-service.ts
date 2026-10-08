@@ -15,7 +15,12 @@ export type NotificationKind =
   | "trip.started"
   | "trip.cancelled"
   | "trip.completed"
-  | "report.closed";
+  | "report.closed"
+  | "route_change.requested"
+  | "route_change.proposed"
+  | "route_change.applied"
+  | "route_change.rejected"
+  | "trip.driver_arriving";
 
 export async function notify(
   client:PoolClient|Pool,

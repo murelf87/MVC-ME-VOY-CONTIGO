@@ -65,7 +65,7 @@ before(async () => {
 beforeEach(async () => {
   await pool.query(`
     truncate table
-      audit_events, route_change_acceptances, route_change_proposals, quote_snapshots,
+      audit_events, route_change_responses, route_change_proposals, quote_snapshots,
       tariff_versions, payment_compensations, bookings, seat_holds, ride_requests,
       trip_segments, trip_stops, trips, vehicles, profiles, user_roles, app_users, provinces
     restart identity cascade`);

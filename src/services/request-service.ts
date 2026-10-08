@@ -4,6 +4,7 @@ import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
 import { displayName, notify } from "./notification-service.js";
 import { snapshotQuoteForRequest } from "./tariff-service.js";
+import { assertStopAhead } from "./trip-progress-service.js";
 
 async function tx<T>(pool: Pool, fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
@@ -105,6 +106,7 @@ export async function createRideRequest(
       throw new DomainError("DRIVER_CANNOT_REQUEST_OWN_TRIP", "Driver cannot request a seat on their own trip", 409);
     }
 
+    if (trip.status==="active") await assertStopAhead(client,input.tripId,input.fromSegmentSeq);
     const segments = await lockRequestedSegments(
       client,input.tripId,input.fromSegmentSeq,input.toSegmentSeq
     );
@@ -248,6 +250,7 @@ export async function decideRideRequest(
       throw new DomainError("TRIP_NOT_BOOKABLE","Trip is not bookable",409);
     }
 
+    if (trip.status==="active") await assertStopAhead(client,trip.id,request.from_segment_seq);
     const segments=await lockRequestedSegments(
       client,trip.id,request.from_segment_seq,request.to_segment_seq
     );

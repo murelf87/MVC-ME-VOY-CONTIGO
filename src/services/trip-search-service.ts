@@ -1,6 +1,7 @@
 import type { Pool } from "pg";
 import { DomainError } from "../errors.js";
 import { activeTariff, quoteFromTariff } from "./tariff-service.js";
+import { LIVE_FRESH_SECONDS } from "./trip-progress-service.js";
 
 export type TripSearchInput = {
   provinceId: string;
@@ -29,6 +30,8 @@ export type TripSearchResult = {
   driverDisplayName: string | null;
   seriesId: string | null;
   seriesWeekdays: number[] | null;
+  /** The car is already on the road and this pickup is still ahead of it. */
+  inProgress: boolean;
   quote: (ReturnType<typeof quoteFromTariff>&{tariffVersion:number}) | null;
 };
 
@@ -110,7 +113,7 @@ export async function searchPublishedTrips(
     trip_id:string;category:string;leg:string;departure_at:Date|null;
     from_seq:number;to_seq:number;pickup_distance_m:number;dropoff_distance_m:number;
     road_distance_m:number;estimated_duration_s:number;driver_display_name:string|null;
-    series_id:string|null;series_weekdays:number[]|null;
+    series_id:string|null;series_weekdays:number[]|null;trip_status:string;
   }>(`
     select distinct on (t.id)
       t.id as trip_id,t.category::text,t.leg::text,t.departure_at,
@@ -134,7 +137,7 @@ export async function searchPublishedTrips(
          where s.trip_id=t.id and s.seq>=pickup.seq and s.seq<dropoff.seq
       ),0) as estimated_duration_s,
       p.display_name as driver_display_name,
-      t.series_id,ts.weekdays::int[] as series_weekdays
+      t.series_id,ts.weekdays::int[] as series_weekdays,t.status::text as trip_status
     from trips t
     left join trip_series ts on ts.id=t.series_id and ts.status='active'
     join vehicles v on v.id=t.vehicle_id
@@ -142,12 +145,19 @@ export async function searchPublishedTrips(
     join trip_stops dropoff on dropoff.trip_id=t.id and dropoff.seq>pickup.seq
     left join profiles p on p.user_id=t.driver_user_id
     where t.province_id=$1
-      and t.status='published'
       and v.vehicle_photo_status='approved'
       and v.insurance_status='approved'
       and v.insurance_expires_on >= current_date
-      and t.departure_at >= $6
-      and ($7::timestamptz is null or t.departure_at <= $7::timestamptz)
+      and (
+        (t.status='published' and t.departure_at >= $6
+          and ($7::timestamptz is null or t.departure_at <= $7::timestamptz))
+        or
+        -- Already on the road: only with a fresh position and a pickup the car has not reached yet.
+        (t.status='active' and exists(
+          select 1 from trip_live_state l
+           where l.trip_id=t.id and l.recorded_at > now()-make_interval(secs=>$10)
+             and ST_LineLocatePoint(t.route_geom,pickup.geom) > ST_LineLocatePoint(t.route_geom,l.geom)))
+      )
       and ST_DWithin(
         pickup.geom::geography,
         ST_SetSRID(ST_Point($2,$3),4326)::geography,
@@ -174,7 +184,7 @@ export async function searchPublishedTrips(
     input.provinceId,
     input.originLongitude,input.originLatitude,
     input.destinationLongitude,input.destinationLatitude,
-    after.toISOString(),before?.toISOString() ?? null,radiusM,limit
+    after.toISOString(),before?.toISOString() ?? null,radiusM,limit,LIVE_FRESH_SECONDS
   ]);
 
   const tariff=await activeTariff(pool);
@@ -198,6 +208,7 @@ export async function searchPublishedTrips(
       driverDisplayName:row.driver_display_name,
       seriesId:row.series_id,
       seriesWeekdays:row.series_weekdays,
+      inProgress:row.trip_status==="active",
       quote:tariff?{tariffVersion:tariff.version,...quoteFromTariff(tariff,row.road_distance_m)}:null
     });
   }
