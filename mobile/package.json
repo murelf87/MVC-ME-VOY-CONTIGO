@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "preview:build": "node preview/build.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.0",

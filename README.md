@@ -50,6 +50,26 @@ Ver docs/DEV_LOCAL.md para recorrer la app de punta a punta con proveedores de d
 
 Más documentación: [docs/ADMIN.md](docs/ADMIN.md) (panel de administración y roles), [docs/CANCELLATIONS.md](docs/CANCELLATIONS.md) (cancelaciones, valoraciones e incidencias) y [docs/RECURRING.md](docs/RECURRING.md) (viajes recurrentes y reserva semanal) [docs/ROUTE_CHANGES.md](docs/ROUTE_CHANGES.md) (desvíos, recogida con el viaje en marcha y hora de llegada) , [docs/PAYMENTS.md](docs/PAYMENTS.md) (pagos, contabilidad y pagos a conductores) y [docs/DEPLOY.md](docs/DEPLOY.md) (despliegue, copias y vuelta atrás). El contrato OpenAPI se regenera con `npm run openapi`.
 
+## Vista previa del móvil
+
+Un solo comando genera la app móvil como un único HTML con todo dentro: `mobile/dist-preview/movil-mvc.html`, de unos 2 MB. Ese archivo contiene el código de la app, la fuente de iconos y un marco de teléfono con selector de modelo (iPhone 15, Pro Max, SE, Android, Pixel, Fold y 320 px).
+
+```
+cd mobile
+npm install
+npm run preview:build
+```
+
+El archivo se abre en cualquier navegador sin internet. También se puede publicar tal cual como Artifact en un chat de Claude, y la app de Claude lo enseña en el panel de la derecha.
+
+Es una vista previa: no llama a ningún servidor. `mobile/preview/preview-api.js` contesta en el navegador con datos de ejemplo, y los correos, los pagos y las respuestas de otros usuarios se simulan. La app real nunca carga ese archivo.
+
+Archivos (en `mobile/preview/`):
+
+- `stage.html`: el marco del teléfono.
+- `app.html`: la página de la app.
+- `build.mjs`: la compilación.
+
 ## CI
 Último run verde:
 https://github.com/murelf87/MVC-ME-VOY-CONTIGO/actions/runs/37210934637

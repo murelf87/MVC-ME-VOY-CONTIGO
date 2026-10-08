@@ -40,3 +40,7 @@ yarn-error.*
 /ios
 /android
 dist-web/
+
+# vista previa
+dist-web/
+dist-preview/
