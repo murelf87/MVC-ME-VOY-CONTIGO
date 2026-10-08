@@ -62,6 +62,15 @@ function msg(e: unknown): string {
 function euros(cents: number | null | undefined): string {
   return cents == null ? "—" : (cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
 }
+function previousMonth(): string {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+function previousMonthLabel(): string {
+  return new Date(`${previousMonth()}-15T12:00:00`).toLocaleDateString("es-ES", { month: "long" });
+}
 function when(iso: string): string {
   return new Date(iso).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
@@ -98,6 +107,7 @@ export function AdminScreen() {
       if (tab === "finance") {
         result.policies = (await apiRequest<any>("/v1/admin/cancellation-policies", { token })).policies;
         result.tariffs = (await apiRequest<any>("/v1/admin/tariffs", { token })).tariffs;
+        result.payments = await apiRequest<any>("/v1/admin/payments", { token });
       }
       setLoaded({ tab, data: result });
     } catch (e) {
@@ -285,6 +295,53 @@ export function AdminScreen() {
 
       {tab === "finance" && data ? (
         <>
+          {data.payments ? (
+            <>
+              <Text style={s.section}>Cobros y pagos</Text>
+              {!data.payments.providerConfigured ? (
+                <Text style={s.warnBox}>Proveedor de pagos sin conectar: no se cobra ni se paga dinero real. Los webhooks responden "no disponible".</Text>
+              ) : null}
+              <View style={s.card}>
+                <View style={s.rowBetween}>
+                  <Text style={s.cardTitle}>Libro contable</Text>
+                  <Text style={s.pill}>{data.payments.ledgerBalanced ? "Cuadra" : "NO cuadra"}</Text>
+                </View>
+                <Text style={s.meta}>
+                  En el proveedor: {euros(data.payments.reconciliation.providerClearingCents)} · esperado {euros(data.payments.reconciliation.expectedCents)} · {data.payments.reconciliation.matches ? "conciliado" : "revisar diferencia"}
+                  {data.payments.reconciliation.bookingsWithoutCapture ? ` · ${data.payments.reconciliation.bookingsWithoutCapture} reservas sin asiento` : ""}
+                </Text>
+              </View>
+              {data.payments.problems.map((ev: any) => (
+                <View key={ev.id} style={s.card}>
+                  <View style={s.rowBetween}>
+                    <Text style={s.cardTitle}>{ev.event_type}</Text>
+                    <Text style={s.pill}>{ev.status === "deferred" ? "En espera" : "Error"}</Text>
+                  </View>
+                  <Text style={s.meta}>{ev.last_error || "Sin detalle"} · {ev.attempts} intentos · {when(ev.occurred_at)}</Text>
+                </View>
+              ))}
+              {data.payments.disputes.filter((d: any) => d.status === "open").map((d: any) => (
+                <View key={d.id} style={s.card}>
+                  <Text style={s.cardTitle}>Disputa abierta · {euros(d.amount_cents)}</Text>
+                  <Text style={s.meta}>{d.reason || "Sin motivo"} · {d.opened_at ? when(d.opened_at) : ""}</Text>
+                </View>
+              ))}
+              <View style={s.rowBetween}>
+                <Text style={s.subsection}>Pagos a conductores (mensual)</Text>
+                <Btn label={`Preparar ${previousMonthLabel()}`} onPress={() => act("/v1/admin/payouts/prepare", { month: previousMonth() }, "Pagos preparados. Se envían cuando el proveedor los confirme.")} />
+              </View>
+              {!data.payments.payouts.length ? <Text style={s.empty}>Aún no hay pagos preparados.</Text> : null}
+              {data.payments.payouts.map((p: any) => (
+                <View key={p.id} style={s.card}>
+                  <View style={s.rowBetween}>
+                    <Text style={s.cardTitle}>{p.driver_display_name || "Conductor"} · {euros(p.amount_cents)}</Text>
+                    <Text style={s.pill}>{p.status === "paid" ? "Pagado" : p.status === "failed" ? "Fallido" : "Esperando al proveedor"}</Text>
+                  </View>
+                  <Text style={s.meta}>{p.period_month.slice(0, 7)}{p.failure_reason ? ` · ${p.failure_reason}` : ""}</Text>
+                </View>
+              ))}
+            </>
+          ) : null}
           <Text style={s.section}>Reembolsos pendientes</Text>
           {!data.refunds.length ? <Text style={s.empty}>No hay reembolsos pendientes.</Text> : null}
           {data.refunds.map((r: any) => (
@@ -420,6 +477,8 @@ const s = StyleSheet.create({
   statValue: { fontSize: 24, fontWeight: "900", color: C.navy, fontVariant: ["tabular-nums"] },
   statLabel: { fontSize: 11, fontWeight: "700", color: C.muted },
   section: { fontSize: 14, fontWeight: "900", color: C.navy, marginTop: 14, marginBottom: 8 },
+  subsection: { fontSize: 13, fontWeight: "900", color: C.navy, marginTop: 10, marginBottom: 6, flex: 1 },
+  warnBox: { fontSize: 12, lineHeight: 17, color: "#966112", backgroundColor: "#FFF6E8", padding: 10, borderRadius: 12, marginBottom: 8 },
   empty: { fontSize: 12, color: C.muted, lineHeight: 17 },
   hint: { fontSize: 11, color: C.muted, lineHeight: 16, marginTop: 4 },
   card: { borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 12, marginBottom: 8, gap: 6 },

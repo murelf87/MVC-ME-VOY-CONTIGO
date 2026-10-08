@@ -17,6 +17,48 @@ import { isStaff } from "./AdminScreen";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
 
+type Earnings = {
+  pendingCents: number; availableCents: number; inTransitCents: number; providerConfigured: boolean;
+  payouts: Array<{ id: string; period_month: string; amount_cents: number; status: "pending_provider" | "paid" | "failed"; failure_reason: string | null }>;
+};
+const PAYOUT_STATUS = { pending_provider: "Esperando al proveedor", paid: "Pagado", failed: "Fallido" } as const;
+function eur(cents: number): string {
+  return (cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+}
+function monthName(isoDay: string): string {
+  return new Date(`${isoDay}T12:00:00`).toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+}
+
+/** Driver balances straight from the ledger: pending until the trip ends, then available for the monthly payout. */
+function EarningsCard({ token }: { token: string }) {
+  const [data, setData] = useState<Earnings | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    apiRequest<Earnings>("/v1/me/earnings", { token }).then(setData).catch(e => setError(e instanceof ApiError ? e.message : "No se pudieron cargar tus ganancias."));
+  }, [token]);
+  if (error) return <Text style={s.earnNote}>{error}</Text>;
+  if (!data) return <ActivityIndicator color={C.blue} />;
+  return (
+    <Card>
+      <View style={s.earnRow}>
+        <View style={s.earnItem}><Text style={s.earnLabel}>Pendiente</Text><Text style={s.earnValue}>{eur(data.pendingCents)}</Text></View>
+        <View style={s.earnItem}><Text style={s.earnLabel}>Disponible</Text><Text style={[s.earnValue, { color: "#0E7A55" }]}>{eur(data.availableCents)}</Text></View>
+        <View style={s.earnItem}><Text style={s.earnLabel}>En camino</Text><Text style={s.earnValue}>{eur(data.inTransitCents)}</Text></View>
+      </View>
+      <Text style={s.earnNote}>
+        Lo pendiente pasa a disponible cuando terminas el viaje con el pasajero a bordo. Se paga una vez al mes.
+        {data.providerConfigured ? "" : " El proveedor de pagos aún no está conectado: todavía no se cobra ni se paga dinero real."}
+      </Text>
+      {data.payouts.map(p => (
+        <View key={p.id} style={s.payoutRow}>
+          <Text style={s.payoutMonth}>{monthName(p.period_month)}</Text>
+          <Text style={s.payoutAmount}>{eur(p.amount_cents)} · {PAYOUT_STATUS[p.status]}</Text>
+        </View>
+      ))}
+    </Card>
+  );
+}
+
 function statusLabel(value: string | null | undefined): string {
   switch (value) {
     case "approved":
@@ -280,6 +322,13 @@ export function ProfileScreen({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}
         </View>
       </Card>
 
+      {isDriver && token ? (
+        <>
+          <Text style={s.sectionTitle}>Mis ganancias</Text>
+          <EarningsCard token={token} />
+        </>
+      ) : null}
+
       {isDriver ? (
         <>
           <View style={s.sectionHeader}>
@@ -382,6 +431,14 @@ const s = StyleSheet.create({
   phone: { fontSize: 12, color: C.muted, marginTop: 4 },
   roleLine: { marginTop: 7, alignSelf: "flex-start", backgroundColor: C.pale, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4 },
   roleSummary: { fontSize: 10, fontWeight: "900", color: C.blue },
+  earnRow: { flexDirection: "row", gap: 8 },
+  earnItem: { flex: 1, backgroundColor: C.pale, borderRadius: 12, padding: 10 },
+  earnLabel: { fontSize: 11, fontWeight: "800", color: C.muted },
+  earnValue: { fontSize: 16, fontWeight: "900", color: C.navy, marginTop: 3, fontVariant: ["tabular-nums"] },
+  earnNote: { fontSize: 11, lineHeight: 16, color: C.muted, marginTop: 10 },
+  payoutRow: { flexDirection: "row", justifyContent: "space-between", paddingTop: 8, marginTop: 8, borderTopWidth: 1, borderTopColor: "#EEF3FA" },
+  payoutMonth: { fontSize: 12, fontWeight: "800", color: C.navy, textTransform: "capitalize" },
+  payoutAmount: { fontSize: 12, color: C.muted },
   sectionTitle: { fontSize: 16, fontWeight: "900", color: C.navy, marginTop: 18, marginBottom: 8 },
   sectionHeader: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" },
   input: { height: 50, borderWidth: 1, borderColor: C.border, borderRadius: 13, paddingHorizontal: 12, fontSize: 14, color: C.navy, marginBottom: 8 },
