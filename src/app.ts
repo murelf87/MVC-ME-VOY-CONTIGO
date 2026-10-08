@@ -34,7 +34,15 @@ import { registerPrivateUploadRoutes } from "./routes/private-upload-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
-  const app = Fastify({ logger: true, trustProxy: config.trustProxy });
+  const app = Fastify({
+    // Query strings carry coordinates and typed addresses: log the path only.
+    logger: {
+      serializers: {
+        req: (req: any) => ({ method: req.method, url: String(req.url ?? "").split("?")[0] ?? "", id: req.id })
+      }
+    },
+    trustProxy: config.trustProxy
+  });
 
   await app.register(rateLimit, {
     max: config.rateLimitMax,

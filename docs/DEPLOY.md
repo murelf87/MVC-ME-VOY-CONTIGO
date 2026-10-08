@@ -32,4 +32,4 @@ Los proveedores de desarrollo se niegan a arrancar fuera de `NODE_ENV=developmen
 ## Monitorización mínima
 - `GET /health/live` y `GET /health/ready` en el comprobador de disponibilidad.
 - Alertas sobre el panel de finanzas: libro que no cuadra, conciliación que no coincide, eventos de pago en `failed` o `deferred` más de una hora, reembolsos `pending_provider` antiguos.
-- Logs: Fastify registra método, ruta, estado y duración; no registra cabeceras ni cuerpos, así que tokens, códigos SMS y documentos no salen en los logs. Los teléfonos se enmascaran en el panel.
+- Logs: se registra método, ruta sin parámetros, estado y duración; ni cabeceras, ni cuerpos, ni la parte de la URL con coordenadas o direcciones. Tokens, códigos SMS y documentos no salen en los logs. Los teléfonos se enmascaran en el panel.
