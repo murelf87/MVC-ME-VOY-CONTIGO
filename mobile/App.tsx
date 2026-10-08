@@ -61,8 +61,13 @@ function AuthenticatedApp() {
     }
   };
 
-  function runSearch(params: TripSearchParams) {
+  useEffect(() => {
+    if (screen === "home") void refreshUnread();
+  }, [screen, refreshUnread]);
+
+    function runSearch(params: TripSearchParams) {
     setSearchParams(params);
+    setTripsMode("available");
     setScreen("trips");
   }
 

@@ -726,7 +726,7 @@ const s = StyleSheet.create({
   shareButton: { marginTop: 12, minHeight: 46, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   shareOn: { backgroundColor: "#10A66A", borderColor: "#10A66A" },
   shareText: { fontSize: 13, fontWeight: "900", color: C.blue },
-  actionNarrow: { flex: 0, width: 46 },
+  actionNarrow: { flexGrow: 0, flexShrink: 0, flexBasis: 46, width: 46 },
   cancelLink: { marginTop: 10, alignSelf: "center", paddingVertical: 8, paddingHorizontal: 12 },
   cancelLinkText: { fontSize: 12, fontWeight: "900", color: "#C93A3A" },
   finish: { marginTop: 14, minHeight: 46, borderRadius: 13, backgroundColor: C.pale, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
