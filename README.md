@@ -48,7 +48,7 @@ No se usan proveedores falsos para declarar operaciones reales.
 ## Entorno local completo
 Ver docs/DEV_LOCAL.md para recorrer la app de punta a punta con proveedores de desarrollo.
 
-Más documentación: [docs/ADMIN.md](docs/ADMIN.md) (panel de administración y roles) y [docs/CANCELLATIONS.md](docs/CANCELLATIONS.md) (cancelaciones, valoraciones e incidencias).
+Más documentación: [docs/ADMIN.md](docs/ADMIN.md) (panel de administración y roles), [docs/CANCELLATIONS.md](docs/CANCELLATIONS.md) (cancelaciones, valoraciones e incidencias) y [docs/RECURRING.md](docs/RECURRING.md) (viajes recurrentes y reserva semanal).
 
 ## CI
 Último run verde:

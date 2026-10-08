@@ -149,7 +149,7 @@ export async function listOwnRideRequests(pool: Pool, principal: AuthPrincipal) 
             t.status as trip_status,t.departure_at,
             b.id as booking_id,b.status as booking_status,b.picked_up_at,
             mr.score as my_rating_score,
-            bc.refund_cents,bc.refund_status
+            bc.refund_cents,bc.refund_status,r.weekly_group_id
        from ride_requests r
        join trips t on t.id=r.trip_id
        left join profiles dp on dp.user_id=t.driver_user_id
@@ -178,7 +178,7 @@ export async function listTripRideRequests(
     `select r.id,r.passenger_user_id,pp.display_name as passenger_display_name,
             r.from_segment_seq,r.to_segment_seq,r.status,r.requested_at,r.updated_at,
             b.id as booking_id,b.status as booking_status,b.picked_up_at,
-            mr.score as my_rating_score
+            mr.score as my_rating_score,r.weekly_group_id
        from ride_requests r
        left join profiles pp on pp.user_id=r.passenger_user_id
        left join bookings b on b.request_id=r.id

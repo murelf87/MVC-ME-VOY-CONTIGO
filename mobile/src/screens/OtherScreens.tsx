@@ -26,6 +26,7 @@ import type {
 } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
 import { CancelPanel, RatingPanel, ReportPanel, refundText } from "../components/TripFeedback";
+import { RepeatPanel, mondayOf, weekdaysLabel } from "../components/Recurring";
 import { startSharingLocation, type LocationSharing } from "../live/shareLocation";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
@@ -105,6 +106,7 @@ export function TripsScreen({
   const [sharingNote, setSharingNote] = useState("");
   const [panel, setPanel] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
+  const [weekResult, setWeekResult] = useState<Record<string, string>>({});
 
   const routeLabel = useMemo(() => {
     if (!searchParams) return "";
@@ -260,6 +262,63 @@ export function TripsScreen({
     }, "No se pudo finalizar el viaje.");
   }
 
+  function requestWeek(trip: TripSearchResult) {
+    if (!token || !trip.seriesId || !trip.departureAt) return;
+    void run(async () => {
+      try {
+        const out = await apiRequest<{ results: Array<{ status: string; departureAt: string; code?: string }> }>(
+          `/v1/series/${trip.seriesId}/weekly-requests`,
+          {
+            method: "POST",
+            token,
+            body: { weekStart: mondayOf(trip.departureAt!), fromSegmentSeq: trip.fromSegmentSeq, toSegmentSeq: trip.toSegmentSeq },
+          }
+        );
+        const ok = out.results.filter(r => r.status === "requested");
+        const full = out.results.filter(r => r.code === "NO_CAPACITY_ON_SEGMENT");
+        const day = (iso: string) => new Date(iso).toLocaleDateString("es-ES", { weekday: "long" });
+        setWeekResult(c => ({
+          ...c,
+          [trip.tripId]: `Solicitados ${ok.length} ${ok.length === 1 ? "día" : "días"} (${ok.map(r => day(r.departureAt)).join(", ")}).`
+            + (full.length ? ` Sin plaza: ${full.map(r => day(r.departureAt)).join(", ")}.` : ""),
+        }));
+        setRequested(c => ({ ...c, [trip.tripId]: true }));
+      } catch (e) {
+        if (e instanceof ApiError && e.code === "WEEK_NOT_BOOKABLE") {
+          setWeekResult(c => ({ ...c, [trip.tripId]: "Esa semana ya la tienes solicitada o no quedan plazas." }));
+          return;
+        }
+        throw e;
+      }
+    }, "No se pudo solicitar la semana.");
+  }
+
+  async function repeatTrip(tripId: string, weekdays: number[]) {
+    if (!token) return;
+    const out = await apiRequest<{ published: string[]; failed: unknown[] }>(`/v1/me/trips/${tripId}/repeat`, {
+      method: "POST",
+      token,
+      body: { weekdays },
+    });
+    setPanel(null);
+    setNotice(`Viaje repetido ${weekdaysLabel(weekdays)}: ${out.published.length} viajes más publicados.`);
+    await loadDriver();
+  }
+
+  function decideWeek(groupId: string, decision: "accept" | "reject") {
+    if (!token) return;
+    void run(async () => {
+      const out = await apiRequest<{ results: Array<{ status: string }> }>(`/v1/weekly-groups/${groupId}/decision`, {
+        method: "POST",
+        token,
+        body: { decision },
+      });
+      const done = out.results.filter(r => r.status !== "failed").length;
+      setNotice(decision === "accept" ? `Semana aceptada: ${done} ${done === 1 ? "día" : "días"}.` : "Semana rechazada.");
+      await loadDriver();
+    }, "No se pudo decidir la semana.");
+  }
+
   async function cancelRequest(requestId: string, reason: string) {
     if (!token) return;
     await apiRequest(`/v1/ride-requests/${requestId}/cancel`, { method: "POST", token, body: { reason: reason || null } });
@@ -365,6 +424,12 @@ export function TripsScreen({
                 </View>
                 <View style={s.badge}><Text style={s.badgeText}>{trip.availableSeats} {trip.availableSeats === 1 ? "plaza" : "plazas"}</Text></View>
               </View>
+              {trip.seriesId && trip.seriesWeekdays?.length ? (
+                <View style={s.repeatTag}>
+                  <Ionicons name="repeat" size={14} color={C.blue} />
+                  <Text style={s.repeatText}>Se repite {weekdaysLabel(trip.seriesWeekdays)}</Text>
+                </View>
+              ) : null}
 
               <View style={s.dataGrid}>
                 <View style={s.dataItem}><Text style={s.dataLabel}>Recorrido</Text><Text style={s.dataValue}>{km(trip.roadDistanceM)}</Text></View>
@@ -377,6 +442,13 @@ export function TripsScreen({
                 onPress={() => requestSeat(trip)}
                 disabled={busy || requested[trip.tripId]}
               />
+              {trip.seriesId && !requested[trip.tripId] ? (
+                <Pressable style={s.weekButton} onPress={() => requestWeek(trip)} disabled={busy}>
+                  <Ionicons name="calendar-outline" size={17} color={C.blue} />
+                  <Text style={s.weekButtonText}>Solicitar toda esa semana</Text>
+                </Pressable>
+              ) : null}
+              {weekResult[trip.tripId] ? <Text style={s.okNote}>{weekResult[trip.tripId]}</Text> : null}
               {requested[trip.tripId] ? (
                 <Text style={s.pending}>Pendiente de aceptación del conductor. Aún no es una reserva confirmada.</Text>
               ) : null}
@@ -530,6 +602,7 @@ export function TripsScreen({
                     <Text style={s.tripName}>{formatDeparture(trip.departure_at)}</Text>
                     <Text style={s.tripMeta}>
                       {trip.offered_seats} plazas{trip.route_distance_m ? ` · ${km(trip.route_distance_m)}` : ""}
+                      {trip.series_id && trip.series_weekdays?.length ? ` · se repite ${weekdaysLabel(trip.series_weekdays)}` : ""}
                     </Text>
                   </View>
                   <View style={s.badge}><Text style={s.badgeText}>{tripStatusLabel(trip.status)}</Text></View>
@@ -538,6 +611,20 @@ export function TripsScreen({
                 {trip.status === "published" ? (
                   <>
                     <PrimaryButton title="Iniciar viaje" onPress={() => startTrip(trip.id)} disabled={busy} />
+                    {!trip.series_id && trip.departure_at ? (
+                      panel === `repeat:${trip.id}` ? (
+                        <RepeatPanel
+                          initial={((new Date(trip.departure_at).getDay() + 6) % 7) + 1}
+                          onConfirm={days => repeatTrip(trip.id, days)}
+                          onClose={() => setPanel(null)}
+                        />
+                      ) : (
+                        <Pressable style={s.weekButton} onPress={() => setPanel(`repeat:${trip.id}`)}>
+                          <Ionicons name="repeat" size={17} color={C.blue} />
+                          <Text style={s.weekButtonText}>Repetir cada semana</Text>
+                        </Pressable>
+                      )
+                    ) : null}
                     {panel === `canceltrip:${trip.id}` ? (
                       <CancelPanel
                         title="Cancelar viaje"
@@ -622,6 +709,12 @@ export function TripsScreen({
                         />
                       ) : null}
 
+                      {item.status === "pending" && item.weekly_group_id ? (
+                        <Pressable style={s.weekButton} onPress={() => decideWeek(item.weekly_group_id!, "accept")}>
+                          <Ionicons name="calendar" size={17} color={C.blue} />
+                          <Text style={s.weekButtonText}>Aceptar toda su semana</Text>
+                        </Pressable>
+                      ) : null}
                       {item.status === "pending" ? (
                         <View style={s.decisions}>
                           <Pressable onPress={() => decide(item.id, "accept")} style={s.accept}>
@@ -726,6 +819,10 @@ const s = StyleSheet.create({
   shareButton: { marginTop: 12, minHeight: 46, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   shareOn: { backgroundColor: "#10A66A", borderColor: "#10A66A" },
   shareText: { fontSize: 13, fontWeight: "900", color: C.blue },
+  repeatTag: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 10, alignSelf: "flex-start", backgroundColor: C.pale, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  repeatText: { fontSize: 11, fontWeight: "900", color: C.blue },
+  weekButton: { marginTop: 10, minHeight: 44, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  weekButtonText: { fontSize: 13, fontWeight: "900", color: C.blue },
   actionNarrow: { flexGrow: 0, flexShrink: 0, flexBasis: 46, width: 46 },
   cancelLink: { marginTop: 10, alignSelf: "center", paddingVertical: 8, paddingHorizontal: 12 },
   cancelLinkText: { fontSize: 12, fontWeight: "900", color: "#C93A3A" },

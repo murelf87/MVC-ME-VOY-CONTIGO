@@ -26,6 +26,8 @@ export type TripSearchResult = {
   estimatedDurationS: number;
   availableSeats: number;
   driverDisplayName: string | null;
+  seriesId: string | null;
+  seriesWeekdays: number[] | null;
 };
 
 function finite(value:number,min:number,max:number,label:string):void{
@@ -106,6 +108,7 @@ export async function searchPublishedTrips(
     trip_id:string;category:string;leg:string;departure_at:Date|null;
     from_seq:number;to_seq:number;pickup_distance_m:number;dropoff_distance_m:number;
     road_distance_m:number;estimated_duration_s:number;driver_display_name:string|null;
+    series_id:string|null;series_weekdays:number[]|null;
   }>(`
     select distinct on (t.id)
       t.id as trip_id,t.category::text,t.leg::text,t.departure_at,
@@ -128,8 +131,10 @@ export async function searchPublishedTrips(
           from trip_segments s
          where s.trip_id=t.id and s.seq>=pickup.seq and s.seq<dropoff.seq
       ),0) as estimated_duration_s,
-      p.display_name as driver_display_name
+      p.display_name as driver_display_name,
+      t.series_id,ts.weekdays::int[] as series_weekdays
     from trips t
+    left join trip_series ts on ts.id=t.series_id and ts.status='active'
     join vehicles v on v.id=t.vehicle_id
     join trip_stops pickup on pickup.trip_id=t.id
     join trip_stops dropoff on dropoff.trip_id=t.id and dropoff.seq>pickup.seq
@@ -187,7 +192,9 @@ export async function searchPublishedTrips(
       roadDistanceM:row.road_distance_m,
       estimatedDurationS:row.estimated_duration_s,
       availableSeats,
-      driverDisplayName:row.driver_display_name
+      driverDisplayName:row.driver_display_name,
+      seriesId:row.series_id,
+      seriesWeekdays:row.series_weekdays
     });
   }
   return results;

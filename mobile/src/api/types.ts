@@ -79,6 +79,8 @@ export type TripSearchResult = {
   estimatedDurationS: number;
   availableSeats: number;
   driverDisplayName: string | null;
+  seriesId?: string | null;
+  seriesWeekdays?: number[] | null;
 };
 
 export type Vehicle = {
@@ -174,6 +176,7 @@ export type PassengerRideRequest = {
   booking_status: string | null;
   picked_up_at: string | null;
   my_rating_score?: number | null;
+  weekly_group_id?: string | null;
   refund_cents?: number | null;
   refund_status?: string | null;
 };
@@ -187,6 +190,9 @@ export type OwnTrip = {
   offered_seats: number;
   route_distance_m?: number | null;
   route_duration_s?: number | null;
+  series_id?: string | null;
+  series_weekdays?: number[] | null;
+  series_status?: string | null;
 };
 
 export type DriverRideRequest = {
@@ -203,6 +209,7 @@ export type DriverRideRequest = {
   booking_status: string | null;
   picked_up_at: string | null;
   my_rating_score?: number | null;
+  weekly_group_id?: string | null;
 };
 
 export type ChatMessage = {
