@@ -1,6 +1,6 @@
 {
   "name": "mvc-me-voy-contigo-mobile",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "main": "index.ts",
   "scripts": {
@@ -11,6 +11,7 @@
     "@expo/metro-runtime": "~57.0.0",
     "@expo/vector-icons": "15.1.1",
     "expo": "~57.0.26",
+    "expo-image-picker": "~57.0.20",
     "expo-secure-store": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
