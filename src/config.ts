@@ -1,5 +1,7 @@
 export type SmsProviderName = "disabled" | "twilio";
 export type MapsProviderName = "disabled" | "google";
+export type PrivateStorageProviderName = "disabled" | "s3";
+export type InsuranceOcrProviderName = "disabled" | "google_vision";
 
 export type AppConfig = {
   nodeEnv: string;
@@ -19,6 +21,16 @@ export type AppConfig = {
   authResendCooldownSeconds: number;
   mapsProvider: MapsProviderName;
   googleMapsApiKey: string | undefined;
+  privateStorageProvider: PrivateStorageProviderName;
+  s3Endpoint: string | undefined;
+  s3Region: string;
+  s3Bucket: string | undefined;
+  s3AccessKeyId: string | undefined;
+  s3SecretAccessKey: string | undefined;
+  s3ForcePathStyle: boolean;
+  privateUploadTtlSeconds: number;
+  insuranceOcrProvider: InsuranceOcrProviderName;
+  googleVisionApiKey: string | undefined;
 };
 
 function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_INTEGER): number {
@@ -35,6 +47,22 @@ function mapsProviderEnv(): MapsProviderName {
   const value = process.env.MAPS_PROVIDER ?? "disabled";
   if (value !== "disabled" && value !== "google") {
     throw new Error("MAPS_PROVIDER must be disabled or google");
+  }
+  return value;
+}
+
+function privateStorageProviderEnv(): PrivateStorageProviderName {
+  const value = process.env.PRIVATE_STORAGE_PROVIDER ?? "disabled";
+  if (value !== "disabled" && value !== "s3") {
+    throw new Error("PRIVATE_STORAGE_PROVIDER must be disabled or s3");
+  }
+  return value;
+}
+
+function insuranceOcrProviderEnv(): InsuranceOcrProviderName {
+  const value = process.env.INSURANCE_OCR_PROVIDER ?? "disabled";
+  if (value !== "disabled" && value !== "google_vision") {
+    throw new Error("INSURANCE_OCR_PROVIDER must be disabled or google_vision");
   }
   return value;
 }
@@ -68,6 +96,16 @@ export function loadConfig(): AppConfig {
     authMaxCheckAttempts: intEnv("AUTH_MAX_CHECK_ATTEMPTS", 5, 1, 10),
     authResendCooldownSeconds: intEnv("AUTH_RESEND_COOLDOWN_SECONDS", 60, 30, 3_600),
     mapsProvider: mapsProviderEnv(),
-    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+    privateStorageProvider: privateStorageProviderEnv(),
+    s3Endpoint: process.env.S3_ENDPOINT,
+    s3Region: process.env.S3_REGION ?? "eu-west-1",
+    s3Bucket: process.env.S3_BUCKET,
+    s3AccessKeyId: process.env.S3_ACCESS_KEY_ID,
+    s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    s3ForcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+    privateUploadTtlSeconds: intEnv("PRIVATE_UPLOAD_TTL_SECONDS", 600, 60, 3600),
+    insuranceOcrProvider: insuranceOcrProviderEnv(),
+    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY
   };
 }

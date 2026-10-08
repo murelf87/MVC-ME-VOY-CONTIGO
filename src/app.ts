@@ -19,6 +19,9 @@ import { registerChatRoutes } from "./routes/chat-routes.js";
 import { registerTripExecutionRoutes } from "./routes/trip-execution-routes.js";
 import { registerProvinceRoutes } from "./routes/province-routes.js";
 import { registerGeocodingRoutes } from "./routes/geocoding-routes.js";
+import { buildPrivateObjectStorage } from "./storage/provider.js";
+import { buildInsuranceOcrProvider } from "./documents/insurance-ocr-provider.js";
+import { registerPrivateUploadRoutes } from "./routes/private-upload-routes.js";
 
 export async function buildApp() {
   const config = loadConfig();
@@ -33,7 +36,7 @@ export async function buildApp() {
     openapi: {
       info: {
         title: "MVC - Me voy contigo API",
-        version: "0.12.0",
+        version: "0.14.0",
         description: "Backend core with provider-backed phone verification and revocable opaque sessions."
       },
       components: {
@@ -98,6 +101,8 @@ export async function buildApp() {
   });
 
   const smsProvider = buildSmsVerificationProvider(config);
+  const privateStorage = buildPrivateObjectStorage(config);
+  const insuranceOcr = buildInsuranceOcrProvider(config);
   let routeProvider: RouteProvider | null = null;
   let geocodingProvider: GeocodingProvider | null = null;
   if (config.mapsProvider === "google") {
@@ -122,6 +127,13 @@ export async function buildApp() {
   await registerTripExecutionRoutes(app, pool);
   await registerProvinceRoutes(app, pool);
   await registerGeocodingRoutes(app, pool, geocodingProvider);
+  await registerPrivateUploadRoutes(
+    app,
+    pool,
+    privateStorage,
+    insuranceOcr,
+    config.privateUploadTtlSeconds
+  );
 
   return app;
 }
