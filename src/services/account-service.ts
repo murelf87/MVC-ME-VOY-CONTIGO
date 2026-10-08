@@ -8,7 +8,7 @@ import { driverBalances } from "./ledger-service.js";
  * Self-service account deletion (required by both app stores).
  *
  * What goes at once: phone number, name, photos and private documents, sessions, roles, inbox,
- * blocks and unfinished drafts. What stays, tied to an id that no longer identifies anyone through
+ * push devices, blocks and unfinished drafts. What stays, tied to an id that no longer identifies anyone through
  * MVC: trips, bookings, payments, ledger, ratings, reports, chat and GPS history of past trips,
  * because accounting and safety investigations need them. How long those are kept and when they
  * are finally purged is a legal decision still pending (docs/ACCOUNT_DELETION.md).
@@ -98,6 +98,7 @@ export async function deleteOwnAccount(pool:Pool,principal:AuthPrincipal,input:{
     await client.query(`delete from auth_sessions where user_id=$1`,[principal.userId]);
     await client.query(`delete from user_roles where user_id=$1`,[principal.userId]);
     await client.query(`delete from user_notifications where user_id=$1`,[principal.userId]);
+    await client.query(`delete from push_devices where user_id=$1`,[principal.userId]);
     await client.query(`delete from user_blocks where blocker_user_id=$1 or blocked_user_id=$1`,[principal.userId]);
 
     // Unfinished things nobody else depends on.

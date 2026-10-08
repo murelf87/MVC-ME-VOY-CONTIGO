@@ -21,7 +21,7 @@ Así nadie se queda tirado en un viaje y no queda dinero sin liquidar.
 - Teléfono (queda libre: si vuelve a registrarse, es una cuenta nueva sin relación con la anterior).
 - Nombre visible, foto pública y selfie.
 - Documentos privados y subidas pendientes: se quitan de la base y sus ficheros pasan a `storage_purge_queue`; `npm run storage:purge` los borra del almacenamiento y reintenta los que fallen. Debe programarse cuando haya almacenamiento privado configurado.
-- Sesiones (se cierra en todos los dispositivos), roles, avisos y bloqueos.
+- Sesiones (se cierra en todos los dispositivos), roles, avisos, móviles registrados para push y bloqueos.
 - Borradores de viaje (pasan a cancelados), series recurrentes (terminadas) y desvíos pedidos sin resolver (cancelados).
 - Queda en la auditoría como `user.deleted`.
 

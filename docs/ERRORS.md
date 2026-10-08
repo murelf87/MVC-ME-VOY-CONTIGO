@@ -15,7 +15,7 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `HTTP_ERROR` | 400 | Other 4xx raised by Fastify (malformed JSON, unsupported media type…) |
 | `INTERNAL_ERROR` | 500 | Internal server error |
 
-## Dominio (212 códigos)
+## Dominio (213 códigos)
 
 | Código | HTTP | Mensaje | Dónde |
 |---|---|---|---|
@@ -96,6 +96,7 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `INVALID_PICKUP_CODE` | 400 | Pickup code must contain exactly 6 digits | services/trip-execution-service.ts |
 | `INVALID_POLICY_RULES` | 400 | … must be an integer between 0 and 10000 / … is required / Rules must be an object / passenger must list 1 to 10 tiers / passenger[…].minMinutesBeforeDeparture must be a non-negative integer / passenger tiers must include one with minMinutesBeforeDeparture 0 | domain/cancellation-policy.ts |
 | `INVALID_PRIVATE_OBJECT` | 400 | Private object reference is invalid | documents/document-service.ts |
+| `INVALID_PUSH_TOKEN` | 400 | Push token is invalid | services/push-service.ts |
 | `INVALID_RATING` | 400 | Score must be an integer between 1 and 5 / Comment must be at most 500 characters | services/feedback-service.ts |
 | `INVALID_REPORT` | 400 | Unknown report category / Description must contain 10 to 2000 characters / You cannot report yourself | services/feedback-service.ts |
 | `INVALID_ROLE` | 400 | Unknown staff role | services/admin-service.ts |

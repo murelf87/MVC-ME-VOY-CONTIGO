@@ -7,7 +7,7 @@ acción que las causa: si la acción se deshace, el evento tampoco existe.
 Se leen con `GET /v1/me/notifications` y se marcan con `POST /v1/me/notifications/read`.
 Cada aviso tiene `id`, `kind`, `trip_id`, `payload`, `created_at`, `read_at`, `departure_at` y `as_driver`.
 Los nombres viajan en el `payload` para que la bandeja se lea bien aunque el perfil cambie después.
-El envío push (APNs/FCM) no está conectado: falta el proveedor (BLOCKERS 6).
+Cada aviso se encola además en `push_outbox` para cada móvil registrado (`POST /v1/me/push-devices`), en la misma transacción. `npm run push:send` los envía con un título y texto cortos (`pushText` en `src/services/push-service.ts`); un aviso sin enviar en una hora caduca y queda solo en la bandeja. Falta elegir el proveedor (BLOCKERS 6): hoy no se envía nada.
 
 | `kind` | Quién lo recibe | `payload` |
 |---|---|---|

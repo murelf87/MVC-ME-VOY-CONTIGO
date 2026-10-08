@@ -4,7 +4,7 @@ import type { AuthPrincipal } from "../auth/session.js";
 /**
  * In-app inbox. Rows are written inside the same transaction as the event
  * that causes them, so a rolled-back action never leaves a notice behind.
- * Push delivery (APNs/FCM) is not wired: it needs provider credentials.
+ * Each notice is also queued for every registered device (push_outbox); src/services/push-service.ts delivers them.
  */
 export type NotificationKind =
   | "ride_request.received"
@@ -32,8 +32,13 @@ export async function notify(
   const ids=[...new Set(Array.isArray(userIds)?userIds:[userIds])];
   if(!ids.length) return;
   await client.query(`
-    insert into user_notifications(user_id,kind,trip_id,payload)
-    select unnest($1::uuid[]),$2,$3,$4`,[ids,kind,tripId,payload]);
+    with inserted as (
+      insert into user_notifications(user_id,kind,trip_id,payload)
+      select unnest($1::uuid[]),$2,$3,$4 returning id,user_id
+    )
+    insert into push_outbox(notification_id,device_id)
+    select i.id,d.id from inserted i join push_devices d on d.user_id=i.user_id and d.disabled_at is null`,
+    [ids,kind,tripId,payload]);
 }
 
 /** Display names travel in the payload so the inbox reads well even after profile edits. */

@@ -29,6 +29,7 @@ import { registerRouteChangeRoutes } from "./routes/route-change-routes.js";
 import { registerTariffRoutes } from "./routes/tariff-routes.js";
 import { registerLegalRoutes } from "./routes/legal-routes.js";
 import { registerAccountRoutes } from "./routes/account-routes.js";
+import { registerPushRoutes } from "./routes/push-routes.js";
 import { registerProvinceRoutes } from "./routes/province-routes.js";
 import { registerGeocodingRoutes } from "./routes/geocoding-routes.js";
 import { buildPrivateObjectStorage } from "./storage/provider.js";
@@ -192,6 +193,7 @@ export async function buildApp() {
   await registerTariffRoutes(app, pool);
   await registerLegalRoutes(app, pool);
   await registerAccountRoutes(app, pool);
+  await registerPushRoutes(app, pool);
   await registerRouteChangeRoutes(app, pool, routeProvider);
   await registerPaymentRoutes(app, pool, config);
   await registerProvinceRoutes(app, pool);
