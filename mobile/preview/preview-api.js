@@ -707,4 +707,25 @@
     Object.defineProperty(navigator, "geolocation", { value: geo, configurable: true });
     if (navigator.permissions) { var origQuery = navigator.permissions.query.bind(navigator.permissions); navigator.permissions.query = function (d) { return d && d.name === "geolocation" ? Promise.resolve({ state: "granted", onchange: null }) : origQuery(d); }; }
   } catch (e) {}
+  // Perfil inicial elegido arriba en la vista previa: pasajero o conductor con la cuenta ya lista, o persona nueva.
+  // La pantalla en la que estás se avisa al marco con postMessage.
+  var PROFILE = window.MVC_PREVIEW_PROFILE || "passenger";
+  window.__MVC_PREVIEW__ = {
+    accessMode: PROFILE === "new" ? "register" : "login",
+    screen: function (name) { try { window.parent.postMessage({ mvcPreview: "screen", name: name }, "*"); } catch (e) {} }
+  };
+  try {
+    window.localStorage.removeItem("mvc.session.token");
+    if (PROFILE === "passenger" || PROFILE === "driver") {
+      var driver = PROFILE === "driver";
+      var em0 = driver ? "conductora@ejemplo.es" : "pasajera@ejemplo.es";
+      accounts[em0] = { password: "una frase larga", user: { id: uid(), email: em0, email_verified: true, display_name: "Tú",
+        roles: (driver ? ["driver", "passenger"] : ["passenger"]).concat(["admin"]) } };
+      if (driver) vehicles.push({ id: uid(), make: "SEAT", model: "León", plate: "1234ABC", passenger_seats: 3,
+        review_status: "approved", documentation_status: "approved", vehicle_photo_status: "approved", insurance_status: "approved",
+        insurance_expires_on: inMin(525600).slice(0, 10) });
+      handle("POST", "/v1/auth/login", new URLSearchParams(), { email: em0, password: "una frase larga" });
+      if (token) window.localStorage.setItem("mvc.session.token", token);
+    }
+  } catch (e) {}
 })();

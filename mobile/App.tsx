@@ -24,6 +24,7 @@ import { AdminScreen } from "./src/screens/AdminScreen";
 import { LegalScreen, usePendingLegal } from "./src/screens/LegalScreen";
 import { NotificationsScreen, useUnreadNotifications, type AppNotification } from "./src/screens/NotificationsScreen";
 import { C } from "./src/theme";
+import { reportScreen } from "./src/previewHook";
 
 type Screen =
   | "home"
@@ -34,6 +35,17 @@ type Screen =
   | "live"
   | "notifications"
   | "admin";
+
+const SCREEN_LABEL: Record<Screen, string> = {
+  home: "Inicio",
+  trips: "Viajes",
+  publish: "Publicar",
+  messages: "Mensajes",
+  profile: "Perfil",
+  live: "En directo",
+  notifications: "Avisos",
+  admin: "Administración"
+};
 
 function BootScreen() {
   return (
@@ -64,6 +76,10 @@ function AuthenticatedApp() {
       setScreen(next as Screen);
     }
   };
+
+  useEffect(() => {
+    reportScreen(legal.pending.length ? "Condiciones" : SCREEN_LABEL[screen]);
+  }, [screen, legal.pending.length]);
 
   useEffect(() => {
     if (screen === "home") void refreshUnread();
@@ -153,6 +169,11 @@ function Root() {
   useEffect(() => {
     setDriverSetupDone(false);
   }, [token]);
+
+  const onboarding = !!token && roles.includes("driver") && !driverSetupDone;
+  useEffect(() => {
+    if (onboarding) reportScreen("Alta de conductor");
+  }, [onboarding]);
 
   if (booting) return <BootScreen />;
   if (!token) return <AccessScreen />;

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -17,12 +17,24 @@ import { Card, PrimaryButton } from "../components/UI";
 import { OfficialLogo } from "../components/OfficialLogo";
 import { useAuth } from "../session/AuthContext";
 import { C, shadow } from "../theme";
+import { previewAccessMode, reportScreen } from "../previewHook";
 
 type Mode = "login" | "register" | "forgot" | "reset";
 
+const MODE_LABEL: Record<Mode, string> = {
+  login: "Entrar",
+  register: "Crear cuenta",
+  forgot: "Recuperar contraseña",
+  reset: "Nueva contraseña"
+};
+
 export function AccessScreen() {
   const { login, register, forgotPassword, resetPassword } = useAuth();
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState<Mode>(() => (previewAccessMode() === "register" ? "register" : "login"));
+
+  useEffect(() => {
+    reportScreen(MODE_LABEL[mode]);
+  }, [mode]);
   const [roles, setRoles] = useState<Role[]>(["passenger"]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

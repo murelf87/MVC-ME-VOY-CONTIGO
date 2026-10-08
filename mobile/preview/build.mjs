@@ -1,6 +1,6 @@
 // Builds the phone preview as one self-contained HTML: mobile/dist-preview/movil-mvc.html.
 // Exports the Expo web app, inlines the bundle, the in-browser sample backend and the icon font,
-// and wraps it in the device stage (iPhone 15, Pro Max, SE, Android, Pixel, Fold, 320 px).
+// and wraps it in the preview shell: profiles, device switcher, corrections and how-to cards.
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -40,11 +40,11 @@ const inner = fs.readFileSync(path.join(here, "app.html"), "utf8")
 const b64 = Buffer.from(inner, "utf8").toString("base64");
 
 const stage = fs.readFileSync(path.join(here, "stage.html"), "utf8")
-  .replace('<iframe id="app" src="app.html"', '<iframe id="app"')
-  .replace("</style>", "</style></head><body>");
+  .replace("</style>", "</style></head><body>")
+  .replace('"__APP_HTML_B64__"', () => JSON.stringify(b64));
 const html = `<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-${stage}<script>(function(){var b=atob("${b64}");var u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);document.getElementById("app").srcdoc=new TextDecoder().decode(u);})();</script>
+${stage}
 </body></html>
 `;
 fs.mkdirSync(out, { recursive: true });

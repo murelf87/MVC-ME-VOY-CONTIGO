@@ -1,17 +1,32 @@
 <title>MVC Me voy contigo</title>
 <style>
-/* Layout: one dark stage, a device frame centred, the device switcher pinned underneath. Single dark look by choice. */
+/* Preview shell: top bar with profiles, the phone with its device switcher, and the side cards (corrections, how to try it). */
 :root{
-  color-scheme:dark;
-  --stage:#070B18; --glow-a:rgba(13,91,255,.28); --glow-b:rgba(82,215,174,.16);
-  --bezel:#0B0E14; --rim:#3A4152; --chip:#151B2B; --chip-on:#2A3350; --ink:#E9EEFA; --muted:#8F9BB6;
+  color-scheme:light;
+  --bg:#E9EEF7; --card:#FFFFFF; --line:#D5DDEC; --ink:#0B2357; --muted:#5B6884; --blue:#1857E0; --blue-ink:#FFFFFF;
+  --chip:#FFFFFF; --chip-on:#E6EEFF; --field:#EEF2F9; --bezel:#111318; --rim:#2C313C;
 }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){color-scheme:dark;--bg:#0B1020;--card:#141B2E;--line:#27314A;--ink:#E7EDFA;--muted:#97A3BF;--blue:#4C82FF;--chip:#141B2E;--chip-on:#22305A;--field:#0F1526;--rim:#3A4152}
+}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0B1020;--card:#141B2E;--line:#27314A;--ink:#E7EDFA;--muted:#97A3BF;--blue:#4C82FF;--chip:#141B2E;--chip-on:#22305A;--field:#0F1526;--rim:#3A4152}
+*{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--stage);color:var(--ink);font:500 13px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
-.stage{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-inline:16px;padding-block:12px;box-sizing:border-box;
-  background:radial-gradient(600px 420px at 50% 0%,var(--glow-a),transparent 70%),radial-gradient(520px 380px at 85% 100%,var(--glow-b),transparent 70%),var(--stage)}
-.fit{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
-.device{position:relative;background:var(--bezel);border:2px solid var(--rim);box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 0 0 6px #000;transform-origin:center center;flex:none}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+.top{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px}
+.brand b{font-size:17px}
+.brand span{color:var(--muted);margin-left:8px;font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:flex;gap:2px;background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--blue);color:var(--blue-ink);font-weight:700}
+.ghost{border:1px solid var(--line);background:var(--chip);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:500}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.layout{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding:0 16px 16px}
+.phonecol{min-height:0;display:flex;flex-direction:column;align-items:center;gap:10px}
+.fit{flex:1;min-height:0;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.device{position:relative;background:var(--bezel);border:2px solid var(--rim);box-shadow:0 30px 60px -30px rgba(10,20,50,.55),inset 0 0 0 6px #000;transform-origin:center center;flex:none}
 .screen{position:absolute;overflow:hidden;background:#fff;display:flex;flex-direction:column}
 .status{flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px;color:#0B2357;font:600 15px/1 ui-sans-serif,system-ui,-apple-system,sans-serif;background:#fff;position:relative}
 .status .icons{display:flex;gap:6px;align-items:center}
@@ -20,33 +35,101 @@ body{margin:0;background:var(--stage);color:var(--ink);font:500 13px/1.4 ui-sans
 iframe{flex:1;border:0;width:100%;min-height:0;background:#fff;display:block}
 .home{position:absolute;left:50%;transform:translateX(-50%);bottom:7px;width:120px;height:5px;border-radius:3px;background:#0B2357;opacity:.85;pointer-events:none}
 .btn-side{position:absolute;background:var(--rim);border-radius:2px}
-.switch{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;background:rgba(21,27,43,.85);border:1px solid #232B42;border-radius:999px;padding:4px}
-.switch button{font:600 12px ui-sans-serif,system-ui,sans-serif;color:var(--muted);background:transparent;border:0;border-radius:999px;padding:7px 12px;cursor:pointer}
-.switch button[aria-pressed="true"]{background:var(--chip-on);color:var(--ink)}
-.switch button:focus-visible{outline:2px solid #5B8CFF;outline-offset:1px}
-.note{flex:none;color:var(--muted);font-size:12px;text-align:center;max-width:60ch}
+.switch{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.switch button{border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:6px 12px;cursor:pointer;font-weight:500;font-size:13px}
+.switch button[aria-pressed="true"]{border-color:var(--blue);background:var(--chip-on);font-weight:700}
+.where{flex:none;margin:0;color:var(--muted);font-size:13px}
+.where b{color:var(--ink)}
+.side{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h2{margin:0 0 8px;font-size:16px}
+.card p{margin:0 0 8px;color:var(--muted);font-size:13px}
+label{display:block;font-size:13px;margin:4px 0 6px;color:var(--muted)}
+textarea{width:100%;min-height:80px;resize:vertical;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink);padding:10px;font:inherit}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}
+.primary{border:0;background:var(--blue);color:var(--blue-ink);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:700}
+.primary:disabled{opacity:.5;cursor:default}
+.notes{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.notes li{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;gap:8px;align-items:flex-start}
+.notes .txt{flex:1;white-space:pre-wrap;word-break:break-word}
+.notes small{display:block;color:var(--muted);margin-top:2px}
+.notes button{border:0;background:transparent;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;padding:2px 4px}
+.howto{margin:0;padding-left:18px;font-size:13px}
+.howto li{margin-bottom:6px}
+.msg{min-height:1em;font-size:12px;color:var(--muted)}
+@media (max-width:860px){
+  body{display:block}
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .phonecol{height:82vh}
+  .side{overflow:visible}
+}
 </style>
 
-<div class="stage">
-  <div class="fit" id="fit">
-    <div class="device" id="device">
-      <span class="btn-side" id="b1"></span><span class="btn-side" id="b2"></span><span class="btn-side" id="b3"></span>
-      <div class="screen" id="screen">
-        <div class="status" id="status"><span id="clock">9:41</span><span class="icons" aria-hidden="true">
-          <svg width="18" height="11" viewBox="0 0 18 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#0B2357"/><rect x="5" y="5" width="3" height="6" rx="1" fill="#0B2357"/><rect x="10" y="2.5" width="3" height="8.5" rx="1" fill="#0B2357"/><rect x="15" y="0" width="3" height="11" rx="1" fill="#0B2357"/></svg>
-          <svg width="16" height="11" viewBox="0 0 16 11"><path d="M8 2.2c2.4 0 4.6.9 6.2 2.5l1.3-1.3A10.6 10.6 0 0 0 8 .3 10.6 10.6 0 0 0 .5 3.4l1.3 1.3A8.7 8.7 0 0 1 8 2.2Zm0 3.6c1.4 0 2.7.5 3.6 1.4l1.3-1.3A7 7 0 0 0 8 3.9a7 7 0 0 0-4.9 2l1.3 1.3c1-.9 2.2-1.4 3.6-1.4Zm0 3.5 1.9-1.9a2.7 2.7 0 0 0-3.8 0L8 9.3Z" fill="#0B2357"/></svg>
-          <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3.5" fill="none" stroke="#0B2357" opacity=".45"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#0B2357"/><rect x="23" y="4" width="1.5" height="4" rx=".7" fill="#0B2357" opacity=".45"/></svg>
-        </span><span class="island" id="island"></span><span class="punch" id="punch"></span></div>
-        <iframe id="app" src="app.html" title="App MVC Me voy contigo"></iframe>
-        <span class="home" id="home"></span>
+<header class="top">
+  <div class="brand"><b>MVC · Me voy contigo</b><span>vista previa con datos de ejemplo</span></div>
+  <div class="actions">
+    <div class="seg" role="group" aria-label="Perfil" id="profiles">
+      <button type="button" data-p="passenger">Pasajero</button>
+      <button type="button" data-p="driver">Conductor</button>
+      <button type="button" data-p="new">Persona nueva</button>
+    </div>
+    <button type="button" class="ghost" id="reset">Reiniciar</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="phonecol">
+    <div class="fit" id="fit">
+      <div class="device" id="device">
+        <span class="btn-side" id="b1"></span><span class="btn-side" id="b2"></span><span class="btn-side" id="b3"></span>
+        <div class="screen" id="screen">
+          <div class="status" id="status"><span id="clock">9:41</span><span class="icons" aria-hidden="true">
+            <svg width="18" height="11" viewBox="0 0 18 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#0B2357"/><rect x="5" y="5" width="3" height="6" rx="1" fill="#0B2357"/><rect x="10" y="2.5" width="3" height="8.5" rx="1" fill="#0B2357"/><rect x="15" y="0" width="3" height="11" rx="1" fill="#0B2357"/></svg>
+            <svg width="16" height="11" viewBox="0 0 16 11"><path d="M8 2.2c2.4 0 4.6.9 6.2 2.5l1.3-1.3A10.6 10.6 0 0 0 8 .3 10.6 10.6 0 0 0 .5 3.4l1.3 1.3A8.7 8.7 0 0 1 8 2.2Zm0 3.6c1.4 0 2.7.5 3.6 1.4l1.3-1.3A7 7 0 0 0 8 3.9a7 7 0 0 0-4.9 2l1.3 1.3c1-.9 2.2-1.4 3.6-1.4Zm0 3.5 1.9-1.9a2.7 2.7 0 0 0-3.8 0L8 9.3Z" fill="#0B2357"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3.5" fill="none" stroke="#0B2357" opacity=".45"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#0B2357"/><rect x="23" y="4" width="1.5" height="4" rx=".7" fill="#0B2357" opacity=".45"/></svg>
+          </span><span class="island" id="island"></span><span class="punch" id="punch"></span></div>
+          <iframe id="app" title="App MVC Me voy contigo"></iframe>
+          <span class="home" id="home"></span>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="switch" role="group" aria-label="Dispositivo" id="switch"></div>
-  <p class="note">Vista previa interactiva con datos de ejemplo: los correos con códigos, los pagos y las respuestas de Ana, Luis y Soporte se simulan en el navegador. Crea una cuenta con cualquier correo y una contraseña de al menos 10 caracteres; el código del correo aparece abajo en pantalla. Tu cuenta de prueba tiene permisos de administración (Perfil › Panel de administración). Los precios aparecen cuando apruebas una tarifa en Finanzas. Pedro acepta desvíos y Ana te avisa cuando llega. En Administración › Condiciones puedes publicar unas condiciones de prueba y ver cómo la app pide aceptarlas.</p>
-</div>
+    <div class="switch" role="group" aria-label="Dispositivo" id="switch"></div>
+    <p class="where">Estás en <b id="where">…</b></p>
+  </section>
+
+  <aside class="side">
+    <section class="card" aria-labelledby="c-title">
+      <h2 id="c-title">Correcciones</h2>
+      <p>Escribe aquí lo que hay que cambiar mientras pruebas. Cada nota se guarda con la pantalla y el móvil en que estabas.</p>
+      <label for="note">Qué hay que corregir en esta pantalla</label>
+      <textarea id="note" placeholder="Por ejemplo: el botón «Buscar» queda muy abajo en el iPhone SE"></textarea>
+      <div class="row">
+        <button type="button" class="primary" id="save">Guardar corrección</button>
+        <button type="button" class="ghost" id="copy">Copiar todas</button>
+      </div>
+      <p class="msg" id="msg" role="status"></p>
+      <p>Se guardan en este navegador. Pulsa «Copiar todas» y pégalas en el chat del proyecto para que Claude las lea.</p>
+      <ul class="notes" id="notes"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="h-title">
+      <h2 id="h-title">Cómo probarla</h2>
+      <ul class="howto">
+        <li>Todo funciona con datos de ejemplo: no se conecta al servidor y no se cobra nada.</li>
+        <li>Pasajero y Conductor entran con la cuenta ya creada (el conductor con su coche aprobado). Persona nueva empieza en «Crear cuenta».</li>
+        <li>Código del correo: al crear la cuenta o pedir una contraseña nueva aparece un aviso dentro del móvil con el código. Cambia cada vez.</li>
+        <li>Se simulan los pagos, los correos, el soporte y las respuestas de Ana, Luis, Marta y Pedro.</li>
+        <li>Los precios aparecen cuando apruebas una tarifa en Perfil › Panel de administración › Finanzas.</li>
+        <li>Pedro acepta desvíos y Ana te avisa cuando llega.</li>
+        <li>Subir fotos no funciona en la vista previa; la ubicación es de ejemplo.</li>
+        <li>Reiniciar deja los datos como al principio. Las correcciones no se borran.</li>
+      </ul>
+    </section>
+  </aside>
+</main>
 
 <script>
+const APP_HTML_B64="__APP_HTML_B64__";
 const DEVICES={
   "iPhone 15":{w:393,h:852,r:55,bez:12,status:50,island:[124,36,12],home:true},
   "Pro Max":{w:430,h:932,r:58,bez:12,status:52,island:[124,36,12],home:true},
@@ -57,10 +140,13 @@ const DEVICES={
   "320 px":{w:320,h:640,r:28,bez:10,status:26,island:null,home:false}
 };
 const $=id=>document.getElementById(id);
-const sw=$("switch");let current="iPhone 15";
-Object.keys(DEVICES).forEach(name=>{const b=document.createElement("button");b.type="button";b.textContent=name;b.onclick=()=>apply(name);sw.appendChild(b);});
-function apply(name){
-  current=name;const d=DEVICES[name];const chin=d.chin?64:0;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+// ---- dispositivo ----
+const sw=$("switch");let device="iPhone 15";
+Object.keys(DEVICES).forEach(name=>{const b=document.createElement("button");b.type="button";b.textContent=name;b.onclick=()=>applyDevice(name);sw.appendChild(b);});
+function applyDevice(name){
+  device=name;const d=DEVICES[name];const chin=d.chin?64:0;
   const W=d.w+d.bez*2,H=d.h+d.bez*2+chin*2;
   Object.assign($("device").style,{width:W+"px",height:H+"px",borderRadius:(d.r+d.bez)+"px"});
   Object.assign($("screen").style,{left:d.bez+"px",top:(d.bez+chin)+"px",width:d.w+"px",height:d.h+"px",borderRadius:(d.chin?4:d.r)+"px"});
@@ -69,16 +155,66 @@ function apply(name){
   const isl=$("island");isl.style.display=d.island?"block":"none";if(d.island){isl.style.width=d.island[0]+"px";isl.style.height=d.island[1]+"px";isl.style.top=d.island[2]+"px";}
   const p=$("punch");p.style.display=d.punch?"block":"none";if(d.punch){p.style.width=p.style.height=d.punch+"px";p.style.top=((d.status-d.punch)/2)+"px";}
   $("home").style.display=d.home?"block":"none";
-  const side=[["b1",-4,150,4,30],["b2",-4,200,4,60],["b3",W,220,4,90]];
-  side.forEach(([id,x,y,w,h])=>Object.assign($(id).style,{left:x+"px",top:y+"px",width:w+"px",height:h+"px",display:d.chin?"none":"block"}));
+  [["b1",-4,150,4,30],["b2",-4,200,4,60],["b3",W,220,4,90]].forEach(([id,x,y,w,h])=>Object.assign($(id).style,{left:x+"px",top:y+"px",width:w+"px",height:h+"px",display:d.chin?"none":"block"}));
   [...sw.children].forEach(b=>b.setAttribute("aria-pressed",b.textContent===name?"true":"false"));
-  try{localStorage.setItem("mvc.preview.device",name)}catch(e){}
+  store.set("mvc.preview.device",name);
   fit();
 }
 function fit(){const dev=$("device"),box=$("fit");const s=Math.min(1,box.clientWidth/dev.offsetWidth,box.clientHeight/dev.offsetHeight);dev.style.transform=`scale(${s})`;}
 addEventListener("resize",fit);
 function tick(){const n=new Date();$("clock").textContent=n.getHours()+":"+String(n.getMinutes()).padStart(2,"0");}
 tick();setInterval(tick,15000);
-let saved=null;try{saved=localStorage.getItem("mvc.preview.device")}catch(e){}
-apply(DEVICES[saved]?saved:"iPhone 15");
+
+// ---- app y perfiles ----
+const APP_HTML=(()=>{const b=atob(APP_HTML_B64);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new TextDecoder().decode(u);})();
+let profile="passenger",loads=0;
+function loadApp(){
+  loads++;$("where").textContent="…";
+  $("app").srcdoc=APP_HTML.replace("<head>",`<head><script>window.MVC_PREVIEW_PROFILE=${JSON.stringify(profile)};<\/script><!-- carga ${loads} -->`);
+}
+function applyProfile(p){
+  profile=p;store.set("mvc.preview.profile",p);
+  document.querySelectorAll("#profiles button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===p?"true":"false"));
+  loadApp();
+}
+document.querySelectorAll("#profiles button").forEach(b=>b.onclick=()=>applyProfile(b.dataset.p));
+$("reset").onclick=loadApp;
+addEventListener("message",e=>{if(e.source===$("app").contentWindow&&e.data&&e.data.mvcPreview==="screen")$("where").textContent=String(e.data.name);});
+
+// ---- correcciones ----
+const KEY="mvc.preview.corrections";
+let notes=[];try{notes=JSON.parse(store.get(KEY)||"[]");if(!Array.isArray(notes))notes=[];}catch(e){notes=[];}
+function persist(){store.set(KEY,JSON.stringify(notes));}
+function fmt(ts){const d=new Date(ts);return d.toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});}
+function renderNotes(){
+  const ul=$("notes");ul.textContent="";
+  if(!notes.length){const li=document.createElement("li");li.textContent="Aún no hay correcciones. Escribe la primera mientras pruebas la app.";li.style.color="var(--muted)";ul.appendChild(li);}
+  notes.forEach((n,i)=>{
+    const li=document.createElement("li");
+    const t=document.createElement("div");t.className="txt";t.textContent=n.text;
+    const m=document.createElement("small");m.textContent=`${n.screen} · ${n.device} · ${fmt(n.at)}`;t.appendChild(m);
+    const del=document.createElement("button");del.type="button";del.textContent="×";del.setAttribute("aria-label","Borrar corrección");
+    del.onclick=()=>{notes.splice(i,1);persist();renderNotes();};
+    li.append(t,del);ul.appendChild(li);
+  });
+  $("copy").disabled=!notes.length;
+}
+function say(t){$("msg").textContent=t;}
+$("save").onclick=()=>{
+  const text=$("note").value.trim();if(!text){say("Escribe primero qué hay que corregir.");return;}
+  notes.unshift({text,screen:$("where").textContent||"…",device,at:Date.now()});persist();renderNotes();
+  $("note").value="";say("Corrección guardada.");
+};
+$("copy").onclick=async()=>{
+  const all="Correcciones de la vista previa de MVC:\n"+notes.slice().reverse().map(n=>`- [${n.screen}, ${n.device}] ${n.text}`).join("\n");
+  try{await navigator.clipboard.writeText(all);say("Copiadas. Pégalas en el chat.");}
+  catch(e){const ta=document.createElement("textarea");ta.value=all;document.body.appendChild(ta);ta.select();
+    let ok=false;try{ok=document.execCommand("copy")}catch(_){}
+    ta.remove();say(ok?"Copiadas. Pégalas en el chat.":"No se han podido copiar desde aquí. Selecciónalas y cópialas a mano.");
+    if(!ok){$("note").value=all;$("note").select();}}
+};
+renderNotes();
+
+const savedDevice=store.get("mvc.preview.device");applyDevice(DEVICES[savedDevice]?savedDevice:"iPhone 15");
+const savedProfile=store.get("mvc.preview.profile");applyProfile(["passenger","driver","new"].includes(savedProfile)?savedProfile:"passenger");
 </script>

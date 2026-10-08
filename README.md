@@ -64,9 +64,11 @@ El archivo se abre en cualquier navegador sin internet. También se puede public
 
 Es una vista previa: no llama a ningún servidor. `mobile/preview/preview-api.js` contesta en el navegador con datos de ejemplo, y los correos, los pagos y las respuestas de otros usuarios se simulan. La app real nunca carga ese archivo.
 
+Arriba se elige el perfil con el que empieza la app: Pasajero, Conductor o Persona nueva. El botón Reiniciar devuelve los datos de ejemplo al principio. A la derecha hay dos cuadros: «Correcciones», con notas que se guardan en el navegador junto con la pantalla y el móvil en que estabas, y un botón para copiarlas todas; y «Cómo probarla». La app avisa a la vista previa de la pantalla en la que está a través de `mobile/src/previewHook.ts`. En la app real ese aviso no hace nada.
+
 Archivos (en `mobile/preview/`):
 
-- `stage.html`: el marco del teléfono.
+- `stage.html`: el marco del teléfono, los perfiles y los cuadros laterales.
 - `app.html`: la página de la app.
 - `build.mjs`: la compilación.
 
