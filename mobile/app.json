@@ -11,6 +11,18 @@
     },
     "android": {
       "predictiveBackGestureEnabled": false
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MVC usa tu ubicación mientras conduces un viaje para que tus pasajeros vean dónde está el coche y cuándo llegas.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false
+        }
+      ]
+    ]
   }
 }

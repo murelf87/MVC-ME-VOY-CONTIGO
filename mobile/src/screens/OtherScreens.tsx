@@ -426,8 +426,10 @@ export function TripsScreen({
       const handle = await startSharingLocation(token, tripId, state => {
         setSharingNote(
           "error" in state
-            ? state.error
-            : `Ubicación enviada a las ${new Date(state.sentAt).toLocaleTimeString("es-ES")}`
+            ? `Sin conexión: ${state.pending === 1 ? "1 posición guardada" : `${state.pending} posiciones guardadas`}, se enviarán al recuperar la señal.`
+            : state.pending
+              ? `Recuperando señal, faltan ${state.pending} por enviar…`
+              : `Ubicación enviada a las ${new Date(state.sentAt).toLocaleTimeString("es-ES")}`
         );
       });
       setSharing({ tripId, handle });
