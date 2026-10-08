@@ -152,6 +152,13 @@ export async function confirmProviderPayment(
       return { status: "compensation_required", compensationId: comp.rows[0].id as string };
     }
 
+    const quote = await client.query(`select passenger_total_cents from quote_snapshots where request_id=$1`, [input.requestId]);
+    if (quote.rowCount && quote.rows[0].passenger_total_cents !== input.amountCents) {
+      throw new DomainError("PAYMENT_AMOUNT_MISMATCH", "Paid amount differs from the agreed quote", 409, {
+        expectedCents: quote.rows[0].passenger_total_cents
+      });
+    }
+
     const booking = await client.query(
       `insert into bookings(request_id,provider_payment_id,amount_cents,status,cancellation_policy_version_id)
        values($1,$2,$3,'confirmed',

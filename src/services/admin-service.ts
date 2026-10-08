@@ -39,7 +39,8 @@ export async function adminOverview(pool:Pool,principal:AuthPrincipal){
       (select count(*)::int from trips where status='active') as active_trips,
       (select count(*)::int from trips where status='published') as published_trips,
       (select count(*)::int from app_users where status='active') as active_users,
-      (select version from cancellation_policy_versions where status='active') as active_policy_version`)).rows[0];
+      (select version from cancellation_policy_versions where status='active') as active_policy_version,
+      (select version from tariff_versions where status='approved') as approved_tariff_version`)).rows[0];
   const verification=has(principal,["admin","verification_admin"]);
   const finance=has(principal,["admin","finance_admin"]);
   const support=has(principal,["admin","support_admin"]);
@@ -47,7 +48,7 @@ export async function adminOverview(pool:Pool,principal:AuthPrincipal){
     roles:principal.roles.filter(r=>(ADMIN_ROLES as readonly string[]).includes(r)),
     verification:verification?{pendingVehicles:q.pending_vehicles,pendingDocuments:q.pending_documents,pendingProfiles:q.pending_profiles}:null,
     support:support?{openReports:q.open_reports,activeTrips:q.active_trips,publishedTrips:q.published_trips,activeUsers:q.active_users}:null,
-    finance:finance?{pendingRefunds:q.pending_refunds,pendingCompensations:q.pending_compensations,activePolicyVersion:q.active_policy_version}:null
+    finance:finance?{pendingRefunds:q.pending_refunds,pendingCompensations:q.pending_compensations,activePolicyVersion:q.active_policy_version,approvedTariffVersion:q.approved_tariff_version}:null
   };
 }
 

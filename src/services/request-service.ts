@@ -3,6 +3,7 @@ import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
 import { displayName, notify } from "./notification-service.js";
+import { snapshotQuoteForRequest } from "./tariff-service.js";
 
 async function tx<T>(pool: Pool, fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
@@ -149,7 +150,9 @@ export async function listOwnRideRequests(pool: Pool, principal: AuthPrincipal) 
             t.status as trip_status,t.departure_at,
             b.id as booking_id,b.status as booking_status,b.picked_up_at,
             mr.score as my_rating_score,
-            bc.refund_cents,bc.refund_status,r.weekly_group_id
+            bc.refund_cents,bc.refund_status,r.weekly_group_id,
+            qs.passenger_total_cents as quote_total_cents,qs.contribution_cents as quote_contribution_cents,
+            qs.road_distance_m as quote_road_distance_m
        from ride_requests r
        join trips t on t.id=r.trip_id
        left join profiles dp on dp.user_id=t.driver_user_id
@@ -157,6 +160,7 @@ export async function listOwnRideRequests(pool: Pool, principal: AuthPrincipal) 
        left join bookings b on b.request_id=r.id
        left join trip_ratings mr on mr.booking_id=b.id and mr.rater_user_id=r.passenger_user_id
        left join booking_cancellations bc on bc.booking_id=b.id
+       left join quote_snapshots qs on qs.request_id=r.id
       where r.passenger_user_id=$1
       order by r.requested_at desc`,
     [principal.userId]
@@ -270,11 +274,13 @@ export async function decideRideRequest(
        values($1,'ride_request.accepted_with_hold','ride_request',$2,$3::jsonb)`,
       [principal.userId,requestId,JSON.stringify({holdId:hold.rows[0].id})]
     );
+    const quote=await snapshotQuoteForRequest(client,requestId);
     await notify(client,request.passenger_user_id,"ride_request.accepted",request.trip_id,{
       requestId,driverName:await displayName(client,principal.userId),
       holdExpiresAt:new Date(hold.rows[0].expires_at).toISOString()
     });
     return {
+      quote,
       request:accepted.rows[0],
       hold:{
         id:hold.rows[0].id,

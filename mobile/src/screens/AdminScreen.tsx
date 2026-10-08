@@ -96,6 +96,7 @@ export function AdminScreen() {
       const result: any = await apiRequest(path[tab], { token });
       if (tab === "finance") {
         result.policies = (await apiRequest<any>("/v1/admin/cancellation-policies", { token })).policies;
+        result.tariffs = (await apiRequest<any>("/v1/admin/tariffs", { token })).tariffs;
       }
       setLoaded({ tab, data: result });
     } catch (e) {
@@ -123,6 +124,21 @@ export function AdminScreen() {
   }
 
   const note = (id: string) => (notes[id] ?? "").trim();
+  const num = (id: string) => Number((notes[id] ?? "").replace(",", ".").trim());
+  function createTariff() {
+    const rate = num("t:rate"), pax = num("t:pax"), drv = num("t:drv"), capText = (notes["t:cap"] ?? "").trim();
+    if (!Number.isFinite(rate) || rate < 0 || !Number.isFinite(pax) || !Number.isFinite(drv) || (notes["t:rate"] ?? "").trim() === "") {
+      setError("Revisa los importes: €/km y porcentajes en números.");
+      return;
+    }
+    void act("/v1/admin/tariffs", {
+      rateMicrosPerKm: Math.round(rate * 1_000_000),
+      passengerCommissionBps: Math.round(pax * 100),
+      driverCommissionBps: Math.round(drv * 100),
+      sharedCostCapCents: capText ? Math.round(num("t:cap") * 100) : null,
+      notes: note("t:notes") || null,
+    }, "Tarifa creada como borrador. Apruébala para que se aplique.");
+  }
   const noteInput = (id: string, placeholder: string) => (
     <TextInput
       value={notes[id] ?? ""}
@@ -171,6 +187,7 @@ export function AdminScreen() {
             <>
               <Stat icon="return-down-back-outline" label="Reembolsos pendientes" value={data.finance.pendingRefunds} tone="#966112" onPress={() => setTab("finance")} />
               <Stat icon="alert-circle-outline" label="Pagos tardíos a revisar" value={data.finance.pendingCompensations} onPress={() => setTab("finance")} />
+              <Stat icon="pricetag-outline" label="Tarifa aplicada" value={data.finance.approvedTariffVersion ? `v${data.finance.approvedTariffVersion}` : "Ninguna"} onPress={() => setTab("finance")} />
               <Stat icon="document-text-outline" label="Política de cancelación" value={data.finance.activePolicyVersion ? `v${data.finance.activePolicyVersion}` : "Ninguna"} onPress={() => setTab("finance")} />
             </>
           ) : null}
@@ -282,6 +299,33 @@ export function AdminScreen() {
             </View>
           ))}
           <Text style={s.hint}>Los reembolsos se ejecutarán cuando haya proveedor de pagos. Hasta entonces quedan aquí, calculados y sin cobrar ni devolver nada.</Text>
+          <Text style={s.section}>Tarifas</Text>
+          {(data.tariffs ?? []).map((t: any) => (
+            <View key={t.id} style={s.card}>
+              <View style={s.rowBetween}>
+                <Text style={s.cardTitle}>Versión {t.version}</Text>
+                <Text style={[s.pill, t.status !== "approved" && s.pillDone]}>{t.status === "approved" ? "Aprobada" : STATUS_LABEL[t.status] ?? t.status}</Text>
+              </View>
+              <Text style={s.meta}>
+                {(t.rate_micros_per_km / 1_000_000).toLocaleString("es-ES", { maximumFractionDigits: 4 })} €/km · pasajero {t.passenger_commission_bps / 100} % · conductor {t.driver_commission_bps / 100} %
+                {t.shared_cost_cap_cents != null ? ` · tope ${euros(t.shared_cost_cap_cents)}` : ""}
+              </Text>
+              {t.notes ? <Text style={s.meta}>{t.notes}</Text> : null}
+              {t.status === "draft" ? <Btn label="Aprobar y aplicar" onPress={() => act(`/v1/admin/tariffs/${t.id}/approve`, {}, `Tarifa v${t.version} aprobada. Los presupuestos nuevos ya la usan.`)} /> : null}
+            </View>
+          ))}
+          <View style={s.card}>
+            <Text style={s.cardTitle}>Nueva tarifa (borrador)</Text>
+            <Text style={s.meta}>Ninguna cifra está decidida en la app: introdúcelas cuando estén aprobadas. Las reservas ya aceptadas conservan su precio.</Text>
+            <View style={s.row}>
+              <TextInput value={notes["t:rate"] ?? ""} onChangeText={v => setNotes(c => ({ ...c, "t:rate": v }))} placeholder="€/km" keyboardType="decimal-pad" style={[s.input, s.small]} />
+              <TextInput value={notes["t:pax"] ?? ""} onChangeText={v => setNotes(c => ({ ...c, "t:pax": v }))} placeholder="% pasajero" keyboardType="decimal-pad" style={[s.input, s.small]} />
+              <TextInput value={notes["t:drv"] ?? ""} onChangeText={v => setNotes(c => ({ ...c, "t:drv": v }))} placeholder="% conductor" keyboardType="decimal-pad" style={[s.input, s.small]} />
+              <TextInput value={notes["t:cap"] ?? ""} onChangeText={v => setNotes(c => ({ ...c, "t:cap": v }))} placeholder="Tope € (opcional)" keyboardType="decimal-pad" style={[s.input, s.small]} />
+            </View>
+            {noteInput("t:notes", "Nota (quién la aprobó, por qué)")}
+            <Btn label="Crear borrador" onPress={createTariff} />
+          </View>
           <Text style={s.section}>Políticas de cancelación</Text>
           {!data.policies?.length ? <Text style={s.empty}>No hay ninguna versión. Se crean con la API (ver docs/CANCELLATIONS.md) tras validarlas jurídica y comercialmente.</Text> : null}
           {(data.policies ?? []).map((p: any) => (
@@ -387,6 +431,7 @@ const s = StyleSheet.create({
   pillDone: { color: C.muted, backgroundColor: "#F1F4F9" },
   pillBad: { color: "#C93A3A", backgroundColor: "#FFF0EF" },
   input: { minHeight: 40, borderWidth: 1, borderColor: C.border, borderRadius: 10, paddingHorizontal: 10, fontSize: 13, color: C.navy },
+  small: { flexBasis: "47%", flexGrow: 1, minWidth: 0 },
   btn: { borderWidth: 1, borderColor: C.blue, borderRadius: 10, paddingHorizontal: 11, paddingVertical: 8 },
   btnDanger: { borderColor: "#E8B4B4" },
   btnText: { fontSize: 12, fontWeight: "900", color: C.blue },

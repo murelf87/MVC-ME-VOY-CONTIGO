@@ -1,5 +1,6 @@
 import type { Pool } from "pg";
 import { DomainError } from "../errors.js";
+import { activeTariff, quoteFromTariff } from "./tariff-service.js";
 
 export type TripSearchInput = {
   provinceId: string;
@@ -28,6 +29,7 @@ export type TripSearchResult = {
   driverDisplayName: string | null;
   seriesId: string | null;
   seriesWeekdays: number[] | null;
+  quote: (ReturnType<typeof quoteFromTariff>&{tariffVersion:number}) | null;
 };
 
 function finite(value:number,min:number,max:number,label:string):void{
@@ -175,6 +177,7 @@ export async function searchPublishedTrips(
     after.toISOString(),before?.toISOString() ?? null,radiusM,limit
   ]);
 
+  const tariff=await activeTariff(pool);
   const results:TripSearchResult[]=[];
   for(const row of candidates.rows){
     if(row.to_seq<=row.from_seq||row.road_distance_m<=0) continue;
@@ -194,7 +197,8 @@ export async function searchPublishedTrips(
       availableSeats,
       driverDisplayName:row.driver_display_name,
       seriesId:row.series_id,
-      seriesWeekdays:row.series_weekdays
+      seriesWeekdays:row.series_weekdays,
+      quote:tariff?{tariffVersion:tariff.version,...quoteFromTariff(tariff,row.road_distance_m)}:null
     });
   }
   return results;

@@ -70,6 +70,10 @@ function requestStatus(status: string, bookingStatus?: string | null): { label: 
   }
 }
 
+function euros(cents: number): string {
+  return (cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+}
+
 function canCancel(item: PassengerRideRequest): boolean {
   if (["pending", "accepted", "payment_pending"].includes(item.status)) return true;
   return item.status === "confirmed" && item.booking_status === "confirmed" && !item.picked_up_at && item.trip_status !== "completed";
@@ -436,6 +440,19 @@ export function TripsScreen({
                 <View style={s.dataItem}><Text style={s.dataLabel}>Duración</Text><Text style={s.dataValue}>{duration(trip.estimatedDurationS)}</Text></View>
                 <View style={s.dataItem}><Text style={s.dataLabel}>A recogida</Text><Text style={s.dataValue}>{km(trip.pickupDistanceM)}</Text></View>
               </View>
+              <View style={s.priceRow}>
+                {trip.quote ? (
+                  <>
+                    <Text style={s.priceValue}>{euros(trip.quote.passengerTotalCents)}</Text>
+                    <Text style={s.priceMeta}>
+                      {euros(trip.quote.contributionCents)} de aportación por {km(trip.roadDistanceM)} reales
+                      {trip.quote.passengerCommissionCents ? ` + ${euros(trip.quote.passengerCommissionCents)} de servicio` : ""}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={s.priceMeta}>Precio pendiente: aún no hay una tarifa aprobada.</Text>
+                )}
+              </View>
 
               <PrimaryButton
                 title={requested[trip.tripId] ? "Solicitud enviada" : "Solicitar plaza"}
@@ -489,6 +506,9 @@ export function TripsScreen({
                   </View>
                   <View style={s.badge}><Text style={s.badgeText}>{tripStatusLabel(item.trip_status)}</Text></View>
                 </View>
+                {item.quote_total_cents != null && !item.refund_status ? (
+                  <Text style={s.tripMeta}>Importe acordado: {euros(item.quote_total_cents)}</Text>
+                ) : null}
                 {item.hold_expires_at ? (
                   <Text style={s.pending}>La plaza está retenida hasta las {new Date(item.hold_expires_at).toLocaleTimeString("es-ES")} a la espera del pago.</Text>
                 ) : null}
@@ -819,6 +839,9 @@ const s = StyleSheet.create({
   shareButton: { marginTop: 12, minHeight: 46, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   shareOn: { backgroundColor: "#10A66A", borderColor: "#10A66A" },
   shareText: { fontSize: 13, fontWeight: "900", color: C.blue },
+  priceRow: { marginTop: 12, marginBottom: 2 },
+  priceValue: { fontSize: 22, fontWeight: "900", color: C.navy, fontVariant: ["tabular-nums"] },
+  priceMeta: { fontSize: 11, color: C.muted, lineHeight: 16, marginTop: 2 },
   repeatTag: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 10, alignSelf: "flex-start", backgroundColor: C.pale, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
   repeatText: { fontSize: 11, fontWeight: "900", color: C.blue },
   weekButton: { marginTop: 10, minHeight: 44, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },

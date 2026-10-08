@@ -81,6 +81,7 @@ export type TripSearchResult = {
   driverDisplayName: string | null;
   seriesId?: string | null;
   seriesWeekdays?: number[] | null;
+  quote?: { tariffVersion: number; contributionCents: number; passengerCommissionCents: number; passengerTotalCents: number } | null;
 };
 
 export type Vehicle = {
@@ -177,6 +178,7 @@ export type PassengerRideRequest = {
   picked_up_at: string | null;
   my_rating_score?: number | null;
   weekly_group_id?: string | null;
+  quote_total_cents?: number | null;
   refund_cents?: number | null;
   refund_status?: string | null;
 };
