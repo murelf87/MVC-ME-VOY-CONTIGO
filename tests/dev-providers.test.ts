@@ -1,34 +1,21 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { AppConfig } from "../src/config.js";
-import { buildSmsVerificationProvider } from "../src/auth/provider.js";
-import { DevConsoleSmsProvider } from "../src/dev/dev-sms-provider.js";
+import { buildEmailProvider } from "../src/email/provider.js";
 import { DevLocalMapsProvider } from "../src/dev/dev-maps-provider.js";
 
-test("dev_console SMS provider is refused outside development", () => {
+test("dev_console email provider is refused outside development and only logs", async () => {
   for (const nodeEnv of ["production", "test", "staging"]) {
-    assert.throws(
-      () => buildSmsVerificationProvider({ smsProvider: "dev_console", nodeEnv } as AppConfig),
-      /only allowed with NODE_ENV=development/
-    );
+    assert.throws(() => buildEmailProvider({ emailProvider: "dev_console", nodeEnv }), /only allowed with NODE_ENV=development/);
   }
-  assert.equal(buildSmsVerificationProvider({ smsProvider: "dev_console", nodeEnv: "development" } as AppConfig).name, "dev_console");
-});
-
-test("dev_console SMS codes are random per challenge and single use", async () => {
-  const provider = new DevConsoleSmsProvider();
+  const provider = buildEmailProvider({ emailProvider: "dev_console", nodeEnv: "development" });
+  assert.equal(provider.name, "dev_console");
   const log = console.log;
-  const codes: string[] = [];
-  console.log = (line: string) => { codes.push(/code=(\d{6})/.exec(line)?.[1] ?? ""); };
-  try {
-    const a = await provider.start("+34600000001");
-    const b = await provider.start("+34600000002");
-    assert.equal((await provider.check(a.providerChallengeId, codes[1]!)).approved, codes[0] === codes[1]);
-    assert.equal((await provider.check(b.providerChallengeId, codes[1]!)).approved, true);
-    assert.equal((await provider.check(b.providerChallengeId, codes[1]!)).approved, false);
-  } finally {
-    console.log = log;
-  }
+  const lines: string[] = [];
+  console.log = (line: string) => { lines.push(line); };
+  try { await provider.send({ to: "a@b.es", subject: "S", text: "T" }); } finally { console.log = log; }
+  assert.match(lines[0] ?? "", /\[DEV EMAIL\] to=a@b\.es/);
+  await assert.rejects(() => buildEmailProvider({ emailProvider: "disabled", nodeEnv: "production" }).send({ to: "a@b.es", subject: "S", text: "T" }),
+    /not configured/);
 });
 
 test("dev_local maps labels its routes as estimates and follows every requested point", async () => {

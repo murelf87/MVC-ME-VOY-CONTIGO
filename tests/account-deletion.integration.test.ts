@@ -24,13 +24,13 @@ beforeEach(async()=>{
     truncate table storage_purge_queue,ledger_entries,ledger_transactions,legal_acceptances,legal_documents,
       user_notifications,user_blocks,trip_location_events,trip_live_state,audit_events,quote_snapshots,payment_compensations,
       bookings,seat_holds,ride_requests,trip_segments,trip_stops,trip_series,trips,private_documents,private_upload_intents,
-      vehicles,profiles,user_roles,auth_sessions,auth_challenges,app_users,provinces
+      vehicles,profiles,user_roles,auth_sessions,auth_email_codes,app_users,provinces
     restart identity cascade`);
 });
 after(async()=>{ await pool.end(); });
 
-async function person(phone:string,roles:string[],name:string){
-  const id=(await pool.query(`insert into app_users(phone_e164) values($1) returning id`,[phone])).rows[0].id as string;
+async function person(email:string,roles:string[],name:string){
+  const id=(await pool.query(`insert into app_users(email,password_hash) values($1,'scrypt$x') returning id`,[email])).rows[0].id as string;
   await pool.query(`insert into profiles(user_id,display_name,public_photo_key,public_photo_status,identity_status)
     values($1,$2,$3,'approved','verified')`,[id,name,`public/${id}.jpg`]);
   for(const r of roles) await pool.query(`insert into user_roles(user_id,role) values($1,$2)`,[id,r]);
@@ -38,8 +38,8 @@ async function person(phone:string,roles:string[],name:string){
 }
 
 async function driverWithFiles(){
-  const d=await person("+34600000001",["driver","passenger"],"Ana");
-  const other=await person("+34600000002",["passenger"],"Luis");
+  const d=await person("ana@mvc.test",["driver","passenger"],"Ana");
+  const other=await person("luis@mvc.test",["passenger"],"Luis");
   const v=(await pool.query(`insert into vehicles(driver_user_id,make,model,plate,passenger_seats,review_status,documentation_status)
     values($1,'SEAT','León','1234ABC',3,'approved','approved') returning id`,[d])).rows[0].id;
   const doc=(await pool.query(`insert into private_documents(owner_user_id,vehicle_id,kind,storage_provider,storage_key,content_type,size_bytes,sha256)
@@ -66,8 +66,9 @@ test("deleting removes identity, access and private files but keeps an anonymous
   await assert.rejects(()=>deleteOwnAccount(pool,auth(s.d,["driver","passenger"]),{confirm:"si"}),code("ACCOUNT_DELETION_NOT_CONFIRMED"));
   assert.deepEqual(await deleteOwnAccount(pool,auth(s.d,["driver","passenger"]),{confirm:"BORRAR"}),{deleted:true});
 
-  const u=(await pool.query(`select phone_e164,status,deleted_at from app_users where id=$1`,[s.d])).rows[0];
-  assert.equal(u.phone_e164,null);
+  const u=(await pool.query(`select email,password_hash,status,deleted_at from app_users where id=$1`,[s.d])).rows[0];
+  assert.equal(u.email,null);
+  assert.equal(u.password_hash,null);
   assert.equal(u.status,"deleted");
   assert.ok(u.deleted_at);
   const p=(await pool.query(`select display_name,public_photo_key from profiles where user_id=$1`,[s.d])).rows[0];
@@ -86,8 +87,8 @@ test("deleting removes identity, access and private files but keeps an anonymous
   assert.deepEqual(queued,[`private/${s.d}/insurance.jpg`,`private/${s.d}/photo.jpg`]);
   assert.deepEqual((await pool.query(`select action from audit_events`)).rows.map(r=>r.action),["user.deleted"]);
 
-  // The phone number is free: signing up again creates a brand-new, unrelated account.
-  const again=(await pool.query(`insert into app_users(phone_e164) values('+34600000001') returning id`)).rows[0].id;
+  // The email is free: signing up again creates a brand-new, unrelated account.
+  const again=(await pool.query(`insert into app_users(email) values('ana@mvc.test') returning id`)).rows[0].id;
   assert.notEqual(again,s.d);
   await assert.rejects(()=>deleteOwnAccount(pool,auth(s.d,["driver"]),{confirm:"BORRAR"}),code("ACCOUNT_ALREADY_DELETED"));
 });
@@ -106,16 +107,16 @@ test("open trips, bookings, unsettled earnings or being the last admin block del
   assert.deepEqual((await ownAccountDeletionCheck(pool,auth(s.other,["passenger"]))).blockers.map(b=>b.code),["OPEN_BOOKINGS"]);
   await assert.rejects(()=>deleteOwnAccount(pool,auth(s.d,["driver"]),{confirm:"BORRAR"}),
     (e:unknown)=>e instanceof DomainError&&e.code==="ACCOUNT_HAS_OPEN_ACTIVITY"&&e.statusCode===409);
-  assert.equal((await pool.query(`select phone_e164 from app_users where id=$1`,[s.d])).rows[0].phone_e164,"+34600000001");
+  assert.equal((await pool.query(`select email from app_users where id=$1`,[s.d])).rows[0].email,"ana@mvc.test");
 
   await pool.query(`update trips set status='completed' where id=$1`,[trip]);
   const txn=(await pool.query(`insert into ledger_transactions(kind,idempotency_key) values('capture','test:capture') returning id`)).rows[0].id;
   await pool.query(`insert into ledger_entries(txn_id,account,user_id,amount_cents) values($1,'provider_clearing',null,500),($1,'driver_pending',$2,-500)`,[txn,s.d]);
   assert.deepEqual((await ownAccountDeletionCheck(pool,auth(s.d,["driver"]))).blockers.map(b=>b.code),["DRIVER_BALANCE_UNSETTLED"]);
 
-  const admin=await person("+34600000009",["admin"],"Admin");
+  const admin=await person("admin@mvc.test",["admin"],"Admin");
   assert.deepEqual((await ownAccountDeletionCheck(pool,auth(admin,["admin"]))).blockers.map(b=>b.code),["LAST_ADMIN"]);
-  await person("+34600000010",["admin"],"Admin 2");
+  await person("admin2@mvc.test",["admin"],"Admin 2");
   assert.deepEqual((await ownAccountDeletionCheck(pool,auth(admin,["admin"]))).blockers,[]);
 });
 

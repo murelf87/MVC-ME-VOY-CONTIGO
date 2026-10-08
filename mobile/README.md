@@ -31,7 +31,7 @@ Cada pantalla llama a endpoints reales del backend (contrato completo en `../doc
 
 | Pantalla | Qué hace | Endpoints principales |
 |---|---|---|
-| Acceso | Alta e inicio de sesión por SMS; la sesión se guarda en SecureStore y se valida al abrir | `/v1/auth/phone/start`, `/v1/auth/phone/verify`, `/v1/auth/session`, `/v1/auth/logout` |
+| Acceso | Alta y entrada con correo y contraseña, confirmación del correo y cambio de contraseña con código; la sesión se guarda en SecureStore y se valida al abrir | `/v1/auth/register`, `/v1/auth/login`, `/v1/auth/email/*`, `/v1/auth/password/*`, `/v1/auth/session`, `/v1/auth/logout` |
 | Inicio y búsqueda | Provincia por GPS o lista, búsqueda por tramos, viajes en marcha y con desvío | `/v1/provinces`, `/v1/provinces/resolve`, `/v1/maps/geocode`, `/v1/trips/search`, `/v1/trips/detour-search` |
 | Publicar | Borrador con ruta calculada en el servidor, publicación, repetir, series semanales | `/v1/me/trips`, `/v1/me/trips/:id/publish`, `/v1/me/trips/:id/repeat` |
 | Viajes | Solicitudes, decisión del conductor, cancelaciones, desvíos, reserva semanal | `/v1/me/ride-requests`, `/v1/trips/:id/requests`, `/v1/ride-requests/:id/decision`, `/v1/route-changes/...`, `/v1/series/:id/weekly-requests` |

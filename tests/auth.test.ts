@@ -1,14 +1,27 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeE164, normalizeRequestedRoles } from "../src/auth/phone.js";
+import { assertPasswordPolicy, hashPassword, maskEmail, normalizeEmail, verifyPassword } from "../src/auth/credentials.js";
+import { normalizeRequestedRoles } from "../src/auth/roles.js";
 import { createRawSessionToken, hashSessionToken, readBearerToken } from "../src/auth/session.js";
 
-test("phone normalization accepts E.164 and harmless formatting", () => {
-  assert.equal(normalizeE164(" +34 600-111-222 "), "+34600111222");
+test("emails are normalized and malformed ones rejected", () => {
+  assert.equal(normalizeEmail("  Marina@Example.ES "), "marina@example.es");
+  assert.throws(() => normalizeEmail("marina@"), /not valid/);
+  assert.throws(() => normalizeEmail("sin arroba"), /not valid/);
+  assert.equal(maskEmail("marina@example.es"), "ma••••@example.es");
 });
 
-test("phone normalization never guesses a country code", () => {
-  assert.throws(() => normalizeE164("600111222"), /E\.164/);
+test("passwords are hashed with a fresh salt and short or trivial ones are refused", async () => {
+  const a = await hashPassword("correcto caballo bateria");
+  const b = await hashPassword("correcto caballo bateria");
+  assert.match(a, /^scrypt\$32768\$8\$1\$/);
+  assert.notEqual(a, b);
+  assert.equal(await verifyPassword("correcto caballo bateria", a), true);
+  assert.equal(await verifyPassword("correcto caballo bateri", a), false);
+  assert.throws(() => assertPasswordPolicy("corta"), /between/);
+  assert.throws(() => assertPasswordPolicy("1234567890"), /easy/);
+  assert.throws(() => assertPasswordPolicy("aaaaaaaaaaaa"), /easy/);
+  assertPasswordPolicy("una frase larga");
 });
 
 test("self-service roles cannot escalate to admin", () => {

@@ -18,7 +18,7 @@ Así nadie se queda tirado en un viaje y no queda dinero sin liquidar.
 
 ## Qué se borra al momento
 `POST /v1/me/account/delete` con `{"confirm":"BORRAR"}`, en una sola transacción:
-- Teléfono (queda libre: si vuelve a registrarse, es una cuenta nueva sin relación con la anterior).
+- Correo, contraseña y teléfono si lo había (el correo queda libre: si vuelve a registrarse, es una cuenta nueva sin relación con la anterior).
 - Nombre visible, foto pública y selfie.
 - Documentos privados y subidas pendientes: se quitan de la base y sus ficheros pasan a `storage_purge_queue`; `npm run storage:purge` los borra del almacenamiento y reintenta los que fallen. Debe programarse cuando haya almacenamiento privado configurado.
 - Sesiones (se cierra en todos los dispositivos), roles, avisos, móviles registrados para push y bloqueos.
@@ -28,7 +28,7 @@ Así nadie se queda tirado en un viaje y no queda dinero sin liquidar.
 ## Qué se conserva, sin datos que identifiquen a la persona en MVC
 Viajes, reservas, cobros, reembolsos, libro contable, payouts, valoraciones, reportes, mensajes de chat
 y posiciones GPS de viajes pasados, y las aceptaciones de condiciones. Siguen enlazados a un
-identificador interno que ya no tiene teléfono ni nombre.
+identificador interno que ya no tiene correo, teléfono ni nombre.
 
 Motivo: contabilidad y obligaciones fiscales, disputas de pago y investigaciones de seguridad de otras personas.
 

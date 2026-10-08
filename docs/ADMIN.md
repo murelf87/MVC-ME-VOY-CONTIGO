@@ -10,10 +10,10 @@ El panel está dentro de la app (Perfil › Panel de administración) y solo apa
 | `finance_admin` | Reembolsos pendientes y políticas de cancelación |
 
 Reglas:
-- No hay contraseña maestra. El primer `admin` lo da alguien con acceso a la base de datos: `npm run staff:grant -- +34600000000 admin` (la persona debe haber entrado antes una vez con su móvil). Queda auditado como `operator_cli`. Los siguientes roles se conceden desde el panel.
+- No hay contraseña maestra. El primer `admin` lo da alguien con acceso a la base de datos: `npm run staff:grant -- correo@ejemplo.es admin` (la persona debe haberse registrado antes). Queda auditado como `operator_cli`. Los siguientes roles se conceden desde el panel.
 - Nadie puede revisar su propio perfil, suspenderse ni quitarse su propio rol `admin`.
 - Suspender una cuenta revoca todas sus sesiones al momento.
-- Los teléfonos se muestran enmascarados en las listas.
+- Los correos se muestran enmascarados en las listas.
 - Ver documentos privados exige el almacenamiento privado (**bloqueado** hasta configurar proveedor).
 
 ## Condiciones de uso y privacidad

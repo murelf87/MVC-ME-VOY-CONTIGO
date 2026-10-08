@@ -1,6 +1,6 @@
 # Bloqueos reales
 
-1. SMS real: adaptador Twilio Verify implementado; credenciales no activadas.
+1. Correo: el acceso es con correo y contraseña (docs/AUTH.md). Falta elegir el proveedor de envío (por ejemplo Amazon SES, Brevo o Resend) y sus claves; sin él no llegan los códigos de confirmación ni los de "he olvidado mi contraseña". Twilio ya no hace falta.
 2. Maps real: Google Routes/Geocoding implementado; falta clave restringida/configuración real.
 3. Provincias: falta seleccionar y aprobar dataset oficial definitivo con fuente, licencia, fecha y versión.
 4. Storage privado: falta proveedor para fotos/documentos, carga segura y URLs firmadas. No existe endpoint que confíe en claves de storage enviadas por el cliente.

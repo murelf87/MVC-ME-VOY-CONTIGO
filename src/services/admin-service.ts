@@ -1,3 +1,4 @@
+import { maskEmail } from "../auth/credentials.js";
 import type { Pool } from "pg";
 import type { AuthPrincipal, UserRole } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
@@ -11,10 +12,6 @@ function has(principal:AuthPrincipal,roles:readonly UserRole[]){
 }
 
 /** Phone numbers are shown masked in admin lists; support rarely needs the full number. */
-export function maskPhone(phone:string|null):string|null{
-  if(!phone) return null;
-  return phone.length<=6?phone:`${phone.slice(0,5)}${"•".repeat(Math.max(0,phone.length-8))}${phone.slice(-3)}`;
-}
 
 async function audit(pool:Pool,actor:string,action:string,entityType:string,entityId:string,metadata:Record<string,unknown>){
   await pool.query(`
@@ -67,10 +64,10 @@ export async function adminVerificationQueue(pool:Pool,principal:AuthPrincipal){
       from private_documents d left join profiles p on p.user_id=d.owner_user_id
      where d.review_status='pending' order by d.created_at asc limit 100`)).rows;
   const profiles=(await pool.query(`
-    select p.user_id,p.display_name,p.public_photo_status,p.identity_status,p.updated_at,u.phone_e164
+    select p.user_id,p.display_name,p.public_photo_status,p.identity_status,p.updated_at,u.email
       from profiles p join app_users u on u.id=p.user_id
      where (p.public_photo_status='pending' and p.public_photo_key is not null) or p.identity_status='pending'
-     order by p.updated_at asc limit 100`)).rows.map(r=>({...r,phone_e164:maskPhone(r.phone_e164)}));
+     order by p.updated_at asc limit 100`)).rows.map(r=>({...r,email:maskEmail(r.email)}));
   return {vehicles,documents,profiles};
 }
 
@@ -98,19 +95,18 @@ export async function adminReviewProfile(
 export async function adminSearchUsers(pool:Pool,principal:AuthPrincipal,query?:string){
   requireAnyRole(principal,["admin","support_admin","verification_admin"]);
   const qtext=(query??"").trim();
-  const digits=qtext.replace(/\D/g,"");
   const rows=(await pool.query(`
-    select u.id,u.phone_e164,u.status,u.created_at,p.display_name,p.public_photo_status,p.identity_status,
+    select u.id,u.email,u.email_verified_at is not null as email_verified,u.status,u.created_at,p.display_name,p.public_photo_status,p.identity_status,
            coalesce(array_agg(ur.role::text order by ur.role::text) filter (where ur.role is not null),'{}'::text[]) as roles,
            (select count(*)::int from incident_reports ir where ir.reported_user_id=u.id) as reports_against,
            (select round(avg(score)::numeric,1)::float8 from trip_ratings tr where tr.rated_user_id=u.id) as rating
       from app_users u
       left join profiles p on p.user_id=u.id
       left join user_roles ur on ur.user_id=u.id
-     where $1='' or p.display_name ilike '%'||$1||'%' or ($2<>'' and u.phone_e164 like '%'||$2)
+     where $1='' or p.display_name ilike '%'||$1||'%' or (length($1)>=3 and u.email ilike '%'||$1||'%')
      group by u.id,p.user_id
-     order by u.created_at desc limit 50`,[qtext,digits.length>=3?digits:""])).rows;
-  return rows.map(r=>({...r,phone_e164:maskPhone(r.phone_e164)}));
+     order by u.created_at desc limit 50`,[qtext])).rows;
+  return rows.map(r=>({...r,email:maskEmail(r.email)}));
 }
 
 export async function adminSetUserStatus(

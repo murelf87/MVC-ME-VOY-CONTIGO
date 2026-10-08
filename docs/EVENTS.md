@@ -58,7 +58,7 @@ Se consulta en `GET /v1/admin/audit` (solo administración).
 
 | Área | `action` |
 |---|---|
-| Acceso | `auth.challenge.started`, `auth.login` |
+| Acceso | `auth.registered`, `auth.login`, `auth.email_verified`, `auth.password_reset`, `auth.password_changed` |
 | Perfil e identidad | `profile.updated`, `profile.reviewed`, `private_document.registered`, `private_document.reviewed` |
 | Usuarios y roles | `user.deleted`, `user.suspended`, `user.reactivated`, `role.granted`, `role.revoked`, `user.blocked`, `user.unblocked` |
 | Vehículos | `vehicle.created`, `vehicle.updated`, `vehicle.reviewed` |

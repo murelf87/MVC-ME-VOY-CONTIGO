@@ -11,8 +11,7 @@ import {
   adminSearchUsers,
   adminSetRole,
   adminSetUserStatus,
-  adminVerificationQueue,
-  maskPhone
+  adminVerificationQueue
 } from "../src/services/admin-service.js";
 
 const {Pool}=pg;
@@ -25,8 +24,8 @@ function auth(userId:string,roles:any[]):AuthPrincipal{
 }
 const code=(c:string)=>(e:unknown)=>e instanceof DomainError&&e.code===c;
 
-async function user(name:string,phone:string,identity="unverified"){
-  const id=(await pool.query(`insert into app_users(phone_e164) values($1) returning id`,[phone])).rows[0].id;
+async function user(name:string,email:string,identity="unverified"){
+  const id=(await pool.query(`insert into app_users(email) values($1) returning id`,[email])).rows[0].id;
   await pool.query(`insert into profiles(user_id,display_name,identity_status) values($1,$2,$3)`,[id,name,identity]);
   return id as string;
 }
@@ -40,8 +39,8 @@ beforeEach(async()=>{
 after(async()=>{await pool.end()});
 
 test("overview only shows the areas each staff role may act on",async()=>{
-  const a=await user("Admin","+34600000001");
-  const v=await user("Verif","+34600000002");
+  const a=await user("Admin","admin@mvc.test");
+  const v=await user("Verif","verif@mvc.test");
   const full=await adminOverview(pool,auth(a,["admin"]));
   assert.ok(full.verification&&full.finance&&full.support);
   const ver=await adminOverview(pool,auth(v,["verification_admin"]));
@@ -51,12 +50,12 @@ test("overview only shows the areas each staff role may act on",async()=>{
   await assert.rejects(()=>adminOverview(pool,auth(v,["driver","passenger"])),code("AUTH_FORBIDDEN"));
 });
 
-test("verification queue lists pending identities with masked phones, and reviews are audited",async()=>{
-  const v=await user("Verif","+34600000002");
-  const luis=await user("Luis","+34611222333","pending");
+test("verification queue lists pending identities with masked emails, and reviews are audited",async()=>{
+  const v=await user("Verif","verif@mvc.test");
+  const luis=await user("Luis","luis.garcia@mvc.test","pending");
   const q=await adminVerificationQueue(pool,auth(v,["verification_admin"]));
   assert.equal(q.profiles.length,1);
-  assert.equal(q.profiles[0].phone_e164,"+3461••••333");
+  assert.equal(q.profiles[0].email,"lu•••••••••@mvc.test");
   await assert.rejects(()=>adminReviewProfile(pool,auth(v,["verification_admin"]),{userId:luis,area:"identity",decision:"rejected"}),code("REVIEW_REASON_REQUIRED"));
   const r=await adminReviewProfile(pool,auth(v,["verification_admin"]),{userId:luis,area:"identity",decision:"approved"});
   assert.equal(r.identity_status,"verified");
@@ -66,22 +65,22 @@ test("verification queue lists pending identities with masked phones, and review
 });
 
 test("suspending a user revokes their sessions; only admins can, and never themselves",async()=>{
-  const a=await user("Admin","+34600000001");
-  const s=await user("Soporte","+34600000003");
-  const luis=await user("Luis","+34611222333");
+  const a=await user("Admin","admin@mvc.test");
+  const s=await user("Soporte","soporte@mvc.test");
+  const luis=await user("Luis","luis.garcia@mvc.test");
   await pool.query(`insert into auth_sessions(user_id,token_hash,expires_at) values($1,$2,now()+interval '1 day')`,[luis,"a".repeat(64)]);
   await assert.rejects(()=>adminSetUserStatus(pool,auth(s,["support_admin"]),{userId:luis,status:"suspended",reason:"Fraude"}),code("AUTH_FORBIDDEN"));
   await assert.rejects(()=>adminSetUserStatus(pool,auth(a,["admin"]),{userId:a,status:"suspended",reason:"Prueba"}),code("SELF_SUSPEND_FORBIDDEN"));
   await adminSetUserStatus(pool,auth(a,["admin"]),{userId:luis,status:"suspended",reason:"Reportes reiterados"});
   const sess=await pool.query(`select revoked_at from auth_sessions where user_id=$1`,[luis]);
   assert.ok(sess.rows[0].revoked_at);
-  const found=await adminSearchUsers(pool,auth(s,["support_admin"]),"333");
+  const found=await adminSearchUsers(pool,auth(s,["support_admin"]),"garcia");
   assert.equal(found[0].status,"suspended");
 });
 
 test("roles are granted by admins only and an admin cannot demote themselves",async()=>{
-  const a=await user("Admin","+34600000001");
-  const luis=await user("Luis","+34611222333");
+  const a=await user("Admin","admin@mvc.test");
+  const luis=await user("Luis","luis.garcia@mvc.test");
   const out=await adminSetRole(pool,auth(a,["admin"]),{userId:luis,role:"support_admin",grant:true});
   assert.deepEqual(out.roles,["support_admin"]);
   await assert.rejects(()=>adminSetRole(pool,auth(luis,["support_admin"]),{userId:luis,role:"admin",grant:true}),code("AUTH_FORBIDDEN"));
@@ -91,7 +90,3 @@ test("roles are granted by admins only and an admin cannot demote themselves",as
   await assert.rejects(()=>adminListAudit(pool,auth(luis,["support_admin"]),{}),code("AUTH_FORBIDDEN"));
 });
 
-test("phone masking keeps prefix and last three digits",()=>{
-  assert.equal(maskPhone("+34600123456"),"+3460••••456");
-  assert.equal(maskPhone(null),null);
-});

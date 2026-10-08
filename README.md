@@ -13,7 +13,7 @@ Viajes compartidos interurbanos dentro de una sola provincia española, con capa
 - PostGIS 3.5
 
 ## Funciones actuales
-- auth por teléfono + sesiones revocables;
+- acceso con correo y contraseña + sesiones revocables;
 - perfiles, vehículos y revisión;
 - routing provincial calculado en servidor;
 - creación/publicación de viajes;
@@ -28,7 +28,7 @@ Viajes compartidos interurbanos dentro de una sola provincia española, con capa
 
 ## Proveedores
 No se usan proveedores falsos para declarar operaciones reales.
-- SMS: Twilio Verify disponible, desactivado sin credenciales.
+- Correo: códigos de confirmación y de contraseña listos, sin proveedor de envío todavía.
 - Maps: Google Maps disponible, desactivado sin clave.
 - Storage: pendiente.
 - Pagos/payouts: pendiente.

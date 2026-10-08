@@ -7,7 +7,7 @@ import { driverBalances } from "./ledger-service.js";
 /**
  * Self-service account deletion (required by both app stores).
  *
- * What goes at once: phone number, name, photos and private documents, sessions, roles, inbox,
+ * What goes at once: email, password, phone number, name, photos and private documents, sessions, roles, inbox,
  * push devices, blocks and unfinished drafts. What stays, tied to an id that no longer identifies anyone through
  * MVC: trips, bookings, payments, ledger, ratings, reports, chat and GPS history of past trips,
  * because accounting and safety investigations need them. How long those are kept and when they
@@ -65,7 +65,7 @@ export async function deleteOwnAccount(pool:Pool,principal:AuthPrincipal,input:{
     throw new DomainError("ACCOUNT_DELETION_NOT_CONFIRMED","Type BORRAR to confirm",400);
   }
   return tx(pool,async client=>{
-    const u=(await client.query(`select id,phone_e164,status from app_users where id=$1 for update`,[principal.userId])).rows[0];
+    const u=(await client.query(`select id,status from app_users where id=$1 for update`,[principal.userId])).rows[0];
     if(!u||u.status==="deleted") throw new DomainError("ACCOUNT_ALREADY_DELETED","Account already deleted",409);
     if(principal.roles.includes("admin")) await client.query(`lock table user_roles in share row exclusive mode`);
     const blockers=await accountDeletionBlockers(client,principal.userId);
@@ -90,9 +90,9 @@ export async function deleteOwnAccount(pool:Pool,principal:AuthPrincipal,input:{
     await client.query(`
       update profiles set display_name=null,public_photo_key=null,private_selfie_key=null,updated_at=now()
        where user_id=$1`,[principal.userId]);
-    await client.query(`delete from auth_challenges where phone_e164=$1`,[u.phone_e164]);
+    await client.query(`delete from auth_email_codes where user_id=$1`,[principal.userId]);
     await client.query(`
-      update app_users set status='deleted',phone_e164=null,deleted_at=now(),updated_at=now() where id=$1`,[principal.userId]);
+      update app_users set status='deleted',phone_e164=null,email=null,password_hash=null,deleted_at=now(),updated_at=now() where id=$1`,[principal.userId]);
 
     // Access and personal lists.
     await client.query(`delete from auth_sessions where user_id=$1`,[principal.userId]);

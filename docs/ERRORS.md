@@ -15,7 +15,7 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `HTTP_ERROR` | 400 | Other 4xx raised by Fastify (malformed JSON, unsupported media type…) |
 | `INTERNAL_ERROR` | 500 | Internal server error |
 
-## Dominio (213 códigos)
+## Dominio (207 códigos)
 
 | Código | HTTP | Mensaje | Dónde |
 |---|---|---|---|
@@ -24,18 +24,13 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `ACCOUNT_HAS_OPEN_ACTIVITY` | 409 | Finish or cancel open trips and settle money first | services/account-service.ts |
 | `ACCOUNT_NOT_ACTIVE` | 403 | Account is not active | auth/service.ts, auth/session.ts |
 | `ALREADY_ON_TRIP` | 409 | You already have an open request on this trip | services/route-change-service.ts |
-| `AUTH_CHALLENGE_ALREADY_USED` | 409 | Verification challenge has already been used | auth/service.ts |
-| `AUTH_CHALLENGE_NOT_APPROVED` | 409 | Verification challenge is not approved | auth/service.ts |
-| `AUTH_CHALLENGE_NOT_FOUND` | 404 | Verification challenge not found | auth/service.ts |
-| `AUTH_CHALLENGE_NOT_READY` | 409 | Verification challenge is not ready | auth/service.ts |
-| `AUTH_CODE_INVALID_OR_EXPIRED` | 401 | Verification code is invalid or expired | auth/provider.ts, auth/service.ts |
+| `AUTH_CODE_INVALID_OR_EXPIRED` | 401 | Code is invalid or expired | auth/service.ts |
 | `AUTH_FORBIDDEN` | 403 | Insufficient permissions | auth/session.ts |
 | `AUTH_INVALID` | 401 | Invalid authentication token | auth/session.ts |
 | `AUTH_INVALID_OR_EXPIRED` | 401 | Session is invalid or expired | auth/session.ts |
-| `AUTH_PROVIDER_MISMATCH` | 409 | Verification provider mismatch | auth/service.ts |
 | `AUTH_REQUIRED` | 401 | Authentication required | auth/session.ts |
-| `AUTH_RESEND_TOO_SOON` | 429 | Wait before requesting another verification code | auth/service.ts |
-| `AUTH_TOO_MANY_ATTEMPTS` | 429 | Too many verification attempts | auth/service.ts |
+| `AUTH_RESEND_TOO_SOON` | 429 | Wait a minute before asking for another code | auth/service.ts |
+| `AUTH_TEMPORARILY_LOCKED` | 429 | Too many failed attempts, try again later | auth/service.ts |
 | `BLOCK_SELF_FORBIDDEN` | 400 | Cannot block yourself | chat/chat-service.ts |
 | `BOOKING_NOT_FOUND` | 404 | Booking not found | services/feedback-service.ts, services/trip-execution-service.ts |
 | `BOOKING_NOT_OWNED` | 403 | Only the booked passenger may generate the pickup code | services/trip-execution-service.ts |
@@ -59,6 +54,8 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `DRIVER_PUBLIC_PHOTO_REQUIRED` | 400 | Approved public profile photo is required | services/trip-service.ts |
 | `DUPLICATE_OPEN_REQUEST` | 409 | An open request already exists for this segment range | services/request-service.ts |
 | `DUPLICATE_OPEN_ROUTE_CHANGE` | 409 | You already asked this driver for a detour | services/route-change-service.ts |
+| `EMAIL_ALREADY_REGISTERED` | 409 | An account with this email already exists | auth/service.ts |
+| `EMAIL_PROVIDER_UNAVAILABLE` | 503 | Email delivery is not configured | auth/service.ts, email/provider.ts |
 | `GEOCODING_PROVIDER_BAD_RESPONSE` | 502 | Geocoding provider returned an incomplete result / Geocoding provider returned invalid JSON | maps/google-maps-provider.ts |
 | `GEOCODING_PROVIDER_ERROR` | 502 | Geocoding provider returned an error | maps/google-maps-provider.ts |
 | `GEOCODING_PROVIDER_RATE_LIMITED` | 429 | Geocoding provider is temporarily rate limited | maps/google-maps-provider.ts |
@@ -72,12 +69,14 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `INVALID_ANALYSIS_CONFIDENCE` | 400 | Analysis confidence must be between 0 and 1 | documents/document-service.ts |
 | `INVALID_CHAT_LIMIT` | 400 | Chat limit must be between 1 and 100 | chat/chat-service.ts |
 | `INVALID_CHAT_MESSAGE` | 400 | Message must contain 1 to 2000 characters | chat/chat-service.ts |
+| `INVALID_CREDENTIALS` | 401 | Email or password is incorrect / Current password is incorrect | auth/service.ts |
 | `INVALID_DECISION` | 400 | Decision must be accept or reject | services/route-change-service.ts |
 | `INVALID_DEPARTURE_TIME` | 400 | departureAt must be a valid ISO timestamp | services/trip-draft-service.ts |
 | `INVALID_DISPLAY_NAME` | 400 | Display name must contain 2 to 80 characters | profiles/profile-service.ts |
 | `INVALID_DOCUMENT_CONTENT_TYPE` | 400 | Document content type is invalid | documents/document-service.ts |
 | `INVALID_DOCUMENT_SHA256` | 400 | Document SHA-256 is invalid | documents/document-service.ts |
 | `INVALID_DOCUMENT_SIZE` | 400 | Document size must be between 1 byte and 20 MiB | documents/document-service.ts |
+| `INVALID_EMAIL` | 400 | Email address is not valid | auth/credentials.ts |
 | `INVALID_END_DATE` | 400 | endsOn must be YYYY-MM-DD | services/recurring-service.ts |
 | `INVALID_FLEXIBILITY` | 400 | Flexibility must be between 0 and 60 minutes | services/trip-draft-service.ts |
 | `INVALID_GEOCODE_QUERY` | 400 | Address must contain between 3 and 500 characters | maps/google-maps-provider.ts |
@@ -92,7 +91,6 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `INVALID_OFFERED_SEATS` | 400 | Offered seats must be between 1 and 8 | services/trip-draft-service.ts |
 | `INVALID_PASSENGER_SEATS` | 400 | Passenger seats must be between 1 and 8 | vehicles/vehicle-service.ts |
 | `INVALID_PAYMENT_AMOUNT` | 400 | Payment amount must be exact integer cents | services/reservation-service.ts |
-| `INVALID_PHONE_E164` | 400 | Phone number must be supplied in E.164 format, for example +34600111222 | auth/phone.ts |
 | `INVALID_PICKUP_CODE` | 400 | Pickup code must contain exactly 6 digits | services/trip-execution-service.ts |
 | `INVALID_POLICY_RULES` | 400 | … must be an integer between 0 and 10000 / … is required / Rules must be an object / passenger must list 1 to 10 tiers / passenger[…].minMinutesBeforeDeparture must be a non-negative integer / passenger tiers must include one with minMinutesBeforeDeparture 0 | domain/cancellation-policy.ts |
 | `INVALID_PRIVATE_OBJECT` | 400 | Private object reference is invalid | documents/document-service.ts |
@@ -107,12 +105,11 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `INVALID_SEARCH_RADIUS` | 400 | Search radius must be between 100 and 50000 meters | services/trip-search-service.ts |
 | `INVALID_SEARCH_WINDOW` | 400 | departureBefore must be after departureAfter | services/trip-search-service.ts |
 | `INVALID_SEGMENT_RANGE` | 400 | Requested segment range is not contiguous / Segment range is invalid | services/request-service.ts, services/reservation-service.ts, services/tariff-service.ts |
-| `INVALID_SELF_SERVICE_ROLES` | 400 | roles must be an array / Select passenger, driver, or both / Only passenger and driver roles may be requested during self-service registration | auth/phone.ts |
+| `INVALID_SELF_SERVICE_ROLES` | 400 | roles must be an array / Select passenger, driver, or both / Only passenger and driver roles may be requested during self-service registration | auth/roles.ts |
 | `INVALID_STALE_THRESHOLD` | 400 | staleAfterSeconds must be between 5 and 3600 | live/tracking-service.ts |
 | `INVALID_TARIFF` | 400 | … must be an integer between … and … / sharedCostCapCents must be a non-negative integer | services/tariff-service.ts |
 | `INVALID_VEHICLE_FIELD` | 400 | … is invalid | vehicles/vehicle-service.ts |
 | `INVALID_VEHICLE_PLATE` | 400 | Vehicle plate is invalid | vehicles/vehicle-service.ts |
-| `INVALID_VERIFICATION_CODE` | 400 | Verification code must contain 4 to 10 characters | auth/provider.ts |
 | `INVALID_WEEK` | 400 | weekStart must be YYYY-MM-DD | services/recurring-service.ts |
 | `INVALID_WEEKDAYS` | 400 | Weekdays must be ISO numbers 1 (Monday) to 7 (Sunday) | services/recurring-service.ts |
 | `LEGAL_ACCEPTANCE_REQUIRED` | 409 | Current terms must be accepted first | services/legal-service.ts |
@@ -131,6 +128,7 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `NO_CAPACITY_ON_SEGMENT` | 409 | No seat capacity on at least one affected segment | services/request-service.ts, services/reservation-service.ts, services/route-change-service.ts |
 | `NO_ROUTE_WITHIN_PROVINCE` | 422 | No provider route candidate remains entirely inside the selected province / At least one requested leg has no driving route that remains inside the selected province / Combined route does not remain inside the selected province | maps/province-route-service.ts |
 | `OFFERED_SEATS_EXCEED_VEHICLE` | 422 | Offered seats exceed vehicle capacity | services/trip-draft-service.ts, services/trip-service.ts |
+| `PASSWORD_TOO_WEAK` | 400 | Password must have between … and … characters / Password is too easy to guess | auth/credentials.ts |
 | `PAYMENT_AMOUNT_MISMATCH` | 409 | Paid amount differs from the agreed quote | services/reservation-service.ts |
 | `PAYMENT_EVENT_NOT_FOUND` | 404 | Payment event not found | services/payments-service.ts |
 | `PAYMENTS_PROVIDER_UNAVAILABLE` | 503 | No payment provider is configured | routes/payment-routes.ts |
@@ -187,10 +185,6 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `SELF_REVIEW_FORBIDDEN` | 403 | You cannot review your own profile | services/admin-service.ts |
 | `SELF_SUSPEND_FORBIDDEN` | 403 | You cannot change your own status | services/admin-service.ts |
 | `SERIES_NOT_FOUND` | 404 | Series not found / Series not found or already ended | services/recurring-service.ts |
-| `SMS_PROVIDER_BAD_RESPONSE` | 502 | SMS provider returned an invalid verification identifier | auth/provider.ts |
-| `SMS_PROVIDER_ERROR` | 502 | SMS verification provider returned an error | auth/provider.ts |
-| `SMS_PROVIDER_UNAVAILABLE` | 503 | SMS verification provider is not configured | auth/provider.ts |
-| `SMS_RATE_LIMITED` | 429 | SMS verification is temporarily rate limited | auth/provider.ts |
 | `TARIFF_HAS_NO_RATE` | 409 | Tariff has no rate | services/tariff-service.ts |
 | `TARIFF_NOT_DRAFT` | 409 | Only draft tariffs can be approved | services/tariff-service.ts |
 | `TARIFF_NOT_FOUND` | 404 | Tariff not found | services/tariff-service.ts |
@@ -215,7 +209,7 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `UPLOAD_STORAGE_MISMATCH` | 409 | Upload storage provider mismatch | documents/private-upload-service.ts |
 | `UPLOADED_FILE_SIZE_MISMATCH` | 422 | Uploaded file size does not match the declared size / Uploaded file byte count is invalid | documents/private-upload-service.ts |
 | `UPLOADED_FILE_TYPE_MISMATCH` | 422 | Uploaded file content type does not match the declared type | documents/private-upload-service.ts |
-| `USER_NOT_FOUND` | 404 | User not found | chat/chat-service.ts, routes/me-routes.ts, services/admin-service.ts |
+| `USER_NOT_FOUND` | 404 | User not found | auth/service.ts, chat/chat-service.ts, routes/me-routes.ts, services/admin-service.ts |
 | `VEHICLE_DOCUMENT_REQUIRES_VEHICLE` | 400 | Vehicle document requires a vehicle | documents/document-service.ts |
 | `VEHICLE_INSURANCE_EXPIRED` | 409 | Expired insurance cannot be approved / Vehicle insurance has expired. Upload and validate the renewal before driving | documents/document-service.ts, vehicles/compliance-service.ts |
 | `VEHICLE_INSURANCE_EXPIRY_REQUIRED` | 409 | Insurance expiry date must be verified before driving | vehicles/compliance-service.ts |

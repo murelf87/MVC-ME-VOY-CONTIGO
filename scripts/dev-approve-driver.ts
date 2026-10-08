@@ -1,7 +1,7 @@
 /**
  * DEVELOPMENT ONLY. Stands in for the administrative review that a real reviewer
  * performs in the admin panel (pending): approves the public photo, identity and
- * every vehicle of the driver with the given phone, with a one-year insurance expiry.
+ * every vehicle of the driver with the given email, with a one-year insurance expiry.
  * Refuses to run unless NODE_ENV=development.
  */
 import { pool } from "../src/db/pool.js";
@@ -10,13 +10,13 @@ if (process.env.NODE_ENV !== "development") {
   throw new Error("dev-approve-driver only runs with NODE_ENV=development");
 }
 
-const phone = process.argv[2];
-if (!phone) throw new Error("Usage: npm run dev:approve-driver -- +34600000000");
+const email = (process.argv[2] ?? "").trim().toLowerCase();
+if (!email) throw new Error("Usage: npm run dev:approve-driver -- persona@ejemplo.es");
 
 try {
-  const user = await pool.query(`select id from app_users where phone_e164=$1`, [phone]);
+  const user = await pool.query(`select id from app_users where lower(email)=$1`, [email]);
   const userId = user.rows[0]?.id as string | undefined;
-  if (!userId) throw new Error(`No user with phone ${phone}`);
+  if (!userId) throw new Error(`No user with email ${email}`);
   await pool.query(
     `update profiles set public_photo_status='approved', identity_status='verified' where user_id=$1`,
     [userId]

@@ -5,7 +5,7 @@ import swaggerUi from "@fastify/swagger-ui";
 import { loadConfig } from "./config.js";
 import { checkDatabaseReadiness, pool } from "./db/pool.js";
 import { DomainError } from "./errors.js";
-import { buildSmsVerificationProvider } from "./auth/provider.js";
+import { buildEmailProvider } from "./email/provider.js";
 import { registerAuthRoutes } from "./auth/routes.js";
 import { readBearerToken, requireAnyRole, resolveSession } from "./auth/session.js";
 import { registerMeRoutes } from "./routes/me-routes.js";
@@ -146,7 +146,7 @@ export async function buildApp() {
     return { status: "ready", postgis: db.postgis ?? "unknown" };
   });
 
-  const smsProvider = buildSmsVerificationProvider(config);
+  const emailProvider = buildEmailProvider(config);
   const privateStorage = buildPrivateObjectStorage(config);
   const insuranceOcr = buildInsuranceOcrProvider(config);
   let routeProvider: RouteProvider | null = null;
@@ -164,10 +164,11 @@ export async function buildApp() {
     routeProvider = devMaps;
     geocodingProvider = devMaps;
   }
-  await registerAuthRoutes(app, pool, smsProvider, {
-    challengeTtlSeconds: config.authChallengeTtlSeconds,
+  await registerAuthRoutes(app, pool, emailProvider, {
     sessionTtlSeconds: config.authSessionTtlSeconds,
-    maxCheckAttempts: config.authMaxCheckAttempts,
+    maxFailedLogins: config.authMaxFailedLogins,
+    lockMinutes: config.authLockMinutes,
+    codeTtlSeconds: config.authCodeTtlSeconds,
     resendCooldownSeconds: config.authResendCooldownSeconds
   });
   await registerMeRoutes(app, pool);
@@ -182,7 +183,7 @@ export async function buildApp() {
   await registerCancellationRoutes(app, pool);
   await registerNotificationRoutes(app, pool);
   await registerAdminRoutes(app, pool, {
-    sms: config.smsProvider,
+    email: config.emailProvider,
     maps: config.mapsProvider,
     storage: config.privateStorageProvider,
     insuranceOcr: config.insuranceOcrProvider,

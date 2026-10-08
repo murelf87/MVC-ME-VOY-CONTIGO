@@ -20,7 +20,7 @@ const uuidParam=(name:string)=>({type:"object",required:[name],properties:{[name
 const sec=[{bearerAuth:[]}];
 
 /** Which external providers are wired in this deployment; "disabled" means the feature is blocked, never faked. */
-export type IntegrationStatus=Record<"sms"|"maps"|"storage"|"insuranceOcr"|"payments"|"push",string>;
+export type IntegrationStatus=Record<"email"|"maps"|"storage"|"insuranceOcr"|"payments"|"push",string>;
 
 export async function registerAdminRoutes(app:FastifyInstance,pool:Pool,integrations?:IntegrationStatus):Promise<void>{
   app.get("/v1/admin/overview",{schema:{security:sec}},async request=>

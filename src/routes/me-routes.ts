@@ -12,7 +12,7 @@ export async function registerMeRoutes(app: FastifyInstance, pool: Pool): Promis
 
     const result = await pool.query(
       `select
-         u.id,u.phone_e164,u.status,
+         u.id,u.email,u.email_verified_at is not null as email_verified,u.status,
          p.display_name,p.public_photo_key,p.public_photo_status,p.identity_status,p.presence_status,
          coalesce(array_agg(ur.role::text order by ur.role::text) filter (where ur.role is not null),'{}'::text[]) as roles
        from app_users u

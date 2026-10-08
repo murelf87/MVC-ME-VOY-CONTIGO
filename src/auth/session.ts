@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import { DomainError } from "../errors.js";
-import type { SelfServiceRole } from "./phone.js";
+import type { SelfServiceRole } from "./roles.js";
 
 export type UserRole = SelfServiceRole | "admin" | "verification_admin" | "finance_admin" | "support_admin";
 

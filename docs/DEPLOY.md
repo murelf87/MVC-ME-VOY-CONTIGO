@@ -6,7 +6,7 @@ Guía para cuando exista un servidor. Hoy no hay ningún entorno de staging ni d
 | | Desarrollo | Staging | Producción |
 |---|---|---|---|
 | `NODE_ENV` | development | production | production |
-| SMS / mapas | `dev_console` / `dev_local` permitidos | Twilio y Google con claves de prueba | Twilio y Google con claves restringidas |
+| Correo / mapas | `dev_console` / `dev_local` permitidos | Proveedor de correo y Google con claves de prueba | Proveedor de correo y Google con claves restringidas |
 | Pagos | `disabled` | Stripe en modo test | Stripe en modo live |
 | Base de datos | local | copia separada, nunca la de producción | gestionada, con copias automáticas |
 
@@ -32,4 +32,4 @@ Los proveedores de desarrollo se niegan a arrancar fuera de `NODE_ENV=developmen
 ## Monitorización mínima
 - `GET /health/live` y `GET /health/ready` en el comprobador de disponibilidad.
 - Alertas sobre el panel de finanzas: libro que no cuadra, conciliación que no coincide, eventos de pago en `failed` o `deferred` más de una hora, reembolsos `pending_provider` antiguos.
-- Logs: se registra método, ruta sin parámetros, estado y duración; ni cabeceras, ni cuerpos, ni la parte de la URL con coordenadas o direcciones. Tokens, códigos SMS y documentos no salen en los logs. Los teléfonos se enmascaran en el panel.
+- Logs: se registra método, ruta sin parámetros, estado y duración; ni cabeceras, ni cuerpos, ni la parte de la URL con coordenadas o direcciones. Contraseñas, tokens, códigos y documentos no salen en los logs. Los correos se enmascaran en el panel.
