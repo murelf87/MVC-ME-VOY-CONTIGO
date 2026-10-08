@@ -122,7 +122,7 @@ export async function adminApproveTariff(pool:Pool,principal:AuthPrincipal,tarif
     const t=(await client.query(`select * from tariff_versions where id=$1 for update`,[tariffId])).rows[0];
     if(!t) throw new DomainError("TARIFF_NOT_FOUND","Tariff not found",404);
     if(t.status!=="draft") throw new DomainError("TARIFF_NOT_DRAFT","Only draft tariffs can be approved",409);
-    if(t.rate_micros_per_km==null) throw new DomainError("INVALID_TARIFF","Tariff has no rate",409);
+    if(t.rate_micros_per_km==null) throw new DomainError("TARIFF_HAS_NO_RATE","Tariff has no rate",409);
     await client.query(`update tariff_versions set status='retired',retired_at=now() where status='approved'`);
     const r=await client.query(`
       update tariff_versions set status='approved',approved_by=$2,approved_at=now() where id=$1 returning *`,[tariffId,principal.userId]);

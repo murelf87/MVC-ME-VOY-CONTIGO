@@ -52,7 +52,7 @@ export async function createSeatHold(pool: Pool, requestId: string, ttlSeconds =
     const tripQ = await client.query(`select * from trips where id=$1 for update`, [request.trip_id]);
     const trip = tripQ.rows[0];
     if (!trip || !["published", "active"].includes(trip.status)) {
-      throw new DomainError("TRIP_NOT_BOOKABLE", "Trip is not bookable");
+      throw new DomainError("TRIP_NOT_BOOKABLE", "Trip is not bookable", 409);
     }
 
     await releaseExpiredHolds(client, trip.id);

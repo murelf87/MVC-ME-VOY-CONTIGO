@@ -47,7 +47,7 @@ export async function publishTrip(pool: Pool, tripId: string): Promise<void> {
     }
     await assertVehicleCanDrive(client, trip.vehicle_id);
     if (trip.offered_seats > trip.passenger_seats) {
-      throw new DomainError("OFFERED_SEATS_EXCEED_VEHICLE", "Offered seats exceed vehicle capacity");
+      throw new DomainError("OFFERED_SEATS_EXCEED_VEHICLE", "Offered seats exceed vehicle capacity", 422);
     }
 
     const invalidStops = await client.query(

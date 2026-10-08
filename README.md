@@ -61,6 +61,8 @@ Lee PROMPT_MAESTRO_MVC.md.
 - STATUS_2026-10-04.md
 - docs/TEST_EVIDENCE.md
 - docs/MANDATORY_TESTS.md
+- docs/EVENTS.md
+- docs/ERRORS.md
 - docs/BLOCKERS.md
 - docs/STATE_MACHINES.md
 - docs/openapi.json
