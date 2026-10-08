@@ -130,11 +130,15 @@ export async function searchPublishedTrips(
       ),0) as estimated_duration_s,
       p.display_name as driver_display_name
     from trips t
+    join vehicles v on v.id=t.vehicle_id
     join trip_stops pickup on pickup.trip_id=t.id
     join trip_stops dropoff on dropoff.trip_id=t.id and dropoff.seq>pickup.seq
     left join profiles p on p.user_id=t.driver_user_id
     where t.province_id=$1
       and t.status='published'
+      and v.vehicle_photo_status='approved'
+      and v.insurance_status='approved'
+      and v.insurance_expires_on >= current_date
       and t.departure_at >= $6
       and ($7::timestamptz is null or t.departure_at <= $7::timestamptz)
       and ST_DWithin(

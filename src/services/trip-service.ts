@@ -1,5 +1,6 @@
 import type { Pool, PoolClient } from "pg";
 import { DomainError } from "../errors.js";
+import { assertVehicleCanDrive } from "../vehicles/compliance-service.js";
 
 async function withTx<T>(pool: Pool, fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
@@ -44,6 +45,7 @@ export async function publishTrip(pool: Pool, tripId: string): Promise<void> {
     if (trip.review_status !== "approved" || trip.documentation_status !== "approved") {
       throw new DomainError("VEHICLE_NOT_APPROVED", "Vehicle and documentation must be approved");
     }
+    await assertVehicleCanDrive(client, trip.vehicle_id);
     if (trip.offered_seats > trip.passenger_seats) {
       throw new DomainError("OFFERED_SEATS_EXCEED_VEHICLE", "Offered seats exceed vehicle capacity");
     }

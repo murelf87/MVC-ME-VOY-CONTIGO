@@ -37,6 +37,8 @@ function seats(value: number): number {
 export async function listOwnVehicles(pool: Pool, principal: AuthPrincipal) {
   return (await pool.query(
     `select id,make,model,plate,passenger_seats,review_status,documentation_status,
+            vehicle_photo_status,vehicle_photo_document_id,
+            insurance_status,insurance_expires_on,insurance_document_id,insurance_reviewed_at,
             review_reason,reviewed_at,created_at,updated_at
        from vehicles
       where driver_user_id=$1
@@ -62,7 +64,8 @@ export async function createVehicle(
          driver_user_id,make,model,plate,passenger_seats,
          review_status,documentation_status
        ) values($1,$2,$3,$4,$5,'pending','pending')
-       returning id,make,model,plate,passenger_seats,review_status,documentation_status,created_at,updated_at`,
+       returning id,make,model,plate,passenger_seats,review_status,documentation_status,
+                 vehicle_photo_status,insurance_status,insurance_expires_on,created_at,updated_at`,
       [principal.userId, make, model, plate.display, passengerSeats]
     );
     const row = result.rows[0];
@@ -109,7 +112,8 @@ export async function updateOwnVehicle(
               review_status='pending',documentation_status='pending',
               review_reason=null,reviewed_by_user_id=null,reviewed_at=null,updated_at=now()
         where id=$1
-        returning id,make,model,plate,passenger_seats,review_status,documentation_status,created_at,updated_at`,
+        returning id,make,model,plate,passenger_seats,review_status,documentation_status,
+                  vehicle_photo_status,insurance_status,insurance_expires_on,created_at,updated_at`,
       [vehicleId, make, model, plate.display, passengerSeats]
     );
     await pool.query(
@@ -148,7 +152,8 @@ export async function reviewVehicle(
             review_reason=$3,reviewed_by_user_id=$4,reviewed_at=now(),updated_at=now()
       where id=$1
       returning id,driver_user_id,make,model,plate,passenger_seats,
-                review_status,documentation_status,review_reason,reviewed_at`,
+                review_status,documentation_status,vehicle_photo_status,
+                insurance_status,insurance_expires_on,review_reason,reviewed_at`,
     [vehicleId, input.decision, reason ?? null, principal.userId]
   );
   const row = result.rows[0];

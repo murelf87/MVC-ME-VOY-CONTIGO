@@ -2,12 +2,14 @@ import type { Pool } from "pg";
 import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
+import { validateInsuranceExpiry } from "../vehicles/compliance-service.js";
 
 export type PrivateDocumentKind =
   | "identity_document"
   | "driver_license"
   | "vehicle_registration"
   | "vehicle_insurance"
+  | "vehicle_photo"
   | "other";
 
 export type VerifiedPrivateObject = {
@@ -18,9 +20,18 @@ export type VerifiedPrivateObject = {
   sha256: string;
 };
 
+export type InsuranceAnalysisInput = {
+  status: "succeeded" | "needs_review" | "failed";
+  detectedExpiresOn?: string;
+  confidence?: number;
+  provider: string;
+  reference?: string;
+};
+
 const VEHICLE_KINDS = new Set<PrivateDocumentKind>([
   "vehicle_registration",
-  "vehicle_insurance"
+  "vehicle_insurance",
+  "vehicle_photo"
 ]);
 
 function validateObject(object: VerifiedPrivateObject): void {
@@ -36,6 +47,10 @@ function validateObject(object: VerifiedPrivateObject): void {
   if (!/^[a-z0-9.+-]+\/[a-z0-9.+-]+$/i.test(object.contentType)) {
     throw new DomainError("INVALID_DOCUMENT_CONTENT_TYPE", "Document content type is invalid");
   }
+}
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export async function registerVerifiedPrivateDocument(
@@ -68,16 +83,21 @@ export async function registerVerifiedPrivateDocument(
     }
   }
 
+  const analysisStatus = input.kind === "vehicle_insurance" ? "pending" : "not_required";
+
   const result = await pool.query(
     `insert into private_documents(
        owner_user_id,vehicle_id,kind,storage_provider,storage_key,
-       content_type,size_bytes,sha256,review_status
-     ) values($1,$2,$3,$4,$5,$6,$7,$8,'pending')
-     returning id,vehicle_id,kind,content_type,size_bytes,sha256,review_status,created_at,updated_at`,
+       content_type,size_bytes,sha256,review_status,analysis_status
+     ) values($1,$2,$3,$4,$5,$6,$7,$8,'pending',$9)
+     returning id,vehicle_id,kind,content_type,size_bytes,sha256,review_status,
+               analysis_status,detected_expires_on,verified_expires_on,
+               created_at,updated_at`,
     [
       principal.userId, input.vehicleId ?? null, input.kind,
       input.object.storageProvider, input.object.storageKey,
-      input.object.contentType, input.object.sizeBytes, input.object.sha256
+      input.object.contentType, input.object.sizeBytes, input.object.sha256,
+      analysisStatus
     ]
   );
 
@@ -87,11 +107,40 @@ export async function registerVerifiedPrivateDocument(
       [principal.userId]
     );
   }
+
   if (input.vehicleId) {
-    await pool.query(
-      `update vehicles set documentation_status='pending',updated_at=now() where id=$1`,
-      [input.vehicleId]
-    );
+    if (input.kind === "vehicle_photo") {
+      await pool.query(
+        `update vehicles
+            set vehicle_photo_status=case
+                  when vehicle_photo_status='approved' and vehicle_photo_document_id is not null
+                    then vehicle_photo_status
+                  else 'pending'::vehicle_review_status
+                end,
+                updated_at=now()
+          where id=$1`,
+        [input.vehicleId]
+      );
+    } else if (input.kind === "vehicle_insurance") {
+      await pool.query(
+        `update vehicles
+            set insurance_status=case
+                  when insurance_status='approved'
+                   and insurance_expires_on is not null
+                   and insurance_expires_on >= current_date
+                    then insurance_status
+                  else 'pending'::vehicle_review_status
+                end,
+                updated_at=now()
+          where id=$1`,
+        [input.vehicleId]
+      );
+    } else {
+      await pool.query(
+        `update vehicles set documentation_status='pending',updated_at=now() where id=$1`,
+        [input.vehicleId]
+      );
+    }
   }
 
   const row = result.rows[0];
@@ -103,10 +152,61 @@ export async function registerVerifiedPrivateDocument(
   return row;
 }
 
+export async function recordInsuranceAnalysisResult(
+  pool: Pool,
+  documentId: string,
+  input: InsuranceAnalysisInput
+) {
+  const confidence = input.confidence;
+  if (confidence !== undefined && (!Number.isFinite(confidence) || confidence < 0 || confidence > 1)) {
+    throw new DomainError("INVALID_ANALYSIS_CONFIDENCE", "Analysis confidence must be between 0 and 1");
+  }
+
+  let detectedExpiresOn: string | null = null;
+  if (input.detectedExpiresOn) {
+    detectedExpiresOn = validateInsuranceExpiry(input.detectedExpiresOn);
+  }
+  if (input.status === "succeeded" && !detectedExpiresOn) {
+    throw new DomainError(
+      "INSURANCE_EXPIRY_NOT_DETECTED",
+      "Successful insurance analysis requires a detected expiry date"
+    );
+  }
+
+  const result = await pool.query(
+    `update private_documents
+        set analysis_status=$2,
+            detected_expires_on=$3::date,
+            analysis_confidence=$4,
+            analyzer_provider=$5,
+            analyzer_reference=$6,
+            analyzed_at=now(),
+            updated_at=now()
+      where id=$1 and kind='vehicle_insurance'
+      returning id,vehicle_id,analysis_status,detected_expires_on,analysis_confidence,
+                analyzer_provider,analyzer_reference,analyzed_at`,
+    [
+      documentId,
+      input.status,
+      detectedExpiresOn,
+      confidence ?? null,
+      input.provider.trim(),
+      input.reference?.trim() || null
+    ]
+  );
+  if (!result.rowCount) {
+    throw new DomainError("INSURANCE_DOCUMENT_NOT_FOUND", "Insurance document not found", 404);
+  }
+  return result.rows[0];
+}
+
 export async function listOwnPrivateDocuments(pool: Pool, principal: AuthPrincipal) {
   return (await pool.query(
     `select id,vehicle_id,kind,content_type,size_bytes,sha256,
-            review_status,review_reason,reviewed_at,created_at,updated_at
+            review_status,review_reason,reviewed_at,
+            analysis_status,detected_expires_on,verified_expires_on,
+            analysis_confidence,analyzer_provider,analyzed_at,expiry_verification_source,
+            created_at,updated_at
        from private_documents
       where owner_user_id=$1
       order by created_at desc`,
@@ -118,7 +218,11 @@ export async function reviewPrivateDocument(
   pool: Pool,
   principal: AuthPrincipal,
   documentId: string,
-  input: { decision: "approved" | "rejected"; reason?: string }
+  input: {
+    decision: "approved" | "rejected";
+    reason?: string;
+    verifiedExpiresOn?: string;
+  }
 ) {
   requireAnyRole(principal, ["admin","verification_admin"]);
   const reason = input.reason?.trim();
@@ -139,14 +243,59 @@ export async function reviewPrivateDocument(
     const document = found.rows[0];
     if (!document) throw new DomainError("DOCUMENT_NOT_FOUND", "Document not found", 404);
 
+    let verifiedExpiresOn: string | null = null;
+    let expirySource: "automatic" | "manual" | null = null;
+
+    if (document.kind === "vehicle_insurance" && input.decision === "approved") {
+      if (input.verifiedExpiresOn) {
+        verifiedExpiresOn = validateInsuranceExpiry(input.verifiedExpiresOn);
+        expirySource = "manual";
+      } else if (
+        document.analysis_status === "succeeded" &&
+        document.detected_expires_on &&
+        Number(document.analysis_confidence ?? 0) >= 0.75
+      ) {
+        verifiedExpiresOn = new Date(document.detected_expires_on).toISOString().slice(0, 10);
+        expirySource = "automatic";
+      } else {
+        throw new DomainError(
+          "INSURANCE_EXPIRY_REVIEW_REQUIRED",
+          "Insurance expiry must be detected with sufficient confidence or manually verified"
+        );
+      }
+
+      if (verifiedExpiresOn < todayIso()) {
+        throw new DomainError(
+          "VEHICLE_INSURANCE_EXPIRED",
+          "Expired insurance cannot be approved",
+          409,
+          { expiresOn: verifiedExpiresOn }
+        );
+      }
+    }
+
     const updated = await client.query(
       `update private_documents
           set review_status=$2::profile_review_status,
-              review_reason=$3,reviewed_by_user_id=$4,reviewed_at=now(),updated_at=now()
+              review_reason=$3,
+              reviewed_by_user_id=$4,
+              reviewed_at=now(),
+              verified_expires_on=coalesce($5::date,verified_expires_on),
+              expiry_verification_source=coalesce($6,expiry_verification_source),
+              updated_at=now()
         where id=$1
         returning id,owner_user_id,vehicle_id,kind,content_type,size_bytes,sha256,
-                  review_status,review_reason,reviewed_at`,
-      [documentId, input.decision, reason ?? null, principal.userId]
+                  review_status,review_reason,reviewed_at,analysis_status,
+                  detected_expires_on,verified_expires_on,analysis_confidence,
+                  expiry_verification_source`,
+      [
+        documentId,
+        input.decision,
+        reason ?? null,
+        principal.userId,
+        verifiedExpiresOn,
+        expirySource
+      ]
     );
 
     if (document.kind === "identity_document") {
@@ -158,11 +307,67 @@ export async function reviewPrivateDocument(
       );
     }
 
+    if (document.kind === "vehicle_photo" && document.vehicle_id) {
+      if (input.decision === "approved") {
+        await client.query(
+          `update vehicles
+              set vehicle_photo_status='approved',
+                  vehicle_photo_document_id=$2,
+                  updated_at=now()
+            where id=$1`,
+          [document.vehicle_id, documentId]
+        );
+      } else {
+        await client.query(
+          `update vehicles
+              set vehicle_photo_status=case
+                    when vehicle_photo_document_id is null then 'rejected'::vehicle_review_status
+                    else vehicle_photo_status
+                  end,
+                  updated_at=now()
+            where id=$1`,
+          [document.vehicle_id]
+        );
+      }
+    }
+
+    if (document.kind === "vehicle_insurance" && document.vehicle_id) {
+      if (input.decision === "approved" && verifiedExpiresOn) {
+        await client.query(
+          `update vehicles
+              set insurance_status='approved',
+                  insurance_expires_on=$2::date,
+                  insurance_document_id=$3,
+                  insurance_reviewed_at=now(),
+                  updated_at=now()
+            where id=$1`,
+          [document.vehicle_id, verifiedExpiresOn, documentId]
+        );
+      } else if (input.decision === "rejected") {
+        await client.query(
+          `update vehicles
+              set insurance_status=case
+                    when insurance_document_id is null
+                      or insurance_expires_on is null
+                      or insurance_expires_on < current_date
+                    then 'rejected'::vehicle_review_status
+                    else insurance_status
+                  end,
+                  updated_at=now()
+            where id=$1`,
+          [document.vehicle_id]
+        );
+      }
+    }
+
     await client.query(
       `insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)
        values($1,'private_document.reviewed','private_document',$2,$3::jsonb)`,
       [principal.userId, documentId, JSON.stringify({
-        decision: input.decision, reason: reason ?? null
+        decision: input.decision,
+        reason: reason ?? null,
+        verifiedExpiresOn,
+        expirySource
       })]
     );
     await client.query("commit");

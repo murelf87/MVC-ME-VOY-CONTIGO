@@ -23,8 +23,8 @@ async function seed(){
       ST_Multi(ST_GeomFromText('POLYGON((10 35,20 35,20 45,10 45,10 35))',4326)))
     returning id`)).rows[0].id;
   const vehicle=(await pool.query(`
-    insert into vehicles(driver_user_id,make,model,plate,passenger_seats,review_status,documentation_status)
-    values($1,'Test','Car','SRC-001',2,'approved','approved') returning id`,[driver])).rows[0].id;
+    insert into vehicles(driver_user_id,make,model,plate,passenger_seats,review_status,documentation_status,vehicle_photo_status,insurance_status,insurance_expires_on)
+    values($1,'Test','Car','SRC-001',2,'approved','approved','approved','approved',current_date+30) returning id`,[driver])).rows[0].id;
 
   const trip=(await pool.query(`
     insert into trips(driver_user_id,vehicle_id,province_id,category,kind,leg,status,departure_at,

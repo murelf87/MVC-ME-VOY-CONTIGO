@@ -3,6 +3,7 @@ import type { Pool,PoolClient } from "pg";
 import type { AuthPrincipal } from "../auth/session.js";
 import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
+import { assertVehicleCanDrive } from "../vehicles/compliance-service.js";
 
 async function tx<T>(pool:Pool,fn:(client:PoolClient)=>Promise<T>):Promise<T>{
   const client=await pool.connect();
@@ -31,7 +32,7 @@ function secureEqual(a:string,b:string):boolean{
 export async function startOwnedTrip(pool:Pool,principal:AuthPrincipal,tripId:string){
   requireAnyRole(principal,["driver"]);
   return tx(pool,async client=>{
-    const q=await client.query(`select driver_user_id,status from trips where id=$1 for update`,[tripId]);
+    const q=await client.query(`select driver_user_id,vehicle_id,status from trips where id=$1 for update`,[tripId]);
     const trip=q.rows[0];
     if(!trip) throw new DomainError("TRIP_NOT_FOUND","Trip not found",404);
     if(trip.driver_user_id!==principal.userId){
@@ -40,6 +41,7 @@ export async function startOwnedTrip(pool:Pool,principal:AuthPrincipal,tripId:st
     if(trip.status!=="published"){
       throw new DomainError("TRIP_NOT_STARTABLE","Only a published trip may be started",409);
     }
+    await assertVehicleCanDrive(client,trip.vehicle_id);
     const result=await client.query(`
       update trips set status='active',started_at=now(),updated_at=now()
        where id=$1

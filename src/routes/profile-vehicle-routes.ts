@@ -98,7 +98,8 @@ export async function registerProfileVehicleRoutes(app: FastifyInstance, pool: P
         properties: {
           area: { type: "string", enum: ["vehicle","documentation"] },
           decision: { type: "string", enum: ["approved","rejected"] },
-          reason: { type: "string", maxLength: 1000 }
+          reason: { type: "string", maxLength: 1000 },
+          verifiedExpiresOn: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" }
         }
       }
     }
