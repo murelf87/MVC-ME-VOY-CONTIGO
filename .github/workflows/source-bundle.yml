@@ -1,0 +1,29 @@
+name: Source Bundle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "docs/MASTER_PROMPT_MVC.md"
+      - "mobile/assets/mvc-logo-oficial.jpg"
+      - ".github/workflows/source-bundle.yml"
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add build manifest
+        run: |
+          mkdir -p DIST_INFO
+          printf "Repository: %s\nCommit: %s\nBranch: main\nGenerated: %s\n" "$GITHUB_REPOSITORY" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > DIST_INFO/SOURCE_MANIFEST.txt
+      - name: Upload complete source
+        uses: actions/upload-artifact@v4
+        with:
+          name: MVC-ME-VOY-CONTIGO-CODIGO-FUENTE-COMPLETO
+          path: |
+            .
+            !.git
+          include-hidden-files: true
+          retention-days: 30
