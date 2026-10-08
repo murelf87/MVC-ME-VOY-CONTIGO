@@ -23,6 +23,8 @@ import type {
   PassengerRideRequest,
   TripSearchParams,
   TripSearchResult,
+  DetourCandidate,
+  RouteChange,
 } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
 import { CancelPanel, RatingPanel, ReportPanel, refundText } from "../components/TripFeedback";
@@ -35,8 +37,8 @@ type Mode = "available" | "mine" | "driver";
 
 function km(meters: number): string {
   return meters >= 1000
-    ? `${(meters / 1000).toFixed(meters >= 10000 ? 0 : 1)} km`
-    : `${meters} m`;
+    ? `${(meters / 1000).toFixed(meters >= 10000 ? 0 : 1).replace(".", ",")} km`
+    : `${Math.round(meters)} m`;
 }
 
 function duration(seconds: number): string {
@@ -73,6 +75,15 @@ function requestStatus(status: string, bookingStatus?: string | null): { label: 
 function euros(cents: number): string {
   return (cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
 }
+
+const DETOUR_STATUS: Record<RouteChange["status"], string> = {
+  awaiting_driver: "Desvío pedido: esperando al conductor",
+  awaiting_passengers: "El conductor acepta: faltan otros pasajeros",
+  applied: "Desvío aceptado",
+  rejected: "Desvío no aceptado",
+  cancelled: "Desvío cancelado",
+  expired: "El desvío caducó o el viaje cambió",
+};
 
 function canCancel(item: PassengerRideRequest): boolean {
   if (["pending", "accepted", "payment_pending"].includes(item.status)) return true;
@@ -111,6 +122,10 @@ export function TripsScreen({
   const [panel, setPanel] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const [weekResult, setWeekResult] = useState<Record<string, string>>({});
+  const [detours, setDetours] = useState<DetourCandidate[]>([]);
+  const [detourAsked, setDetourAsked] = useState<Record<string, boolean>>({});
+  const [myChanges, setMyChanges] = useState<{ requested: RouteChange[]; toAnswer: RouteChange[] }>({ requested: [], toAnswer: [] });
+  const [driverChanges, setDriverChanges] = useState<RouteChange[]>([]);
 
   const routeLabel = useMemo(() => {
     if (!searchParams) return "";
@@ -138,6 +153,10 @@ export function TripsScreen({
         `/v1/trips/search?${query}`
       );
       setTrips(response.trips);
+      const direct = new Set(response.trips.map(t => t.tripId));
+      const near = await apiRequest<{ trips: DetourCandidate[] }>(`/v1/trips/detour-search?${query.replace(/&radiusM=\d+/, "")}`)
+        .catch(() => ({ trips: [] as DetourCandidate[] }));
+      setDetours(near.trips.filter(t => !direct.has(t.tripId)));
     } catch (e) {
       setError(errorText(e, "No se pudieron buscar viajes."));
     } finally {
@@ -151,6 +170,8 @@ export function TripsScreen({
     setError("");
     try {
       setMine(await loadPassengerRequests(token));
+      setMyChanges(await apiRequest<{ requested: RouteChange[]; toAnswer: RouteChange[] }>("/v1/me/route-changes", { token })
+        .catch(() => ({ requested: [], toAnswer: [] })));
     } catch (e) {
       setError(errorText(e, "No se pudieron cargar tus solicitudes."));
     } finally {
@@ -166,6 +187,11 @@ export function TripsScreen({
       const result = await loadDriverTrips(token);
       setOwnTrips(result.trips);
       setDriverRequests(result.requests);
+      const open = result.trips.filter(t => t.status === "published" || t.status === "active");
+      const lists = await Promise.all(open.map(t =>
+        apiRequest<{ routeChanges: RouteChange[] }>(`/v1/me/trips/${t.id}/route-changes`, { token })
+          .then(r => r.routeChanges).catch(() => [] as RouteChange[])));
+      setDriverChanges(lists.flat());
     } catch (e) {
       setError(errorText(e, "No se pudieron cargar tus viajes de conductor."));
     } finally {
@@ -215,6 +241,44 @@ export function TripsScreen({
       });
       await loadDriver();
     }, "No se pudo registrar la decisión.");
+  }
+
+  function askDetour(trip: DetourCandidate) {
+    if (!token || !searchParams) return;
+    void run(async () => {
+      await apiRequest(`/v1/trips/${trip.tripId}/route-changes`, {
+        method: "POST",
+        token,
+        body: {
+          pickup: searchParams.origin.location,
+          dropoff: searchParams.destination.location,
+          pickupLabel: searchParams.origin.formattedAddress,
+          dropoffLabel: searchParams.destination.formattedAddress,
+        },
+      });
+      setDetourAsked(current => ({ ...current, [trip.tripId]: true }));
+    }, "No se pudo pedir el desvío.");
+  }
+
+  function decideDetour(id: string, decision: "accept" | "reject") {
+    if (!token) return;
+    void run(async () => {
+      const out = await apiRequest<{ status: string; passengersAsked?: number }>(`/v1/route-changes/${id}/decision`, { method: "POST", token, body: { decision } });
+      setNotice(out.status === "applied" ? "Ruta actualizada. La plaza queda retenida mientras paga."
+        : out.status === "awaiting_passengers" ? `Aceptado. Falta que ${out.passengersAsked === 1 ? "un pasajero confirme" : `${out.passengersAsked} pasajeros confirmen`} el cambio de hora.`
+        : out.status === "rejected" ? "Desvío rechazado." : "El desvío ya no se puede aplicar: el viaje ha cambiado.");
+      await loadDriver();
+    }, "No se pudo decidir el desvío.");
+  }
+
+  function answerDetour(id: string, decision: "accept" | "reject") {
+    if (!token) return;
+    void run(async () => {
+      const out = await apiRequest<{ status: string }>(`/v1/route-changes/${id}/response`, { method: "POST", token, body: { decision } });
+      setNotice(decision === "reject" ? "Has rechazado el cambio. La ruta sigue como estaba."
+        : out.status === "applied" ? "Cambio aceptado. La ruta ya está actualizada." : "Cambio aceptado. Falta la respuesta de otros pasajeros.");
+      await loadMine();
+    }, "No se pudo enviar tu respuesta.");
   }
 
   function showPickupCode(bookingId: string) {
@@ -428,6 +492,12 @@ export function TripsScreen({
                 </View>
                 <View style={s.badge}><Text style={s.badgeText}>{trip.availableSeats} {trip.availableSeats === 1 ? "plaza" : "plazas"}</Text></View>
               </View>
+              {trip.inProgress ? (
+                <View style={[s.repeatTag, s.liveTag]}>
+                  <Ionicons name="radio" size={14} color="#0E7A55" />
+                  <Text style={[s.repeatText, { color: "#0E7A55" }]}>En marcha · te recoge por el camino</Text>
+                </View>
+              ) : null}
               {trip.seriesId && trip.seriesWeekdays?.length ? (
                 <View style={s.repeatTag}>
                   <Ionicons name="repeat" size={14} color={C.blue} />
@@ -472,6 +542,35 @@ export function TripsScreen({
             </Card>
           ))}
 
+          {detours.length ? (
+            <>
+              <Text style={s.sectionTitle}>Con un pequeño desvío</Text>
+              <Text style={s.subtitle}>Su ruta pasa cerca. Si el conductor acepta, recalculamos la ruta y tu precio sale de tus km reales, sin recargos.</Text>
+              {detours.map(trip => (
+                <Card key={trip.tripId} style={s.tripCard}>
+                  <View style={s.tripTop}>
+                    <View style={s.avatar}><Ionicons name="person" size={28} color="#fff" /></View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.tripName}>{trip.driverDisplayName || "Conductor MVC"}</Text>
+                      <Text style={s.tripMeta}>{trip.inProgress ? "En marcha ahora" : formatDeparture(trip.departureAt)}</Text>
+                    </View>
+                  </View>
+                  <Text style={s.tripMeta}>
+                    Su ruta pasa a {km(trip.pickupOffRouteM)} de tu salida y a {km(trip.dropoffOffRouteM)} de tu destino. Acepta desvíos de hasta {km(trip.maxDetourM)}.
+                  </Text>
+                  <PrimaryButton
+                    title={detourAsked[trip.tripId] ? "Desvío pedido" : "Pedir que me recoja"}
+                    onPress={() => askDetour(trip)}
+                    disabled={busy || detourAsked[trip.tripId]}
+                  />
+                  {detourAsked[trip.tripId] ? (
+                    <Text style={s.pending}>Esperando a {trip.driverDisplayName || "el conductor"}. Si el cambio retrasa a otros pasajeros, ellos también tienen que aceptarlo. Lo verás en Mis reservas.</Text>
+                  ) : null}
+                </Card>
+              ))}
+            </>
+          ) : null}
+
           {searchParams ? (
             <Pressable style={s.liveLink} onPress={() => onLive({ provinceId: searchParams.provinceId })}>
               <Ionicons name="map-outline" size={19} color={C.blue} />
@@ -484,7 +583,43 @@ export function TripsScreen({
       {mode === "mine" ? (
         <>
           <Text style={s.subtitle}>Estados reales de tus solicitudes y reservas.</Text>
-          {!busy && !mine.length ? (
+          {myChanges.toAnswer.map(rc => (
+            <Card key={`ans-${rc.id}`} style={[s.tripCard, s.changeCard]}>
+              <View style={s.requestHeader}>
+                <Ionicons name="time" size={22} color="#966112" />
+                <View style={{ flex: 1 }}>
+                  <Text style={s.tripName}>Cambio de ruta en tu viaje</Text>
+                  <Text style={s.tripMeta}>{rc.driver_display_name || "Tu conductor"} · {formatDeparture(rc.departure_at ?? null)}</Text>
+                </View>
+              </View>
+              <Text style={s.changeText}>
+                {rc.driver_display_name || "Tu conductor"} quiere recoger a {rc.passenger_display_name || "otra persona"}{rc.pickup_label ? ` en ${rc.pickup_label}` : ""}.
+                {" "}Llegarías unos {Math.max(1, Math.round((rc.extra_delay_s ?? 0) / 60))} min más tarde. Tu precio no cambia.
+              </Text>
+              <View style={s.decisions}>
+                <Pressable onPress={() => answerDetour(rc.id, "accept")} style={s.accept}>
+                  <Ionicons name="checkmark" size={19} color="#fff" />
+                  <Text style={s.acceptText}>Acepto</Text>
+                </Pressable>
+                <Pressable onPress={() => answerDetour(rc.id, "reject")} style={s.reject}>
+                  <Ionicons name="close" size={19} color={C.blue} />
+                  <Text style={s.rejectText}>No acepto</Text>
+                </Pressable>
+              </View>
+            </Card>
+          ))}
+          {myChanges.requested.filter(rc => rc.status !== "applied").map(rc => (
+            <Card key={`req-${rc.id}`} style={s.tripCard}>
+              <View style={s.requestHeader}>
+                <Ionicons name="git-branch" size={22} color={C.blue} />
+                <View style={{ flex: 1 }}>
+                  <Text style={s.tripName}>{DETOUR_STATUS[rc.status]}</Text>
+                  <Text style={s.tripMeta}>Desvío con {rc.driver_display_name || "el conductor"} · +{km(rc.added_distance_m)}</Text>
+                </View>
+              </View>
+            </Card>
+          ))}
+          {!busy && !mine.length && !myChanges.requested.length && !myChanges.toAnswer.length ? (
             <Card style={s.emptyCard}>
               <Ionicons name="document-text-outline" size={36} color={C.blue} />
               <Text style={s.emptyTitle}>No tienes solicitudes</Text>
@@ -621,7 +756,7 @@ export function TripsScreen({
                   <View style={{ flex: 1 }}>
                     <Text style={s.tripName}>{formatDeparture(trip.departure_at)}</Text>
                     <Text style={s.tripMeta}>
-                      {trip.offered_seats} plazas{trip.route_distance_m ? ` · ${km(trip.route_distance_m)}` : ""}
+                      {trip.offered_seats} {trip.offered_seats === 1 ? "plaza" : "plazas"}{trip.route_distance_m ? ` · ${km(trip.route_distance_m)}` : ""}
                       {trip.series_id && trip.series_weekdays?.length ? ` · se repite ${weekdaysLabel(trip.series_weekdays)}` : ""}
                     </Text>
                   </View>
@@ -673,6 +808,29 @@ export function TripsScreen({
                     {isSharing && sharingNote ? <Text style={s.requestMeta}>{sharingNote}</Text> : null}
                   </>
                 ) : null}
+
+                {driverChanges.filter(rc => rc.trip_id === trip.id && (rc.status === "awaiting_driver" || rc.status === "awaiting_passengers")).map(rc => (
+                  <View key={rc.id} style={s.driverChange}>
+                    <Text style={s.passengerName}>{rc.passenger_display_name || "Un pasajero"} pide un desvío</Text>
+                    <Text style={s.tripMeta}>
+                      {rc.pickup_label ? `Recogida en ${rc.pickup_label}. ` : ""}Añade {km(rc.added_distance_m)} y unos {Math.max(1, Math.round(rc.added_duration_s / 60))} min a tu ruta.
+                    </Text>
+                    {rc.status === "awaiting_driver" ? (
+                      <View style={s.decisions}>
+                        <Pressable onPress={() => decideDetour(rc.id, "accept")} style={s.accept}>
+                          <Ionicons name="checkmark" size={19} color="#fff" />
+                          <Text style={s.acceptText}>Aceptar</Text>
+                        </Pressable>
+                        <Pressable onPress={() => decideDetour(rc.id, "reject")} style={s.reject}>
+                          <Ionicons name="close" size={19} color={C.blue} />
+                          <Text style={s.rejectText}>Rechazar</Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <Text style={s.pending}>Esperando a {rc.answers_pending === 1 ? "un pasajero" : `${rc.answers_pending} pasajeros`} que llegarían más tarde.</Text>
+                    )}
+                  </View>
+                ))}
 
                 {requests.map(item => {
                   const status = requestStatus(item.status, item.booking_status);
@@ -843,6 +1001,11 @@ const s = StyleSheet.create({
   priceValue: { fontSize: 22, fontWeight: "900", color: C.navy, fontVariant: ["tabular-nums"] },
   priceMeta: { fontSize: 11, color: C.muted, lineHeight: 16, marginTop: 2 },
   repeatTag: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 10, alignSelf: "flex-start", backgroundColor: C.pale, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  liveTag: { backgroundColor: C.mintPale },
+  sectionTitle: { fontSize: 17, fontWeight: "900", color: C.navy, marginTop: 8, marginBottom: 4 },
+  changeCard: { borderColor: "#F2C77B", borderWidth: 1, backgroundColor: "#FFFBF2" },
+  driverChange: { marginTop: 12, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: "#F2C77B", backgroundColor: "#FFFBF2", gap: 4 },
+  changeText: { fontSize: 13, lineHeight: 19, color: C.navy, marginTop: 10 },
   repeatText: { fontSize: 11, fontWeight: "900", color: C.blue },
   weekButton: { marginTop: 10, minHeight: 44, borderRadius: 13, borderWidth: 1, borderColor: C.blue, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   weekButtonText: { fontSize: 13, fontWeight: "900", color: C.blue },

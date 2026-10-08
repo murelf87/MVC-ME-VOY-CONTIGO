@@ -81,6 +81,7 @@ export type TripSearchResult = {
   driverDisplayName: string | null;
   seriesId?: string | null;
   seriesWeekdays?: number[] | null;
+  inProgress?: boolean;
   quote?: { tariffVersion: number; contributionCents: number; passengerCommissionCents: number; passengerTotalCents: number } | null;
 };
 
@@ -251,4 +252,29 @@ export type PublicLiveTrip = {
   recordedAt: string;
   stale: boolean;
   ageSeconds: number;
+};
+
+export type TripEtaStop = {
+  seq: number; kind: string; label: string | null; latitude: number; longitude: number;
+  passed: boolean; etaS: number | null; roadDistanceM: number | null;
+};
+export type TripEta = {
+  status: string; live: boolean; stale: boolean; recordedAt: string | null; ageSeconds: number | null;
+  passedStopSeq: number; stops: TripEtaStop[];
+  me: {
+    pickupStopSeq: number; dropoffStopSeq: number; pickedUp: boolean;
+    pickupEtaS: number | null; pickupDistanceM: number | null;
+    dropoffEtaS: number | null; dropoffDistanceM: number | null; arriving: boolean;
+  } | null;
+};
+export type RouteChange = {
+  id: string; trip_id: string; status: "awaiting_driver" | "awaiting_passengers" | "applied" | "rejected" | "cancelled" | "expired";
+  added_distance_m: number; added_duration_s: number; expires_at: string; created_at: string;
+  pickup_label: string | null; dropoff_label: string | null; request_id: string | null;
+  passenger_display_name?: string | null; driver_display_name?: string | null; departure_at?: string | null;
+  answers_pending?: number; extra_delay_s?: number;
+};
+export type DetourCandidate = {
+  tripId: string; inProgress: boolean; departureAt: string | null; driverDisplayName: string | null;
+  maxDetourM: number; pickupOffRouteM: number; dropoffOffRouteM: number;
 };

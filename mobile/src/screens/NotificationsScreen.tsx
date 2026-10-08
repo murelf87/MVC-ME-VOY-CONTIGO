@@ -39,6 +39,14 @@ export function useUnreadNotifications(token: string | null, intervalMs = 15000)
   return { unread, refresh };
 }
 
+function mins(seconds: unknown): string {
+  return `${Math.max(1, Math.round(Number(seconds || 0) / 60))} min`;
+}
+function km(meters: unknown): string {
+  const m = Number(meters || 0);
+  return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 })} km`;
+}
+
 function describe(n: AppNotification): { icon: any; title: string; body: string; tone: string } {
   const p = n.payload ?? {};
   const when = n.departure_at ? formatDeparture(n.departure_at) : "";
@@ -63,6 +71,20 @@ function describe(n: AppNotification): { icon: any; title: string; body: string;
       return { icon: "star", tone: "#F5A524", title: "Viaje terminado", body: `¿Qué tal con ${p.driverName || "tu conductor"}? Puedes valorarlo en Mis reservas.` };
     case "report.closed":
       return { icon: "shield-checkmark", tone: C.navy, title: p.status === "resolved" ? "Tu reporte se ha resuelto" : "Tu reporte se ha cerrado", body: p.note || "Soporte de MVC ha revisado el caso." };
+    case "route_change.requested":
+      return { icon: "git-branch", tone: C.blue, title: `${p.passengerName || "Un pasajero"} pide un desvío`, body: `Te añade ${km(p.addedDistanceM)} y unos ${mins(p.addedDurationS)}. Decide en Conduzco.` };
+    case "route_change.proposed":
+      return { icon: "time", tone: "#B7791F", title: "Cambio de ruta: necesitamos tu respuesta", body: `${p.driverName || "Tu conductor"} quiere recoger a otra persona. Llegarías unos ${mins(p.extraDelayS)} más tarde; tu precio no cambia. Responde en Mis reservas.` };
+    case "route_change.applied":
+      return n.as_driver
+        ? { icon: "git-merge", tone: "#10A66A", title: "Ruta actualizada", body: `Recoges a ${p.passengerName || "un pasajero"} en el camino.` }
+        : p.requestId
+          ? { icon: "git-merge", tone: "#10A66A", title: `${p.driverName || "El conductor"} te recoge`, body: "Tu plaza está retenida mientras se completa el pago." }
+          : { icon: "git-merge", tone: C.blue, title: "Ruta actualizada", body: `${p.passengerName || "Otra persona"} se une al viaje con el desvío que aceptaste.` };
+    case "route_change.rejected":
+      return { icon: "close-circle", tone: "#C93A3A", title: "Desvío no aplicado", body: p.reason === "driver" ? "El conductor no puede hacer ese desvío." : p.reason === "passenger" ? "Un pasajero del viaje no aceptó el cambio." : "El viaje cambió antes de confirmarlo." };
+    case "trip.driver_arriving":
+      return { icon: "navigate", tone: "#10A66A", title: `${p.driverName || "Tu conductor"} está llegando`, body: p.etaS != null ? `Unos ${mins(p.etaS)} para la recogida. Ten listo tu código.` : "Ten listo tu código de recogida." };
     default:
       return { icon: "notifications", tone: C.blue, title: "Aviso de MVC", body: "" };
   }

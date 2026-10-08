@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, ApiError } from "../api/client";
-import type { PublicLiveTrip, TripLocation } from "../api/types";
+import type { PublicLiveTrip, TripEta, TripLocation } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
@@ -15,6 +15,15 @@ function age(seconds: number): string {
   return minutes < 60 ? `hace ${minutes} min` : `hace ${Math.floor(minutes / 60)} h`;
 }
 
+function mins(seconds: number): string {
+  const m = Math.max(1, Math.round(seconds / 60));
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
+}
+function km(meters: number): string {
+  return meters < 1000 ? `${Math.round(meters / 10) * 10} m` : `${(meters / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 })} km`;
+}
+const STOP_KIND: Record<string, string> = { origin: "Salida", stop: "Parada", pickup: "Recogida", dropoff: "Bajada", destination: "Destino" };
+
 function openInMaps(latitude: number, longitude: number) {
   void Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`);
 }
@@ -26,6 +35,7 @@ export function LiveScreen({ tripId, provinceId }: { tripId?: string; provinceId
 function TripTracking({ tripId }: { tripId: string }) {
   const { token } = useAuth();
   const [location, setLocation] = useState<TripLocation | null>(null);
+  const [eta, setEta] = useState<TripEta | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,6 +44,8 @@ function TripTracking({ tripId }: { tripId: string }) {
       const response = await apiRequest<{ location: TripLocation | null }>(`/v1/trips/${tripId}/location`, { token });
       setLocation(response.location);
       setError("");
+      // Only the driver and confirmed passengers get an ETA; anyone else just sees the position.
+      setEta(await apiRequest<TripEta>(`/v1/trips/${tripId}/eta`, { token }).catch(() => null));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No se pudo cargar la ubicación.");
     } finally {
@@ -82,8 +94,10 @@ function TripTracking({ tripId }: { tripId: string }) {
             {location.accuracyM != null ? <Row label="Margen GPS" value={`${Math.round(location.accuracyM)} m`} /> : null}
           </Card>
 
+          {eta ? <EtaCard eta={eta} /> : null}
+
           <PrimaryButton title="Abrir en el mapa" onPress={() => openInMaps(location.latitude, location.longitude)} />
-          <Text style={s.note}>La hora de llegada estimada llegará cuando el backend calcule rutas con el proveedor de mapas real.</Text>
+          <Text style={s.note}>La hora estimada sale de la ruta calculada y de la última posición. El tráfico puede cambiarla; nunca cambia el precio.</Text>
         </>
       ) : null}
     </ScrollView>
@@ -148,6 +162,61 @@ function ProvinceLiveMap({ provinceId }: { provinceId?: string }) {
   );
 }
 
+function EtaCard({ eta }: { eta: TripEta }) {
+  if (!eta.live) {
+    return (
+      <Card style={s.etaCard}>
+        <Text style={s.etaTitle}>Sin hora estimada</Text>
+        <Text style={s.etaMeta}>Hace falta una posición reciente del coche para calcularla.</Text>
+      </Card>
+    );
+  }
+  const me = eta.me;
+  const ahead = eta.stops.filter(x => !x.passed && x.etaS != null);
+  return (
+    <>
+      {me?.arriving ? (
+        <View style={s.arriving}>
+          <Ionicons name="notifications" size={20} color="#fff" />
+          <Text style={s.arrivingText}>Tu conductor está llegando a la recogida</Text>
+        </View>
+      ) : null}
+      {me ? (
+        <Card style={s.etaCard}>
+          {me.pickedUp ? (
+            <Text style={s.etaTitle}>Ya vas en el coche</Text>
+          ) : me.pickupEtaS != null ? (
+            <>
+              <Text style={s.etaLabel}>Te recoge en</Text>
+              <Text style={s.etaBig}>{mins(me.pickupEtaS)}</Text>
+              <Text style={s.etaMeta}>{km(me.pickupDistanceM ?? 0)} por carretera hasta tu punto</Text>
+            </>
+          ) : (
+            <Text style={s.etaTitle}>El coche ya pasó por tu punto de recogida</Text>
+          )}
+          {me.dropoffEtaS != null ? (
+            <View style={s.etaRow}>
+              <Text style={s.rowLabel}>Llegas a tu destino en</Text>
+              <Text style={s.rowValue}>{mins(me.dropoffEtaS)} · {km(me.dropoffDistanceM ?? 0)}</Text>
+            </View>
+          ) : null}
+        </Card>
+      ) : null}
+      {ahead.length ? (
+        <Card style={s.etaCard}>
+          <Text style={s.etaTitle}>Próximas paradas</Text>
+          {ahead.map(x => (
+            <View key={x.seq} style={s.etaRow}>
+              <Text style={s.rowLabel}>{STOP_KIND[x.kind] ?? "Parada"}{x.label ? ` · ${x.label}` : ""}</Text>
+              <Text style={s.rowValue}>{mins(x.etaS ?? 0)} · {km(x.roadDistanceM ?? 0)}</Text>
+            </View>
+          ))}
+        </Card>
+      ) : null}
+    </>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <View style={s.row}>
@@ -174,6 +243,14 @@ const s = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: "#EEF3FA" },
   rowLabel: { fontSize: 12, color: C.muted, fontWeight: "700" },
   rowValue: { fontSize: 13, color: C.navy, fontWeight: "900", fontVariant: ["tabular-nums"] },
+  etaCard: { marginTop: 12, gap: 4 },
+  etaLabel: { fontSize: 12, fontWeight: "800", color: C.muted },
+  etaBig: { fontSize: 30, fontWeight: "900", color: C.navy, fontVariant: ["tabular-nums"] },
+  etaTitle: { fontSize: 15, fontWeight: "900", color: C.navy },
+  etaMeta: { fontSize: 12, color: C.muted },
+  etaRow: { flexDirection: "row", justifyContent: "space-between", gap: 10, paddingTop: 8, marginTop: 4, borderTopWidth: 1, borderTopColor: "#EEF3FA" },
+  arriving: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#0E7A55", borderRadius: 14, padding: 13, marginTop: 4 },
+  arrivingText: { color: "#fff", fontWeight: "900", fontSize: 14, flex: 1 },
   note: { fontSize: 11, color: C.muted, textAlign: "center", marginTop: 12, lineHeight: 16 },
   carRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
   carPin: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.blue, alignItems: "center", justifyContent: "center" },
