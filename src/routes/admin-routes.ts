@@ -19,9 +19,12 @@ async function principal(pool:Pool,authorization:string|undefined){
 const uuidParam=(name:string)=>({type:"object",required:[name],properties:{[name]:{type:"string",format:"uuid"}}});
 const sec=[{bearerAuth:[]}];
 
-export async function registerAdminRoutes(app:FastifyInstance,pool:Pool):Promise<void>{
+/** Which external providers are wired in this deployment; "disabled" means the feature is blocked, never faked. */
+export type IntegrationStatus=Record<"sms"|"maps"|"storage"|"insuranceOcr"|"payments"|"push",string>;
+
+export async function registerAdminRoutes(app:FastifyInstance,pool:Pool,integrations?:IntegrationStatus):Promise<void>{
   app.get("/v1/admin/overview",{schema:{security:sec}},async request=>
-    adminOverview(pool,await principal(pool,request.headers.authorization)));
+    ({...await adminOverview(pool,await principal(pool,request.headers.authorization)),integrations:integrations??null}));
 
   app.get("/v1/admin/verification-queue",{schema:{security:sec}},async request=>
     adminVerificationQueue(pool,await principal(pool,request.headers.authorization)));

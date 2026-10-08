@@ -161,7 +161,14 @@ export async function buildApp() {
   await registerFeedbackRoutes(app, pool);
   await registerCancellationRoutes(app, pool);
   await registerNotificationRoutes(app, pool);
-  await registerAdminRoutes(app, pool);
+  await registerAdminRoutes(app, pool, {
+    sms: config.smsProvider,
+    maps: config.mapsProvider,
+    storage: config.privateStorageProvider,
+    insuranceOcr: config.insuranceOcrProvider,
+    payments: config.paymentsProvider === "stripe" && config.stripeWebhookSecret ? "stripe" : "disabled",
+    push: "disabled"
+  });
   await registerRecurringRoutes(app, pool);
   await registerTariffRoutes(app, pool);
   await registerRouteChangeRoutes(app, pool, routeProvider);

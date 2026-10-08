@@ -56,6 +56,11 @@ const AUDIT_LABEL: Record<string, string> = {
   "tariff.created": "Tarifa creada", "tariff.approved": "Tarifa aprobada",
 };
 
+const INTEGRATION_LABEL: Record<string, string> = {
+  sms: "SMS de verificación", maps: "Mapas y rutas", storage: "Fotos y documentos privados",
+  insuranceOcr: "Lectura de seguros", payments: "Cobros y pagos", push: "Notificaciones push",
+};
+
 function msg(e: unknown): string {
   return e instanceof ApiError || e instanceof Error ? e.message : "Algo ha fallado.";
 }
@@ -203,6 +208,21 @@ export function AdminScreen() {
             </>
           ) : null}
         </View>
+      ) : null}
+      {tab === "summary" && data?.integrations ? (
+        <>
+          <Text style={s.section}>Integraciones</Text>
+          {Object.entries(INTEGRATION_LABEL).map(([key, label]) => {
+            const value = data.integrations[key] as string;
+            const on = value && value !== "disabled";
+            return (
+              <View key={key} style={[s.card, s.rowBetween]}>
+                <Text style={s.cardTitle}>{label}</Text>
+                <Text style={[s.pill, !on && s.pillOff]}>{on ? (value.startsWith("dev_") ? "Solo desarrollo" : value) : "Sin conectar"}</Text>
+              </View>
+            );
+          })}
+        </>
       ) : null}
 
       {tab === "verification" && data ? (
@@ -477,6 +497,7 @@ const s = StyleSheet.create({
   statValue: { fontSize: 24, fontWeight: "900", color: C.navy, fontVariant: ["tabular-nums"] },
   statLabel: { fontSize: 11, fontWeight: "700", color: C.muted },
   section: { fontSize: 14, fontWeight: "900", color: C.navy, marginTop: 14, marginBottom: 8 },
+  pillOff: { backgroundColor: "#FFF6E8", color: "#966112" },
   subsection: { fontSize: 13, fontWeight: "900", color: C.navy, marginTop: 10, marginBottom: 6, flex: 1 },
   warnBox: { fontSize: 12, lineHeight: 17, color: "#966112", backgroundColor: "#FFF6E8", padding: 10, borderRadius: 12, marginBottom: 8 },
   empty: { fontSize: 12, color: C.muted, lineHeight: 17 },
