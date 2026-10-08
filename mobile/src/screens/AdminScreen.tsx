@@ -53,6 +53,7 @@ const AUDIT_LABEL: Record<string, string> = {
   "incident_report.status_changed": "Incidencia actualizada", "user.suspended": "Cuenta suspendida",
   "user.reactivated": "Cuenta reactivada", "role.granted": "Rol concedido", "role.revoked": "Rol retirado",
   "cancellation_policy.created": "Política creada", "cancellation_policy.activated": "Política activada",
+  "tariff.created": "Tarifa creada", "tariff.approved": "Tarifa aprobada",
 };
 
 function msg(e: unknown): string {
