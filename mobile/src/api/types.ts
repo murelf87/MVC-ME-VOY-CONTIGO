@@ -21,7 +21,8 @@ export type SessionInfo = {
 
 export type MeProfile = {
   id: string;
-  phone_e164: string | null;
+  email: string | null;
+  email_verified: boolean;
   status: string;
   display_name: string | null;
   public_photo_key: string | null;
@@ -31,10 +32,6 @@ export type MeProfile = {
   roles: Role[];
 };
 
-export type VerificationStart = {
-  challengeId: string;
-  expiresAt: string;
-};
 
 export type Province = {
   id: string;

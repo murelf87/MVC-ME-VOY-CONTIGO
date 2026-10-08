@@ -14,6 +14,7 @@ import type { Vehicle } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
 import { BlockedPeople } from "../components/TripFeedback";
 import { DeleteAccount } from "../components/DeleteAccount";
+import { AccountSecurity } from "../components/AccountSecurity";
 import { isStaff } from "./AdminScreen";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
@@ -245,7 +246,6 @@ export function ProfileScreen({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.name}>{profile?.display_name?.trim() || "Perfil MVC"}</Text>
-          <Text style={s.phone}>{profile?.phone_e164 ?? "Teléfono verificado"}</Text>
           <View style={s.roleLine}>
             <Text style={s.roleSummary}>
               {roles.length === 2
@@ -256,6 +256,9 @@ export function ProfileScreen({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}
             </Text>
           </View>
         </View>
+      </Card>
+      <Card style={{ marginTop: 10 }}>
+        <AccountSecurity />
       </Card>
 
       <Text style={s.sectionTitle}>Nombre visible</Text>

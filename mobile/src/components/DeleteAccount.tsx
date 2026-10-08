@@ -69,7 +69,7 @@ export function DeleteAccount() {
       {check?.canDelete ? (
         <>
           <Text style={s.text}>
-            Se borran tu número, tu nombre, tus fotos y documentos, tus avisos y bloqueos, y se cierran tus sesiones. Los viajes, pagos,
+            Se borran tu correo y contraseña, tu nombre, tus fotos y documentos, tus avisos y bloqueos, y se cierran tus sesiones. Los viajes, pagos,
             valoraciones y reportes ya hechos se conservan sin tus datos, porque la contabilidad y la seguridad de otras personas los necesitan.
             No se puede deshacer.
           </Text>

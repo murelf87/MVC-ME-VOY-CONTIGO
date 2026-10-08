@@ -46,7 +46,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const AUDIT_LABEL: Record<string, string> = {
-  "user.deleted": "Cuenta eliminada", "legal_document.created": "Condiciones redactadas", "legal_document.published": "Condiciones publicadas",
+  "user.deleted": "Cuenta eliminada", "auth.registered": "Cuenta creada", "auth.email_verified": "Correo confirmado", "auth.password_reset": "Contraseña recuperada", "auth.password_changed": "Contraseña cambiada", "legal_document.created": "Condiciones redactadas", "legal_document.published": "Condiciones publicadas",
   "ride_request.created": "Solicitud de plaza", "ride_request.rejected": "Solicitud rechazada",
   "ride_request.accepted_with_hold": "Solicitud aceptada", "ride_request.cancelled": "Solicitud cancelada",
   "booking.confirmed": "Reserva confirmada", "trip.started": "Viaje iniciado", "trip.completed": "Viaje finalizado",
@@ -234,7 +234,7 @@ export function AdminScreen() {
           {!data.profiles.length ? <Text style={s.empty}>Nada pendiente.</Text> : null}
           {data.profiles.map((p: any) => (
             <View key={p.user_id} style={s.card}>
-              <Text style={s.cardTitle}>{p.display_name || "Sin nombre"} · {p.phone_e164}</Text>
+              <Text style={s.cardTitle}>{p.display_name || "Sin nombre"} · {p.email}</Text>
               <Text style={s.meta}>Foto: {STATUS_LABEL[p.public_photo_status]} · Identidad: {STATUS_LABEL[p.identity_status]}</Text>
               {noteInput(`p:${p.user_id}`, "Motivo si rechazas")}
               <View style={s.row}>
@@ -425,7 +425,7 @@ export function AdminScreen() {
       {tab === "users" ? (
         <>
           <View style={s.row}>
-            <TextInput value={query} onChangeText={setQuery} placeholder="Nombre o últimas cifras del móvil" style={[s.input, { flex: 1, minWidth: 0 }]} onSubmitEditing={() => void load()} />
+            <TextInput value={query} onChangeText={setQuery} placeholder="Nombre o correo" style={[s.input, { flex: 1, minWidth: 0 }]} onSubmitEditing={() => void load()} />
             <Btn label="Buscar" onPress={() => void load()} />
           </View>
           {data?.users?.map((u: any) => (
@@ -435,7 +435,7 @@ export function AdminScreen() {
                 <Text style={[s.pill, u.status !== "active" && s.pillBad]}>{STATUS_LABEL[u.status]}</Text>
               </View>
               <Text style={s.meta}>
-                {u.phone_e164} · {u.roles.map((r: string) => ROLE_LABEL[r] ?? r).join(", ") || "sin rol"} · {u.rating ? `★ ${u.rating}` : "sin valoraciones"} · {u.reports_against} reportes
+                {u.email ?? "sin correo"} · {u.roles.map((r: string) => ROLE_LABEL[r] ?? r).join(", ") || "sin rol"} · {u.rating ? `★ ${u.rating}` : "sin valoraciones"} · {u.reports_against} reportes
               </Text>
               {mine.includes("admin") ? (
                 <>
