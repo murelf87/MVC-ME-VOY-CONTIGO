@@ -89,6 +89,12 @@ export type Vehicle = {
   passenger_seats: number;
   review_status: string;
   documentation_status: string;
+  vehicle_photo_status: string;
+  vehicle_photo_document_id?: string | null;
+  insurance_status: string;
+  insurance_expires_on?: string | null;
+  insurance_document_id?: string | null;
+  insurance_reviewed_at?: string | null;
   review_reason?: string | null;
   reviewed_at?: string | null;
 };
@@ -102,4 +108,51 @@ export type RideRequest = {
   to_segment_seq: number;
   requested_at?: string;
   updated_at?: string;
+};
+
+
+export type PrivateDocument = {
+  id: string;
+  vehicle_id?: string | null;
+  kind: string;
+  content_type: string;
+  size_bytes: number;
+  sha256: string;
+  review_status: string;
+  review_reason?: string | null;
+  analysis_status?: string | null;
+  detected_expires_on?: string | null;
+  verified_expires_on?: string | null;
+  analysis_confidence?: number | null;
+  analyzer_provider?: string | null;
+  analyzed_at?: string | null;
+  expiry_verification_source?: "automatic" | "manual" | null;
+  reviewed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PrivateUploadIntent = {
+  intentId: string;
+  uploadUrl: string;
+  headers: Record<string, string>;
+  expiresAt: string;
+};
+
+export type InsuranceAnalysis = {
+  id?: string;
+  vehicle_id?: string;
+  analysis_status?: string;
+  detected_expires_on?: string | null;
+  analysis_confidence?: number | null;
+  analyzer_provider?: string | null;
+  analyzed_at?: string | null;
+  status?: string;
+  provider?: string;
+};
+
+export type CompletePrivateUpload = {
+  document: PrivateDocument;
+  analysis?: InsuranceAnalysis | null;
+  alreadyCompleted: boolean;
 };
