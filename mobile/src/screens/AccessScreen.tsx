@@ -13,9 +13,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ApiError } from "../api/client";
 import type { Role } from "../api/types";
-import { Brand, Card, PrimaryButton } from "../components/UI";
+import { Card, PrimaryButton } from "../components/UI";
+import { OfficialLogo } from "../components/OfficialLogo";
 import { useAuth } from "../session/AuthContext";
-import { C } from "../theme";
+import { C, shadow } from "../theme";
 
 export function AccessScreen() {
   const { startVerification, verifyCode } = useAuth();
@@ -26,6 +27,7 @@ export function AccessScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  const hasDriver = roles.includes("driver");
   const subtitle = useMemo(() => {
     if (roles.length === 2) return "Pasajero y conductor";
     return roles[0] === "driver" ? "Conductor" : "Pasajero";
@@ -38,6 +40,9 @@ export function AccessScreen() {
       }
       return [...current, role];
     });
+    setChallengeId(null);
+    setCode("");
+    setError("");
   }
 
   async function begin() {
@@ -74,7 +79,7 @@ export function AccessScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={s.root}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
@@ -82,67 +87,93 @@ export function AccessScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={s.top}>
-          <Brand />
-          <View style={s.badge}>
-            <Text style={s.badgeText}>Acceso seguro</Text>
+        <View style={s.brandRow}>
+          <OfficialLogo width={222} />
+          <View style={s.secureBadge}>
+            <Ionicons name="shield-checkmark" size={14} color={C.blue} />
+            <Text style={s.secureText}>Acceso seguro</Text>
           </View>
         </View>
 
-        <Text style={s.title}>¿Cómo quieres viajar?</Text>
-        <Text style={s.subtitle}>Elige tu perfil para empezar.</Text>
+        <View style={s.hero}>
+          <Text style={s.eyebrow}>BIENVENIDO A MVC</Text>
+          <Text style={s.title}>¿Cómo quieres viajar?</Text>
+          <Text style={s.subtitle}>
+            Entra como pasajero, conductor o activa ambos perfiles.
+          </Text>
+        </View>
 
         <View style={s.roles}>
           <Pressable
             onPress={() => toggle("passenger")}
             style={[s.roleCard, roles.includes("passenger") && s.roleActive]}
           >
-            <View style={s.illustration}>
-              <Ionicons name="person" size={56} color={C.blue} />
-              <Ionicons
-                name="location"
-                size={30}
-                color={C.mint}
-                style={s.roleCorner}
-              />
+            <View style={[s.roleIcon, s.passengerIcon]}>
+              <Ionicons name="person" size={35} color={C.blue} />
+              <Ionicons name="location" size={20} color={C.mint} style={s.cornerIcon} />
             </View>
-            <Text style={s.roleTitle}>Soy pasajero</Text>
-            <Text style={s.roleText}>Reserva tu plaza para ir a tu destino.</Text>
-            <Ionicons name="chevron-forward" size={19} color={C.navy} />
+            <View style={s.roleBody}>
+              <View style={s.roleTitleRow}>
+                <Text style={s.roleTitle}>Soy pasajero</Text>
+                {roles.includes("passenger") ? (
+                  <Ionicons name="checkmark-circle" size={21} color={C.blue} />
+                ) : null}
+              </View>
+              <Text style={s.roleText}>
+                Busca trayectos, solicita plaza y sigue el coche en directo.
+              </Text>
+            </View>
           </Pressable>
 
           <Pressable
             onPress={() => toggle("driver")}
             style={[s.roleCard, roles.includes("driver") && s.roleActive]}
           >
-            <View style={[s.illustration, { backgroundColor: C.mintPale }]}>
-              <Ionicons name="car-sport" size={58} color={C.blue} />
-              <Ionicons
-                name="people"
-                size={28}
-                color={C.mint}
-                style={s.roleCorner}
-              />
+            <View style={[s.roleIcon, s.driverIcon]}>
+              <Ionicons name="car-sport" size={38} color={C.blue} />
+              <Ionicons name="people" size={19} color={C.mint} style={s.cornerIcon} />
             </View>
-            <Text style={s.roleTitle}>Soy conductor</Text>
-            <Text style={s.roleText}>Comparte tu coche y los gastos.</Text>
-            <Ionicons name="chevron-forward" size={19} color={C.navy} />
+            <View style={s.roleBody}>
+              <View style={s.roleTitleRow}>
+                <Text style={s.roleTitle}>Soy conductor</Text>
+                {roles.includes("driver") ? (
+                  <Ionicons name="checkmark-circle" size={21} color={C.blue} />
+                ) : null}
+              </View>
+              <Text style={s.roleText}>
+                Publica tus trayectos y decide qué solicitudes aceptar.
+              </Text>
+              <Text style={s.driverRequirement}>
+                Durante el registro añadirás matrícula, datos del coche, foto del
+                vehículo y seguro en vigor.
+              </Text>
+            </View>
           </Pressable>
         </View>
 
-        <Text style={s.both}>
-          Puedes activar ambos perfiles.
-        </Text>
+        <View style={s.bothRow}>
+          <Ionicons name="people-circle-outline" size={21} color={C.blue} />
+          <Text style={s.bothText}>Puedes activar ambos perfiles en una sola cuenta.</Text>
+        </View>
 
         <Card style={s.form}>
-          <Text style={s.formTitle}>
-            {challengeId ? "Introduce el código" : "Acceso con teléfono"}
-          </Text>
-          <Text style={s.formMeta}>
-            {challengeId
-              ? "Usa el código que te ha enviado el proveedor de verificación."
-              : subtitle + ". Tu número se verifica antes de crear la sesión."}
-          </Text>
+          <View style={s.formHeader}>
+            <View style={s.phoneIcon}>
+              <Ionicons name="phone-portrait-outline" size={23} color={C.blue} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.formTitle}>
+                {challengeId ? "Introduce el código" : "Acceso con teléfono"}
+              </Text>
+              <Text style={s.formMeta}>
+                {challengeId
+                  ? "Introduce el código enviado a tu móvil para continuar."
+                  : hasDriver
+                    ? "Verifica tu móvil y después completa el registro del coche."
+                    : subtitle + ". Verifica tu móvil para entrar en MVC."}
+              </Text>
+            </View>
+          </View>
 
           {!challengeId ? (
             <>
@@ -157,7 +188,7 @@ export function AccessScreen() {
                 placeholderTextColor="#91A0BC"
               />
               <PrimaryButton
-                title={busy ? "Enviando..." : "Verificar móvil"}
+                title={busy ? "Enviando…" : "Verificar móvil"}
                 onPress={() => void begin()}
                 disabled={busy}
               />
@@ -175,7 +206,7 @@ export function AccessScreen() {
                 maxLength={10}
               />
               <PrimaryButton
-                title={busy ? "Comprobando..." : "Entrar en MVC"}
+                title={busy ? "Comprobando…" : "Continuar"}
                 onPress={() => void verify()}
                 disabled={busy || code.trim().length < 4}
               />
@@ -192,77 +223,220 @@ export function AccessScreen() {
             </>
           )}
 
-          {busy ? <ActivityIndicator style={{ marginTop: 12 }} color={C.blue} /> : null}
+          {busy ? <ActivityIndicator style={s.spinner} color={C.blue} /> : null}
           {error ? <Text style={s.error}>{error}</Text> : null}
         </Card>
 
-        <View style={s.privacy}>
-          <Ionicons name="shield-checkmark-outline" size={22} color={C.blue} />
-          <Text style={s.privacyText}>
-            No hay contraseñas maestras ni códigos universales. El backend valida la sesión.
-          </Text>
-        </View>
+        {hasDriver ? (
+          <View style={s.driverInfo}>
+            <Ionicons name="shield-checkmark-outline" size={22} color={C.blue} />
+            <Text style={s.driverInfoText}>
+              Un conductor no podrá publicar ni iniciar viajes hasta que la foto
+              del coche y el seguro estén validados. Si el seguro caduca, MVC
+              bloqueará la conducción hasta verificar la renovación.
+            </Text>
+          </View>
+        ) : (
+          <View style={s.trust}>
+            <Ionicons name="shield-checkmark-outline" size={21} color={C.blue} />
+            <Text style={s.trustText}>
+              Acceso sin contraseña maestra ni códigos universales. La sesión la
+              valida el backend de MVC.
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
-  wrap: { padding: 18, paddingBottom: 40, backgroundColor: "#fff" },
-  top: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  badge: { backgroundColor: C.pale, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  badgeText: { fontSize: 10, fontWeight: "900", color: C.blue },
-  title: { fontSize: 30, fontWeight: "900", color: C.navy, marginTop: 26, letterSpacing: -0.7 },
-  subtitle: { fontSize: 15, color: C.muted, marginTop: 3, marginBottom: 16 },
-  roles: { gap: 10 },
-  roleCard: {
-    minHeight: 138,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: C.border,
-    padding: 14,
+  root: { flex: 1, backgroundColor: "#fff" },
+  wrap: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "ios" ? 14 : 22,
+    paddingBottom: 42,
     backgroundColor: "#fff",
   },
+  brandRow: {
+    minHeight: 76,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  secureBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: C.pale,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  secureText: { fontSize: 10, fontWeight: "900", color: C.blue },
+  hero: { marginTop: 18, marginBottom: 18 },
+  eyebrow: {
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.4,
+    color: C.blue,
+    marginBottom: 7,
+  },
+  title: {
+    fontSize: 34,
+    lineHeight: 39,
+    fontWeight: "900",
+    color: C.navy,
+    letterSpacing: -1,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: C.muted,
+    marginTop: 5,
+  },
+  roles: { gap: 11 },
+  roleCard: {
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: C.border,
+    backgroundColor: "#fff",
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 13,
+    ...shadow,
+  },
   roleActive: { borderColor: C.blue, backgroundColor: "#F8FBFF" },
-  illustration: {
-    height: 62,
+  roleIcon: {
+    width: 74,
+    height: 74,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    flexShrink: 0,
+  },
+  passengerIcon: { backgroundColor: C.pale },
+  driverIcon: { backgroundColor: C.mintPale },
+  cornerIcon: { position: "absolute", right: 9, bottom: 8 },
+  roleBody: { flex: 1 },
+  roleTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  roleTitle: { fontSize: 18, fontWeight: "900", color: C.navy },
+  roleText: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: C.muted,
+    marginTop: 4,
+  },
+  driverRequirement: {
+    fontSize: 10,
+    lineHeight: 15,
+    color: C.blue,
+    fontWeight: "800",
+    marginTop: 6,
+  },
+  bothRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+    marginVertical: 15,
+  },
+  bothText: {
+    fontSize: 11,
+    color: C.navy,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  form: { padding: 17 },
+  formHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginBottom: 15,
+  },
+  phoneIcon: {
+    width: 42,
+    height: 42,
     borderRadius: 14,
     backgroundColor: C.pale,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
-    marginBottom: 9,
   },
-  roleCorner: { position: "absolute", right: 18, bottom: 10 },
-  roleTitle: { fontSize: 17, fontWeight: "900", color: C.navy },
-  roleText: { fontSize: 12, color: C.muted, marginTop: 2, paddingRight: 28 },
-  both: { textAlign: "center", color: C.navy, fontSize: 12, fontWeight: "700", marginVertical: 14 },
-  form: { padding: 16 },
   formTitle: { fontSize: 18, fontWeight: "900", color: C.navy },
-  formMeta: { fontSize: 12, lineHeight: 18, color: C.muted, marginTop: 4, marginBottom: 14 },
-  label: { fontSize: 12, fontWeight: "800", color: C.navy, marginBottom: 7 },
+  formMeta: {
+    fontSize: 11,
+    lineHeight: 16,
+    color: C.muted,
+    marginTop: 3,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: C.navy,
+    marginBottom: 7,
+  },
   input: {
-    height: 52,
+    height: 54,
     borderWidth: 1,
     borderColor: C.border,
-    borderRadius: 14,
+    borderRadius: 15,
     paddingHorizontal: 14,
     fontSize: 16,
     color: C.navy,
     backgroundColor: "#fff",
   },
-  codeInput: { textAlign: "center", fontSize: 24, fontWeight: "900", letterSpacing: 6 },
+  codeInput: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "900",
+    letterSpacing: 6,
+  },
   restart: { alignItems: "center", padding: 12 },
-  restartText: { fontSize: 12, fontWeight: "800", color: C.blue },
+  restartText: { fontSize: 11, fontWeight: "900", color: C.blue },
+  spinner: { marginTop: 12 },
   error: {
     marginTop: 12,
     color: "#9E302D",
     backgroundColor: "#FFF0EF",
     borderRadius: 12,
     padding: 11,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 11,
+    lineHeight: 16,
   },
-  privacy: { flexDirection: "row", gap: 8, alignItems: "center", marginTop: 14, paddingHorizontal: 4 },
-  privacyText: { flex: 1, fontSize: 11, color: C.muted, lineHeight: 16 },
+  driverInfo: {
+    flexDirection: "row",
+    gap: 9,
+    alignItems: "flex-start",
+    backgroundColor: "#F7FAFF",
+    borderRadius: 15,
+    padding: 13,
+    marginTop: 14,
+  },
+  driverInfoText: {
+    flex: 1,
+    fontSize: 10,
+    lineHeight: 15,
+    color: C.muted,
+  },
+  trust: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "flex-start",
+    paddingHorizontal: 3,
+    marginTop: 14,
+  },
+  trustText: {
+    flex: 1,
+    fontSize: 10,
+    lineHeight: 15,
+    color: C.muted,
+  },
 });
