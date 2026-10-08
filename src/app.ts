@@ -18,6 +18,8 @@ import { registerTripDraftRoutes } from "./routes/trip-draft-routes.js";
 import { registerTripSearchRoutes } from "./routes/trip-search-routes.js";
 import { registerChatRoutes } from "./routes/chat-routes.js";
 import { registerTripExecutionRoutes } from "./routes/trip-execution-routes.js";
+import { registerFeedbackRoutes } from "./routes/feedback-routes.js";
+import { registerCancellationRoutes } from "./routes/cancellation-routes.js";
 import { registerProvinceRoutes } from "./routes/province-routes.js";
 import { registerGeocodingRoutes } from "./routes/geocoding-routes.js";
 import { buildPrivateObjectStorage } from "./storage/provider.js";
@@ -150,6 +152,8 @@ export async function buildApp() {
   await registerTripSearchRoutes(app, pool);
   await registerChatRoutes(app, pool);
   await registerTripExecutionRoutes(app, pool);
+  await registerFeedbackRoutes(app, pool);
+  await registerCancellationRoutes(app, pool);
   await registerProvinceRoutes(app, pool);
   await registerGeocodingRoutes(app, pool, geocodingProvider);
   await registerPrivateUploadRoutes(

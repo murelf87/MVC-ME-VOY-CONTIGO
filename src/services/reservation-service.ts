@@ -152,8 +152,9 @@ export async function confirmProviderPayment(
     }
 
     const booking = await client.query(
-      `insert into bookings(request_id,provider_payment_id,amount_cents,status)
-       values($1,$2,$3,'confirmed')
+      `insert into bookings(request_id,provider_payment_id,amount_cents,status,cancellation_policy_version_id)
+       values($1,$2,$3,'confirmed',
+         (select id from cancellation_policy_versions where status='active'))
        returning id`,
       [input.requestId, input.providerPaymentId, input.amountCents]
     );

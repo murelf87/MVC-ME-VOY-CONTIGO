@@ -143,12 +143,16 @@ export async function listOwnRideRequests(pool: Pool, principal: AuthPrincipal) 
             r.requested_at,r.updated_at,h.expires_at as hold_expires_at,
             t.driver_user_id,dp.display_name as driver_display_name,
             t.status as trip_status,t.departure_at,
-            b.id as booking_id,b.status as booking_status,b.picked_up_at
+            b.id as booking_id,b.status as booking_status,b.picked_up_at,
+            mr.score as my_rating_score,
+            bc.refund_cents,bc.refund_status
        from ride_requests r
        join trips t on t.id=r.trip_id
        left join profiles dp on dp.user_id=t.driver_user_id
        left join seat_holds h on h.request_id=r.id and h.status='active'
        left join bookings b on b.request_id=r.id
+       left join trip_ratings mr on mr.booking_id=b.id and mr.rater_user_id=r.passenger_user_id
+       left join booking_cancellations bc on bc.booking_id=b.id
       where r.passenger_user_id=$1
       order by r.requested_at desc`,
     [principal.userId]
@@ -169,13 +173,15 @@ export async function listTripRideRequests(
   return (await pool.query(
     `select r.id,r.passenger_user_id,pp.display_name as passenger_display_name,
             r.from_segment_seq,r.to_segment_seq,r.status,r.requested_at,r.updated_at,
-            b.id as booking_id,b.status as booking_status,b.picked_up_at
+            b.id as booking_id,b.status as booking_status,b.picked_up_at,
+            mr.score as my_rating_score
        from ride_requests r
        left join profiles pp on pp.user_id=r.passenger_user_id
        left join bookings b on b.request_id=r.id
+       left join trip_ratings mr on mr.booking_id=b.id and mr.rater_user_id=$2
       where r.trip_id=$1
       order by r.requested_at asc`,
-    [tripId]
+    [tripId,principal.userId]
   )).rows;
 }
 
