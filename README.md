@@ -63,6 +63,7 @@ Lee PROMPT_MAESTRO_MVC.md.
 - docs/MANDATORY_TESTS.md
 - docs/EVENTS.md
 - docs/ERRORS.md
+- docs/ACCOUNT_DELETION.md
 - docs/BLOCKERS.md
 - docs/STATE_MACHINES.md
 - docs/openapi.json

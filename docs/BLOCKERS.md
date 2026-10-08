@@ -12,3 +12,4 @@
 11. Disputas y no-shows: falta decidir quién asume una disputa perdida y qué pasa con el pago de un pasajero que no se presenta.
 10. Frontend móvil: no está disponible el código fuente móvil aprobado para una validación final de interoperabilidad.
 12. Textos legales: el sistema de condiciones de uso y aviso de privacidad versionados está hecho (docs/ADMIN.md, sección Condiciones). Falta el texto redactado por vuestro asesor; MVC no publica ninguno propio.
+13. Conservación de datos: la eliminación de cuenta está hecha (docs/ACCOUNT_DELETION.md). Falta que vuestro asesor fije cuánto se guardan viajes, chat, GPS y contabilidad de cuentas eliminadas y cuándo se purgan.

@@ -15,10 +15,13 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `HTTP_ERROR` | 400 | Other 4xx raised by Fastify (malformed JSON, unsupported media type…) |
 | `INTERNAL_ERROR` | 500 | Internal server error |
 
-## Dominio (209 códigos)
+## Dominio (212 códigos)
 
 | Código | HTTP | Mensaje | Dónde |
 |---|---|---|---|
+| `ACCOUNT_ALREADY_DELETED` | 409 | Account already deleted | services/account-service.ts |
+| `ACCOUNT_DELETION_NOT_CONFIRMED` | 400 | Type BORRAR to confirm | services/account-service.ts |
+| `ACCOUNT_HAS_OPEN_ACTIVITY` | 409 | Finish or cancel open trips and settle money first | services/account-service.ts |
 | `ACCOUNT_NOT_ACTIVE` | 403 | Account is not active | auth/service.ts, auth/session.ts |
 | `ALREADY_ON_TRIP` | 409 | You already have an open request on this trip | services/route-change-service.ts |
 | `AUTH_CHALLENGE_ALREADY_USED` | 409 | Verification challenge has already been used | auth/service.ts |

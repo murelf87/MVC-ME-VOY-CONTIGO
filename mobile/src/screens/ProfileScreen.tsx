@@ -13,6 +13,7 @@ import { apiRequest, ApiError } from "../api/client";
 import type { Vehicle } from "../api/types";
 import { Card, PrimaryButton } from "../components/UI";
 import { BlockedPeople } from "../components/TripFeedback";
+import { DeleteAccount } from "../components/DeleteAccount";
 import { isStaff } from "./AdminScreen";
 import { useAuth } from "../session/AuthContext";
 import { C } from "../theme";
@@ -412,6 +413,7 @@ export function ProfileScreen({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}
         <Text style={s.logoutText}>Cerrar sesión</Text>
       </Pressable>
       {busy ? <ActivityIndicator color={C.blue} style={{ marginTop: 10 }} /> : null}
+      <DeleteAccount />
     </ScrollView>
   );
 }

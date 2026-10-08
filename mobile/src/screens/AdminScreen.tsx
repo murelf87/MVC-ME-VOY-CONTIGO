@@ -46,7 +46,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const AUDIT_LABEL: Record<string, string> = {
-  "legal_document.created": "Condiciones redactadas", "legal_document.published": "Condiciones publicadas",
+  "user.deleted": "Cuenta eliminada", "legal_document.created": "Condiciones redactadas", "legal_document.published": "Condiciones publicadas",
   "ride_request.created": "Solicitud de plaza", "ride_request.rejected": "Solicitud rechazada",
   "ride_request.accepted_with_hold": "Solicitud aceptada", "ride_request.cancelled": "Solicitud cancelada",
   "booking.confirmed": "Reserva confirmada", "trip.started": "Viaje iniciado", "trip.completed": "Viaje finalizado",

@@ -19,4 +19,6 @@ export interface PrivateObjectStorage {
   headObject(key:string):Promise<PrivateObjectInfo>;
   readObject(key:string,maxBytes:number):Promise<Uint8Array>;
   createDownloadUrl(key:string,expiresInSeconds:number):Promise<string>;
+  /** Removing a key that no longer exists is not an error. */
+  deleteObject(key:string):Promise<void>;
 }

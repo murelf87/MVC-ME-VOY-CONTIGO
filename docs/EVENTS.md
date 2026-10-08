@@ -60,7 +60,7 @@ Se consulta en `GET /v1/admin/audit` (solo administración).
 |---|---|
 | Acceso | `auth.challenge.started`, `auth.login` |
 | Perfil e identidad | `profile.updated`, `profile.reviewed`, `private_document.registered`, `private_document.reviewed` |
-| Usuarios y roles | `user.suspended`, `user.reactivated`, `role.granted`, `role.revoked`, `user.blocked`, `user.unblocked` |
+| Usuarios y roles | `user.deleted`, `user.suspended`, `user.reactivated`, `role.granted`, `role.revoked`, `user.blocked`, `user.unblocked` |
 | Vehículos | `vehicle.created`, `vehicle.updated`, `vehicle.reviewed` |
 | Viajes | `trip.draft.created`, `trip.started`, `trip.completed`, `trip.cancelled`, `trip_series.created`, `trip_series.status_changed` |
 | Solicitudes | `ride_request.created`, `ride_request.accepted_with_hold`, `ride_request.rejected`, `ride_request.cancelled` |
