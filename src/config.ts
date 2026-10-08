@@ -2,6 +2,7 @@ export type SmsProviderName = "disabled" | "twilio" | "dev_console";
 export type MapsProviderName = "disabled" | "google" | "dev_local";
 export type PrivateStorageProviderName = "disabled" | "s3";
 export type InsuranceOcrProviderName = "disabled" | "google_vision";
+export type PaymentsProviderName = "disabled" | "stripe";
 
 export type AppConfig = {
   nodeEnv: string;
@@ -31,6 +32,8 @@ export type AppConfig = {
   privateUploadTtlSeconds: number;
   insuranceOcrProvider: InsuranceOcrProviderName;
   googleVisionApiKey: string | undefined;
+  paymentsProvider: PaymentsProviderName;
+  stripeWebhookSecret: string | undefined;
 };
 
 function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_INTEGER): number {
@@ -63,6 +66,14 @@ function insuranceOcrProviderEnv(): InsuranceOcrProviderName {
   const value = process.env.INSURANCE_OCR_PROVIDER ?? "disabled";
   if (value !== "disabled" && value !== "google_vision") {
     throw new Error("INSURANCE_OCR_PROVIDER must be disabled or google_vision");
+  }
+  return value;
+}
+
+function paymentsProviderEnv(): PaymentsProviderName {
+  const value = process.env.PAYMENTS_PROVIDER ?? "disabled";
+  if (value !== "disabled" && value !== "stripe") {
+    throw new Error("PAYMENTS_PROVIDER must be disabled or stripe");
   }
   return value;
 }
@@ -106,6 +117,8 @@ export function loadConfig(): AppConfig {
     s3ForcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
     privateUploadTtlSeconds: intEnv("PRIVATE_UPLOAD_TTL_SECONDS", 600, 60, 3600),
     insuranceOcrProvider: insuranceOcrProviderEnv(),
-    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY
+    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY,
+    paymentsProvider: paymentsProviderEnv(),
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET
   };
 }

@@ -1,3 +1,4 @@
+import { postRelease } from "./ledger-service.js";
 import crypto from "node:crypto";
 import type { Pool,PoolClient } from "pg";
 import type { AuthPrincipal } from "../auth/session.js";
@@ -234,6 +235,11 @@ export async function completeOwnedTrip(pool:Pool,principal:AuthPrincipal,tripId
         from ride_requests r
        where b.request_id=r.id and r.trip_id=$1 and b.status='confirmed'
     `,[tripId]);
+    // Only passengers who were actually picked up make the driver's share payable; no-shows wait for the policy.
+    const completed=await client.query(`
+      select b.id from bookings b join ride_requests r on r.id=b.request_id
+       where r.trip_id=$1 and b.status='completed'`,[tripId]);
+    for(const b of completed.rows) await postRelease(client,b.id);
     const done=await client.query(`
       update trips set status='completed',completed_at=now(),updated_at=now()
        where id=$1 returning id,status,completed_at

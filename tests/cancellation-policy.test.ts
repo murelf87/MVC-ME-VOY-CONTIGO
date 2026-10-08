@@ -18,9 +18,9 @@ const rules=parseCancellationRules({
 
 test("passenger tiers are sorted and chosen by minutes before departure",()=>{
   const base={actor:"passenger" as const,tripStarted:false,paidCents:1010,passengerFeeCents:10};
-  assert.deepEqual(computeRefund(rules,{...base,minutesBeforeDeparture:2000}),{ruleApplied:"passenger[0]",refundCents:1000,retainedCents:10});
-  assert.deepEqual(computeRefund(rules,{...base,minutesBeforeDeparture:300}),{ruleApplied:"passenger[1]",refundCents:500,retainedCents:510});
-  assert.deepEqual(computeRefund(rules,{...base,minutesBeforeDeparture:30}),{ruleApplied:"passenger[2]",refundCents:0,retainedCents:1010});
+  assert.deepEqual(computeRefund(rules,{...base,minutesBeforeDeparture:2000}),{ruleApplied:"passenger[0]",refundCents:1000,retainedCents:10,refundContributionCents:1000,refundFeeCents:0});
+  assert.deepEqual(computeRefund(rules,{...base,minutesBeforeDeparture:300}),{ruleApplied:"passenger[1]",refundCents:500,retainedCents:510,refundContributionCents:500,refundFeeCents:0});
+  assert.deepEqual(computeRefund(rules,{...base,minutesBeforeDeparture:30}),{ruleApplied:"passenger[2]",refundCents:0,retainedCents:1010,refundContributionCents:0,refundFeeCents:0});
   assert.equal(computeRefund(rules,{...base,minutesBeforeDeparture:-10}).ruleApplied,"passenger[2]");
 });
 

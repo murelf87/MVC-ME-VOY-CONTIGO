@@ -67,7 +67,7 @@ export function computeRefund(
     paidCents:number;
     passengerFeeCents:number;
   }
-):{ruleApplied:string;refundCents:number;retainedCents:number}{
+):{ruleApplied:string;refundCents:number;retainedCents:number;refundContributionCents:number;refundFeeCents:number}{
   let applied:RefundRule;let name:string;
   if(input.actor==="driver"){applied=rules.driver;name="driver";}
   else if(input.actor==="platform"){applied=rules.platform;name="platform";}
@@ -80,6 +80,8 @@ export function computeRefund(
   }
   const fee=Math.min(Math.max(0,input.passengerFeeCents),input.paidCents);
   const contribution=input.paidCents-fee;
-  const refundCents=share(contribution,applied.refundContributionBps)+share(fee,applied.refundPassengerFeeBps);
-  return {ruleApplied:name,refundCents,retainedCents:input.paidCents-refundCents};
+  const refundContributionCents=share(contribution,applied.refundContributionBps);
+  const refundFeeCents=share(fee,applied.refundPassengerFeeBps);
+  const refundCents=refundContributionCents+refundFeeCents;
+  return {ruleApplied:name,refundCents,retainedCents:input.paidCents-refundCents,refundContributionCents,refundFeeCents};
 }

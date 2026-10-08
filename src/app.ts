@@ -23,6 +23,7 @@ import { registerCancellationRoutes } from "./routes/cancellation-routes.js";
 import { registerNotificationRoutes } from "./routes/notification-routes.js";
 import { registerAdminRoutes } from "./routes/admin-routes.js";
 import { registerRecurringRoutes } from "./routes/recurring-routes.js";
+import { registerPaymentRoutes } from "./routes/payment-routes.js";
 import { registerRouteChangeRoutes } from "./routes/route-change-routes.js";
 import { registerTariffRoutes } from "./routes/tariff-routes.js";
 import { registerProvinceRoutes } from "./routes/province-routes.js";
@@ -44,7 +45,7 @@ export async function buildApp() {
     openapi: {
       info: {
         title: "MVC - Me voy contigo API",
-        version: "0.14.0",
+        version: "0.21.0",
         description: "Backend core with provider-backed phone verification and revocable opaque sessions."
       },
       components: {
@@ -164,6 +165,7 @@ export async function buildApp() {
   await registerRecurringRoutes(app, pool);
   await registerTariffRoutes(app, pool);
   await registerRouteChangeRoutes(app, pool, routeProvider);
+  await registerPaymentRoutes(app, pool, config);
   await registerProvinceRoutes(app, pool);
   await registerGeocodingRoutes(app, pool, geocodingProvider);
   await registerPrivateUploadRoutes(

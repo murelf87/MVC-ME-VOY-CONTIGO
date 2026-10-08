@@ -34,7 +34,7 @@ async function cancelBooking(
 ){
   const minutes=ctx.departureAt?Math.floor((ctx.departureAt.getTime()-Date.now())/60000):null;
   let policyId=booking.cancellation_policy_version_id;
-  let refund:{ruleApplied:string;refundCents:number;retainedCents:number}|null=null;
+  let refund:ReturnType<typeof computeRefund>|null=null;
   if(policyId){
     const p=await client.query(`select rules from cancellation_policy_versions where id=$1`,[policyId]);
     const quote=await client.query(`
@@ -49,11 +49,13 @@ async function cancelBooking(
   await client.query(`update bookings set status=$2,updated_at=now() where id=$1`,[booking.id,ctx.bookingStatus]);
   const row=await client.query(`
     insert into booking_cancellations(booking_id,actor,cancelled_by_user_id,reason,trip_started,
-      minutes_before_departure,policy_version_id,rule_applied,paid_cents,refund_cents,retained_cents,refund_status)
-    values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      minutes_before_departure,policy_version_id,rule_applied,paid_cents,refund_cents,retained_cents,refund_status,
+      refund_contribution_cents,refund_fee_cents)
+    values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
     returning id,booking_id,actor,rule_applied,paid_cents,refund_cents,retained_cents,refund_status,created_at`,
     [booking.id,ctx.actor,ctx.userId,ctx.reason,ctx.tripStarted,minutes,policyId,refund?.ruleApplied??null,
-     booking.amount_cents,refund?.refundCents??null,refund?.retainedCents??null,refundStatus]);
+     booking.amount_cents,refund?.refundCents??null,refund?.retainedCents??null,refundStatus,
+     refund?.refundContributionCents??null,refund?.refundFeeCents??null]);
   return row.rows[0];
 }
 
