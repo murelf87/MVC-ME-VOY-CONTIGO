@@ -5,6 +5,7 @@ import { requireAnyRole } from "../auth/session.js";
 import { DomainError } from "../errors.js";
 import { createRideRequest, decideRideRequest } from "./request-service.js";
 import { publishTrip } from "./trip-service.js";
+import { assertLegalAccepted } from "./legal-service.js";
 
 const MAX_HORIZON_WEEKS=8;
 
@@ -188,6 +189,7 @@ export async function requestSeriesWeek(
   input:{seriesId:string;weekStart:string;fromSegmentSeq:number;toSegmentSeq:number;weekdays?:number[]}
 ){
   requireAnyRole(principal,["passenger"]);
+  await assertLegalAccepted(pool,principal.userId);
   const {trips}=await seriesWeek(pool,input.seriesId,input.weekStart);
   const only=input.weekdays?.length?new Set(validWeekdays(input.weekdays)):null;
   const groupId=crypto.randomUUID();

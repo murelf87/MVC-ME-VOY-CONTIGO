@@ -15,7 +15,7 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `HTTP_ERROR` | 400 | Other 4xx raised by Fastify (malformed JSON, unsupported media type…) |
 | `INTERNAL_ERROR` | 500 | Internal server error |
 
-## Dominio (203 códigos)
+## Dominio (209 códigos)
 
 | Código | HTTP | Mensaje | Dónde |
 |---|---|---|---|
@@ -81,6 +81,7 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `INVALID_HOLD_TTL` | 400 | Seat hold TTL must be between 30 and 3600 seconds | services/request-service.ts, services/reservation-service.ts |
 | `INVALID_INSURANCE_EXPIRY` | 400 | Insurance expiry must use YYYY-MM-DD format / Insurance expiry date is invalid | vehicles/compliance-service.ts |
 | `INVALID_LATITUDE` | 400 | Latitude must be between -90 and 90 | maps/google-maps-provider.ts |
+| `INVALID_LEGAL_DOCUMENT` | 400 | Title and text are required | services/legal-service.ts |
 | `INVALID_LOCATION_EVENT` | 400 | … must be a UUID / … is outside its valid range / recordedAt must be a valid ISO timestamp | live/tracking-service.ts |
 | `INVALID_LONGITUDE` | 400 | Longitude must be between -180 and 180 | maps/google-maps-provider.ts |
 | `INVALID_MAX_DETOUR` | 400 | Maximum detour is invalid | services/trip-draft-service.ts |
@@ -110,6 +111,11 @@ Cada código va siempre con el mismo estado HTTP (lo comprueba `tests/error-cata
 | `INVALID_VERIFICATION_CODE` | 400 | Verification code must contain 4 to 10 characters | auth/provider.ts |
 | `INVALID_WEEK` | 400 | weekStart must be YYYY-MM-DD | services/recurring-service.ts |
 | `INVALID_WEEKDAYS` | 400 | Weekdays must be ISO numbers 1 (Monday) to 7 (Sunday) | services/recurring-service.ts |
+| `LEGAL_ACCEPTANCE_REQUIRED` | 409 | Current terms must be accepted first | services/legal-service.ts |
+| `LEGAL_DOCUMENT_NOT_CURRENT` | 409 | Only the current published version can be accepted | services/legal-service.ts |
+| `LEGAL_DOCUMENT_NOT_DRAFT` | 409 | Only drafts can be published | services/legal-service.ts |
+| `LEGAL_DOCUMENT_NOT_FOUND` | 404 | Legal document not found | services/legal-service.ts |
+| `LEGAL_DOCUMENT_REQUIRED` | 400 | At least one document is required | services/legal-service.ts |
 | `LIVE_POSITION_STALE` | 409 | The car's position is not recent enough to accept a pickup while moving | services/route-change-service.ts, services/trip-progress-service.ts |
 | `LOCATION_EVENT_FROM_FUTURE` | 422 | GPS timestamp is too far in the future | live/tracking-service.ts |
 | `LOCATION_EVENT_TOO_OLD` | 422 | GPS event is older than 24 hours | live/tracking-service.ts |

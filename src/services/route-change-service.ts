@@ -7,6 +7,7 @@ import type { GeoJsonLineString, LatLng, RouteProvider } from "../maps/types.js"
 import { displayName, notify } from "./notification-service.js";
 import { snapshotQuoteForRequest } from "./tariff-service.js";
 import { tripProgress } from "./trip-progress-service.js";
+import { assertLegalAccepted } from "./legal-service.js";
 
 /**
  * A passenger asks to be picked up off the published route, before departure or with the car
@@ -206,6 +207,7 @@ export async function requestRouteChange(
   input:{tripId:string;pickup:LatLng;dropoff:LatLng;pickupLabel?:string|null;dropoffLabel?:string|null}
 ){
   requireAnyRole(principal,["passenger"]);
+  await assertLegalAccepted(pool,principal.userId);
   if(!provider) throw new DomainError("MAPS_PROVIDER_UNAVAILABLE","A real routing provider is not configured",503);
   const pickup=point(input.pickup,"pickup"),dropoff=point(input.dropoff,"dropoff");
   const trip=await loadTrip(pool,input.tripId);

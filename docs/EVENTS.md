@@ -67,6 +67,7 @@ Se consulta en `GET /v1/admin/audit` (solo administración).
 | Recogida | `pickup_code.generated`, `pickup.verified` |
 | Cambios de ruta | `route_change.requested`, `route_change.driver_accepted`, `route_change.applied`, `route_change.rejected`, `route_change.expired` |
 | Chat y reportes | `chat.message.sent`, `incident_report.created`, `incident_report.status_changed` |
+| Condiciones | `legal_document.created`, `legal_document.published` |
 | Finanzas | `tariff.created`, `tariff.approved`, `cancellation_policy.created`, `cancellation_policy.activated`, `payouts.prepared` |
 | Datos | `province.dataset.activated` |
 

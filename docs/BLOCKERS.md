@@ -11,3 +11,4 @@
 9. Cancelaciones: el sistema de políticas versionadas está hecho; falta que Finanzas cree y active la política final.
 11. Disputas y no-shows: falta decidir quién asume una disputa perdida y qué pasa con el pago de un pasajero que no se presenta.
 10. Frontend móvil: no está disponible el código fuente móvil aprobado para una validación final de interoperabilidad.
+12. Textos legales: el sistema de condiciones de uso y aviso de privacidad versionados está hecho (docs/ADMIN.md, sección Condiciones). Falta el texto redactado por vuestro asesor; MVC no publica ninguno propio.

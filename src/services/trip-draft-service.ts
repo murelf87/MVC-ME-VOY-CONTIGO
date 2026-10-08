@@ -5,6 +5,7 @@ import { DomainError } from "../errors.js";
 import type { LatLng, RouteProvider } from "../maps/types.js";
 import { computeProvinceCompliantSegmentPlan } from "../maps/province-route-service.js";
 import { publishTrip } from "./trip-service.js";
+import { assertLegalAccepted } from "./legal-service.js";
 
 export type CreateTripDraftInput = {
   vehicleId: string;
@@ -172,6 +173,7 @@ export async function publishOwnedTrip(
   tripId:string
 ):Promise<void>{
   requireAnyRole(principal,["driver"]);
+  await assertLegalAccepted(pool,principal.userId);
   const trip=await pool.query(`select driver_user_id,kind from trips where id=$1`,[tripId]);
   if(!trip.rowCount) throw new DomainError("TRIP_NOT_FOUND","Trip not found",404);
   if(trip.rows[0].driver_user_id!==principal.userId){

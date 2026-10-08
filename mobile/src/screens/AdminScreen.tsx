@@ -11,7 +11,7 @@ export function isStaff(roles: readonly string[]): boolean {
   return roles.some(role => STAFF_ROLES.includes(role));
 }
 
-type Tab = "summary" | "verification" | "reports" | "finance" | "users" | "trips" | "audit";
+type Tab = "summary" | "verification" | "reports" | "finance" | "users" | "trips" | "legal" | "audit";
 
 const TAB_RULES: Array<{ id: Tab; label: string; roles: string[] }> = [
   { id: "summary", label: "Resumen", roles: STAFF_ROLES },
@@ -20,6 +20,7 @@ const TAB_RULES: Array<{ id: Tab; label: string; roles: string[] }> = [
   { id: "trips", label: "Viajes", roles: ["admin", "support_admin"] },
   { id: "finance", label: "Finanzas", roles: ["admin", "finance_admin"] },
   { id: "users", label: "Usuarios", roles: ["admin", "support_admin", "verification_admin"] },
+  { id: "legal", label: "Condiciones", roles: ["admin"] },
   { id: "audit", label: "Auditoría", roles: ["admin"] },
 ];
 
@@ -45,6 +46,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const AUDIT_LABEL: Record<string, string> = {
+  "legal_document.created": "Condiciones redactadas", "legal_document.published": "Condiciones publicadas",
   "ride_request.created": "Solicitud de plaza", "ride_request.rejected": "Solicitud rechazada",
   "ride_request.accepted_with_hold": "Solicitud aceptada", "ride_request.cancelled": "Solicitud cancelada",
   "booking.confirmed": "Reserva confirmada", "trip.started": "Viaje iniciado", "trip.completed": "Viaje finalizado",
@@ -106,6 +108,7 @@ export function AdminScreen() {
         trips: "/v1/admin/trips",
         finance: "/v1/admin/refunds/pending",
         users: `/v1/admin/users?q=${encodeURIComponent(query)}`,
+        legal: "/v1/admin/legal-documents",
         audit: "/v1/admin/audit?limit=60",
       };
       const result: any = await apiRequest(path[tab], { token });
@@ -444,6 +447,48 @@ export function AdminScreen() {
                   </View>
                 </>
               ) : null}
+            </View>
+          ))}
+        </>
+      ) : null}
+
+      {tab === "legal" && data ? (
+        <>
+          <Text style={s.meta}>
+            MVC no trae textos legales propios: el texto lo redacta vuestro asesor. Al publicar una versión nueva, todos tienen que aceptarla antes de volver a reservar o publicar.
+          </Text>
+          {!data.documents.length ? <Text style={s.empty}>Aún no hay condiciones ni aviso de privacidad.</Text> : null}
+          {data.documents.map((d: any) => (
+            <View key={d.id} style={s.card}>
+              <View style={s.rowBetween}>
+                <Text style={s.cardTitle}>{d.kind === "terms" ? "Condiciones de uso" : "Privacidad"} v{d.version} · {d.title}</Text>
+                <Text style={s.pill}>{d.status === "published" ? "Publicada" : d.status === "draft" ? "Borrador" : "Retirada"}</Text>
+              </View>
+              <Text style={s.meta} numberOfLines={3}>{d.body}</Text>
+              <Text style={s.meta}>{d.acceptances} {d.acceptances === 1 ? "aceptación" : "aceptaciones"}{d.published_at ? ` · publicada ${when(d.published_at)}` : ""}</Text>
+              {d.status === "draft" ? (
+                <Btn label="Publicar" onPress={() => void act(`/v1/admin/legal-documents/${d.id}/publish`, {}, "Publicada. Se pedirá aceptarla a todos.")} />
+              ) : null}
+            </View>
+          ))}
+          {(["terms", "privacy"] as const).map(kind => (
+            <View key={kind} style={s.card}>
+              <Text style={s.cardTitle}>Nuevo borrador: {kind === "terms" ? "condiciones de uso" : "aviso de privacidad"}</Text>
+              {noteInput(`l:${kind}:title`, "Título")}
+              <TextInput
+                value={notes[`l:${kind}:body`] ?? ""}
+                onChangeText={v => setNotes(c => ({ ...c, [`l:${kind}:body`]: v }))}
+                placeholder="Pega aquí el texto aprobado"
+                style={[s.input, { minHeight: 110, paddingTop: 8, textAlignVertical: "top" }]}
+                multiline
+              />
+              <Btn
+                label="Guardar borrador"
+                onPress={() => {
+                  if (!note(`l:${kind}:title`) || !note(`l:${kind}:body`)) return setError("Escribe título y texto.");
+                  void act("/v1/admin/legal-documents", { kind, title: note(`l:${kind}:title`), body: note(`l:${kind}:body`) }, "Borrador guardado. Revísalo y publícalo cuando esté aprobado.");
+                }}
+              />
             </View>
           ))}
         </>

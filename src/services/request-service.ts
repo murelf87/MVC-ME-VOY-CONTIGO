@@ -5,6 +5,7 @@ import { DomainError } from "../errors.js";
 import { displayName, notify } from "./notification-service.js";
 import { snapshotQuoteForRequest } from "./tariff-service.js";
 import { assertStopAhead } from "./trip-progress-service.js";
+import { assertLegalAccepted } from "./legal-service.js";
 
 async function tx<T>(pool: Pool, fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
@@ -91,6 +92,7 @@ export async function createRideRequest(
 ) {
   requireAnyRole(principal, ["passenger"]);
   validateRange(input.fromSegmentSeq, input.toSegmentSeq);
+  await assertLegalAccepted(pool, principal.userId);
 
   return tx(pool, async client => {
     const tripQ = await client.query(

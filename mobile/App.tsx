@@ -21,6 +21,7 @@ import { TripsScreen } from "./src/screens/OtherScreens";
 import { MessagesScreen } from "./src/screens/MessagesScreen";
 import { PublishScreen } from "./src/screens/PublishScreen";
 import { AdminScreen } from "./src/screens/AdminScreen";
+import { LegalScreen, usePendingLegal } from "./src/screens/LegalScreen";
 import { NotificationsScreen, useUnreadNotifications, type AppNotification } from "./src/screens/NotificationsScreen";
 import { C } from "./src/theme";
 
@@ -52,6 +53,7 @@ function AuthenticatedApp() {
   const [tripsMode, setTripsMode] = useState<"available" | "mine" | "driver" | undefined>(undefined);
   const { token } = useAuth();
   const { unread, refresh: refreshUnread } = useUnreadNotifications(token);
+  const legal = usePendingLegal(token);
   const main = ["home", "trips", "publish", "messages", "profile"].includes(screen);
   const navActive = main ? screen : screen === "admin" ? "profile" : screen === "notifications" ? "home" : "trips";
 
@@ -66,6 +68,11 @@ function AuthenticatedApp() {
   useEffect(() => {
     if (screen === "home") void refreshUnread();
   }, [screen, refreshUnread]);
+
+  // A new version can be published while the app is open: check again on every main tab change.
+  useEffect(() => {
+    if (main) void legal.refresh();
+  }, [screen]);
 
     function runSearch(params: TripSearchParams) {
     setSearchParams(params);
@@ -88,6 +95,10 @@ function AuthenticatedApp() {
   function openChat(next: Conversation) {
     setConversation(next);
     setScreen("messages");
+  }
+
+  if (legal.pending.length) {
+    return <LegalScreen documents={legal.pending} onAccepted={legal.setPending} />;
   }
 
   return (

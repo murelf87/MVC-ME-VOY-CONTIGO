@@ -15,3 +15,11 @@ Reglas:
 - Suspender una cuenta revoca todas sus sesiones al momento.
 - Los teléfonos se muestran enmascarados en las listas.
 - Ver documentos privados exige el almacenamiento privado (**bloqueado** hasta configurar proveedor).
+
+## Condiciones de uso y privacidad
+- Pestaña **Condiciones** (solo `admin`): se guarda un borrador con título y texto, y se publica cuando está aprobado. Cada tipo (`terms`, `privacy`) tiene sus versiones numeradas; publicar una retira la anterior.
+- El texto publicado no se puede modificar (lo impide la base de datos): es la prueba de lo que aceptó cada persona. Para cambiarlo se publica otra versión.
+- Tras publicar, la app pide aceptar antes de seguir, y el servidor rechaza reservar, pedir un desvío, reservar una semana o publicar un viaje con `LEGAL_ACCEPTANCE_REQUIRED` hasta que se acepte.
+- Cada aceptación guarda usuario, versión y hora (`legal_acceptances`). Mientras no haya nada publicado no se bloquea nada.
+- Endpoints: `GET /v1/legal/current` (público), `GET /v1/me/legal`, `POST /v1/me/legal/accept`, `GET|POST /v1/admin/legal-documents`, `POST /v1/admin/legal-documents/:id/publish`.
+- MVC no incluye textos legales propios: el contenido lo aporta vuestro asesor (ver BLOCKERS 12).
