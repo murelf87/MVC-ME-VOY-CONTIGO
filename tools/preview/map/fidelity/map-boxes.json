@@ -1,0 +1,12 @@
+{
+  "_nota": "Recorte (px de design/screens/<id>.png, láminas a 2×) de la zona de mapa de cada pantalla aprobada. Obtenidos por coincidencia de plantilla (error cuadrático medio < 3e-7) y revisados a ojo. Si las láminas se regeneran hay que volver a medirlos.",
+  "09": { "screen": "screens/09.png", "x": 30, "y": 665, "w": 728, "h": 770, "pantalla": "Buscar viaje (coches con plazas libres)" },
+  "11": { "screen": "screens/11.png", "x": 30, "y": 385, "w": 728, "h": 305, "pantalla": "Resultado de búsqueda (origen, ruta y universidad)" },
+  "12": { "screen": "screens/12.png", "x": 58, "y": 528, "w": 678, "h": 320, "pantalla": "Ruta del conductor con paradas y horas" },
+  "13a": { "screen": "screens/13a.png", "x": 30, "y": 210, "w": 728, "h": 765, "pantalla": "Elegir punto de recogida" },
+  "19": { "screen": "screens/19.png", "x": 58, "y": 348, "w": 678, "h": 782, "pantalla": "Mis rutas del conductor" },
+  "21": { "screen": "screens/21.png", "x": 30, "y": 595, "w": 728, "h": 530, "pantalla": "Seguimiento del coche que llega" },
+  "22": { "screen": "screens/22.png", "x": 55, "y": 355, "w": 681, "h": 417, "pantalla": "Cambio de ruta propuesto" },
+  "24": { "screen": "screens/24.png", "x": 52, "y": 348, "w": 678, "h": 282, "pantalla": "Detalle de viaje" },
+  "37a": { "screen": "screens/37a.png", "x": 52, "y": 1085, "w": 686, "h": 455, "pantalla": "Panel de administración: actividad de coches" }
+}

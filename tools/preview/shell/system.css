@@ -1,0 +1,165 @@
+/* Capa del «sistema» del móvil simulado: diálogos de permisos, cámara, galería, compartir, pagos, biometría, avisos… Todo lo que
+   el sistema operativo dibujaría por encima de la app. Cada pieza lleva la etiqueta «Simulación». */
+.v-sys { position: absolute; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; border-radius: inherit; color: #000; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif; --st: 47px; --sbm: 34px; }
+.v-sys[data-os="android"] { font-family: Roboto, "Google Sans", system-ui, "Segoe UI", sans-serif; }
+.v-sys button { font-family: inherit; }
+.v-sys-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); pointer-events: auto; animation: v-fade 0.16s ease-out; }
+.v-sys-scrim.clear { background: transparent; }
+@keyframes v-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes v-pop { from { opacity: 0; transform: translate(-50%, -50%) scale(1.06); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes v-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes v-down { from { transform: translateY(-24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .v-sys * { animation-duration: 0.01ms !important; } }
+.v-sim-tag { font-size: 10px; line-height: 1.25; letter-spacing: 0.02em; color: rgba(60, 60, 67, 0.7); text-align: center; padding: 0 12px 8px; }
+
+/* Diálogo estilo iOS */
+.v-ios-alert { position: absolute; left: 50%; top: 50%; width: 270px; max-width: calc(100% - 40px); transform: translate(-50%, -50%); background: rgba(246, 246, 248, 0.97); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); border-radius: 14px; overflow: hidden; pointer-events: auto; text-align: center; animation: v-pop 0.18s ease-out; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25); }
+.v-ios-alert .body { padding: 18px 16px 14px; }
+.v-ios-alert .title { font-size: 17px; font-weight: 600; line-height: 1.25; }
+.v-ios-alert .msg { font-size: 13px; line-height: 1.3; margin-top: 4px; }
+.v-ios-alert .btns { display: flex; flex-direction: column; border-top: 0.5px solid rgba(60, 60, 67, 0.36); }
+.v-ios-alert .btns.row { flex-direction: row; }
+.v-ios-alert .btns button { flex: 1; padding: 11px 8px; min-height: 44px; background: transparent; border: 0; color: #007aff; font-size: 17px; border-top: 0.5px solid rgba(60, 60, 67, 0.36); }
+.v-ios-alert .btns button:first-child { border-top: 0; }
+.v-ios-alert .btns.row button + button { border-top: 0; border-left: 0.5px solid rgba(60, 60, 67, 0.36); }
+.v-ios-alert .btns button.strong { font-weight: 600; }
+.v-ios-alert .btns button.destructive { color: #ff3b30; }
+.v-ios-alert .btns button:active { background: rgba(120, 120, 128, 0.2); }
+.v-ios-alert .v-sim-tag { padding-top: 6px; border-top: 0.5px solid rgba(60, 60, 67, 0.36); }
+
+/* Diálogo estilo Android (permisos de Android 13+, centrado) */
+.v-and-perm { position: absolute; left: 50%; top: 50%; width: calc(100% - 40px); max-width: 340px; transform: translate(-50%, -50%); background: #f3f4f8; border-radius: 28px; padding: 24px 22px 14px; pointer-events: auto; text-align: center; animation: v-pop 0.18s ease-out; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.v-and-perm .ico { width: 28px; height: 28px; margin: 0 auto 12px; color: #1f3a8a; }
+.v-and-perm .ico svg { width: 28px; height: 28px; fill: currentColor; }
+.v-and-perm .title { font-size: 16px; line-height: 1.35; color: #1b1b1f; }
+.v-and-perm .btns { display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+.v-and-perm .btns button { min-height: 46px; border-radius: 24px; border: 1px solid #c4c6d0; background: #fff; color: #0b57d0; font-size: 14px; font-weight: 500; padding: 8px 12px; }
+.v-and-perm .btns button.first { background: #d3e3fd; border-color: transparent; }
+.v-and-perm .v-sim-tag { margin-top: 10px; padding-bottom: 0; color: #5f6368; }
+/* Diálogo Material (alert) */
+.v-and-alert { position: absolute; left: 50%; top: 50%; width: calc(100% - 48px); max-width: 312px; transform: translate(-50%, -50%); background: #ece6f0; border-radius: 28px; padding: 24px 24px 12px; pointer-events: auto; animation: v-pop 0.18s ease-out; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3); }
+.v-and-alert .title { font-size: 24px; line-height: 1.25; color: #1d1b20; }
+.v-and-alert .msg { margin-top: 12px; font-size: 14px; line-height: 1.45; color: #49454f; }
+.v-and-alert .btns { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
+.v-and-alert .btns button { min-height: 40px; padding: 8px 12px; border: 0; background: transparent; color: #6750a4; font-size: 14px; font-weight: 500; border-radius: 20px; }
+.v-and-alert .btns button.destructive { color: #b3261e; }
+
+/* Hojas inferiores */
+.v-sheet { position: absolute; left: 8px; right: 8px; bottom: 8px; max-height: calc(100% - var(--st) - 8px); overflow: auto; background: #f2f2f7; border-radius: 24px; pointer-events: auto; animation: v-up 0.22s ease-out; box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.25); color: #000; display: flex; flex-direction: column; }
+.v-sys[data-os="android"] .v-sheet { left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; background: #f3f4f8; padding-bottom: 8px; }
+.v-sheet .grab { width: 36px; height: 5px; border-radius: 3px; background: rgba(60, 60, 67, 0.3); margin: 8px auto 0; flex: none; }
+.v-sheet header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 6px; flex: none; }
+.v-sheet header b { font-size: 17px; font-weight: 600; flex: 1; }
+.v-sheet .content { padding: 4px 16px 12px; overflow: auto; }
+.v-sheet .foot { display: flex; gap: 8px; padding: 6px 16px 14px; flex: none; }
+.v-sheet .foot.wrap { flex-wrap: wrap; }
+.v-sheet .foot.wrap .v-sbtn.dark { order: -1; flex: 1 1 100%; }
+.v-sbtn { flex: 1; min-height: 46px; border-radius: 14px; border: 0; background: #e5e5ea; color: #007aff; font-size: 16px; font-weight: 600; padding: 8px 12px; }
+.v-sbtn.primary { background: #044dfd; color: #fff; }
+.v-sbtn.dark { background: #000; color: #fff; }
+.v-sbtn.danger { color: #ff3b30; }
+.v-sbtn[disabled] { opacity: 0.45; }
+.v-sys[data-os="android"] .v-sbtn { border-radius: 24px; background: #e1e2ec; color: #0b57d0; font-weight: 500; }
+.v-sys[data-os="android"] .v-sbtn.primary { background: #0b57d0; color: #fff; }
+.v-xbtn { width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(120, 120, 128, 0.18); color: #3c3c43; font-size: 16px; line-height: 1; padding: 0; flex: none; }
+.v-simbar { margin: 0 16px 6px; padding: 7px 10px; border-radius: 10px; background: #fff1d6; color: #7a4a00; font-size: 12px; font-weight: 600; line-height: 1.3; display: flex; gap: 8px; align-items: flex-start; flex: none; }
+.v-simbar::before { content: "SIM"; flex: none; font-size: 10px; font-weight: 800; background: #7a4a00; color: #fff1d6; border-radius: 5px; padding: 1px 5px; margin-top: 1px; letter-spacing: 0.05em; }
+
+/* Compartir / pagos / filas */
+.v-prev { background: #fff; border-radius: 14px; padding: 12px; display: flex; gap: 10px; align-items: center; }
+.v-prev .ic { width: 40px; height: 40px; border-radius: 10px; flex: none; background: #fff; border: 1px solid #e5e5ea; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.v-prev .ic img { width: 36px; height: auto; }
+.v-prev .tx { min-width: 0; }
+.v-prev .tx b { display: block; font-size: 14px; }
+.v-prev .tx span { display: block; font-size: 12px; color: #6c6c70; word-break: break-word; max-height: 3.9em; overflow: hidden; }
+.v-targets { display: flex; gap: 14px; overflow-x: auto; padding: 14px 2px 4px; }
+.v-target { flex: none; width: 66px; background: none; border: 0; text-align: center; padding: 0; color: #000; font-size: 11px; }
+.v-target i { display: flex; width: 54px; height: 54px; margin: 0 auto 4px; border-radius: 14px; align-items: center; justify-content: center; font-style: normal; font-size: 24px; color: #fff; }
+.v-rowl { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 0.5px solid rgba(60, 60, 67, 0.25); font-size: 14px; }
+.v-rowl:first-child { border-top: 0; }
+.v-rowl span:first-child { color: #6c6c70; }
+.v-rowl b { text-align: right; font-weight: 600; }
+.v-total { font-size: 28px; font-weight: 700; text-align: center; padding: 8px 0 2px; }
+.v-pay-state { text-align: center; padding: 18px 0; font-size: 15px; }
+.v-pay-state .ring { width: 44px; height: 44px; margin: 0 auto 10px; border-radius: 50%; border: 4px solid #d1d1d6; border-top-color: #000; animation: v-rot 0.8s linear infinite; }
+.v-pay-state .check { width: 52px; height: 52px; margin: 0 auto 8px; border-radius: 50%; background: #1f9d55; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.v-pay-state .check.bad { background: #c0262d; }
+.v-faceid { text-align: center; padding: 8px 0 4px; }
+.v-faceid svg { width: 54px; height: 54px; stroke: #007aff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Pantallas completas del sistema (cámara, Mensajes, Ajustes) */
+.v-full { position: absolute; inset: 0; pointer-events: auto; z-index: 3; animation: v-fade 0.16s; }
+.v-cam { background: #000; color: #fff; display: flex; flex-direction: column; }
+.v-cam canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.v-cam .top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: calc(var(--st) + 4px) 16px 14px; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.62) calc(var(--st) - 4px), rgba(0, 0, 0, 0)); }
+.v-cam .chip { background: rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.28); color: #ffd25e; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.v-cam .xb { width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, 0.5); color: #fff; font-size: 18px; padding: 0; }
+.v-cam .cap { position: relative; z-index: 2; text-align: center; font-size: 15px; font-weight: 600; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); padding: 6px 24px; }
+.v-cam .bottom { position: relative; z-index: 2; margin-top: auto; display: flex; align-items: center; justify-content: space-around; padding: 16px 24px calc(var(--sbm) + 22px); background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent); }
+.v-cam .shutter { width: 74px; height: 74px; border-radius: 50%; border: 5px solid #fff; background: transparent; padding: 0; position: relative; }
+.v-cam .shutter::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: #fff; }
+.v-cam .shutter:active::after { inset: 7px; }
+.v-cam .flip { width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.2); color: #fff; font-size: 20px; padding: 0; }
+.v-cam .spacer { width: 48px; }
+.v-flash { position: absolute; inset: 0; background: #fff; z-index: 5; animation: v-flash 0.25s ease-out forwards; pointer-events: none; }
+@keyframes v-flash { from { opacity: 0.9; } to { opacity: 0; } }
+
+.v-gal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.v-gal button { position: relative; padding: 0; border: 0; background: #d1d1d6; border-radius: 10px; overflow: hidden; aspect-ratio: 1; }
+.v-gal img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v-gal button[aria-pressed="true"]::after { content: "✓"; position: absolute; right: 5px; top: 5px; width: 22px; height: 22px; border-radius: 50%; background: #044dfd; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.v-gal button[aria-pressed="true"] { outline: 3px solid #044dfd; outline-offset: -3px; }
+.v-docs button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px; background: #fff; border: 0; border-radius: 12px; margin-bottom: 6px; font-size: 14px; }
+.v-docs button[aria-pressed="true"] { outline: 2px solid #044dfd; }
+.v-docs .di { width: 34px; height: 40px; border-radius: 6px; background: #e8ecf7; color: #044dfd; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none; }
+.v-docs small { display: block; color: #6c6c70; font-size: 11px; }
+
+.v-msgs { background: #fff; color: #000; display: flex; flex-direction: column; }
+.v-msgs header { padding: calc(var(--st) + 4px) 14px 10px; display: flex; align-items: center; gap: 8px; border-bottom: 0.5px solid #d1d1d6; background: #f7f7f9; }
+.v-msgs header b { flex: 1; text-align: center; font-size: 16px; }
+.v-msgs header button { border: 0; background: none; color: #007aff; font-size: 16px; padding: 4px; }
+.v-msgs .v-sim-tag { padding: 6px 12px; background: #fff4d6; color: #6b4300; font-weight: 600; border-bottom: 0.5px solid #ecd9a3; }
+.v-msgs .list { flex: 1; overflow: auto; padding: 12px 12px calc(var(--sbm) + 12px); background: #fff; }
+.v-bubble { max-width: 82%; background: #e9e9eb; border-radius: 18px; padding: 8px 12px; font-size: 15px; line-height: 1.3; margin: 0 0 4px; }
+.v-bubble b { font-family: ui-monospace, Menlo, monospace; letter-spacing: 0.08em; background: #fff3b0; padding: 0 3px; border-radius: 4px; }
+.v-bubble-meta { font-size: 11px; color: #8e8e93; margin: 0 4px 12px; }
+.v-bubble-from { font-size: 12px; color: #8e8e93; margin: 8px 4px 2px; }
+.v-msgs .empty { text-align: center; color: #8e8e93; padding: 40px 20px; font-size: 14px; }
+.v-msgs .cp { border: 0; background: #e5e5ea; color: #007aff; border-radius: 14px; padding: 4px 10px; font-size: 12px; font-weight: 600; margin: 0 0 12px 4px; }
+
+.v-set { background: #f2f2f7; color: #000; display: flex; flex-direction: column; }
+.v-set header { padding: calc(var(--st) + 4px) 14px 10px; display: flex; align-items: center; gap: 8px; }
+.v-set header b { flex: 1; text-align: center; font-size: 17px; }
+.v-set header button { border: 0; background: none; color: #007aff; font-size: 16px; padding: 4px; }
+.v-set .body { flex: 1; overflow: auto; padding: 4px 16px calc(var(--sbm) + 16px); }
+.v-set .app { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+.v-set .app img { width: 48px; height: auto; border-radius: 11px; }
+.v-set h4 { margin: 14px 0 6px 12px; font-size: 12px; font-weight: 500; color: #6c6c70; text-transform: uppercase; }
+.v-set .grp { background: #fff; border-radius: 12px; overflow: hidden; }
+.v-set .it { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-top: 0.5px solid #e5e5ea; font-size: 15px; min-height: 46px; }
+.v-set .it:first-child { border-top: 0; }
+.v-set .it > span { flex: 1; }
+.v-set .it select { border: 0; background: transparent; color: #8e8e93; font-size: 14px; max-width: 150px; text-align: right; direction: rtl; }
+.v-set .tg { position: relative; width: 51px; height: 31px; border-radius: 999px; border: 0; background: #e9e9ea; padding: 0; flex: none; transition: background 0.15s; }
+.v-set .tg::after { content: ""; position: absolute; left: 2px; top: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); transition: transform 0.15s; }
+.v-set .tg[aria-checked="true"] { background: #34c759; }
+.v-set .tg[aria-checked="true"]::after { transform: translateX(20px); }
+.v-set .hint { font-size: 12px; color: #6c6c70; margin: 6px 12px; }
+
+/* Avisos y toasts */
+.v-banners { position: absolute; left: 8px; right: 8px; top: calc(var(--st) - 6px); z-index: 6; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.v-banner { pointer-events: auto; display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; padding: 10px 12px; border-radius: 22px; border: 0; background: rgba(246, 246, 248, 0.94); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22); color: #000; animation: v-down 0.25s ease-out; position: relative; overflow: hidden; }
+.v-sys[data-os="android"] .v-banner { border-radius: 20px; background: #fff; }
+.v-banner .ai { width: 38px; height: 38px; border-radius: 9px; flex: none; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid rgba(0, 0, 0, 0.08); }
+.v-banner .ai img { width: 34px; height: auto; display: block; }
+.v-banner .ai.sms { background: #34c759; border: 0; color: #fff; font-size: 20px; }
+.v-banner .tx { min-width: 0; flex: 1; }
+.v-banner .tx small { display: flex; justify-content: space-between; font-size: 11px; color: #6c6c70; text-transform: uppercase; }
+.v-banner .tx b { display: block; font-size: 14px; line-height: 1.25; }
+.v-banner .tx span { display: block; font-size: 13px; line-height: 1.3; color: #3c3c43; max-height: 2.7em; overflow: hidden; }
+.v-banner[data-tone="warning"]::before, .v-banner[data-tone="critical"]::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: #f2a900; }
+.v-banner[data-tone="critical"]::before { background: #d12b2b; }
+.v-stoast { position: absolute; left: 50%; bottom: calc(var(--sbm) + 18px); transform: translateX(-50%); z-index: 9; max-width: calc(100% - 32px); background: rgba(28, 28, 30, 0.94); color: #fff; padding: 9px 14px; border-radius: 16px; font-size: 13px; line-height: 1.3; text-align: center; pointer-events: none; animation: v-fade 0.18s; }
+
+/* El diálogo toma el foco al abrirse (lectores de pantalla) sin dibujar un aro que un móvil real no tiene */
+.v-sys [tabindex="-1"]:focus { outline: none; }

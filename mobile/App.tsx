@@ -1,156 +1,111 @@
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import type { TripSearchParams } from "./src/api/types";
-import { BottomNav, Brand } from "./src/legacy/components/UI";
-import { AuthProvider, useAuth } from "./src/session/AuthContext";
-import { AccessScreen } from "./src/legacy/screens/AccessScreen";
-import { HomeScreen } from "./src/legacy/screens/HomeScreen";
-import { RouteScreen } from "./src/legacy/screens/RouteScreen";
-import { LiveScreen } from "./src/legacy/screens/LiveScreen";
-import { ProfileScreen } from "./src/legacy/screens/ProfileScreen";
-import { DriverOnboardingScreen } from "./src/legacy/screens/DriverOnboardingScreen";
-import {
-  MessagesScreen,
-  TripsScreen,
-} from "./src/legacy/screens/OtherScreens";
-import { PublishScreen } from "./src/legacy/screens/PublishScreen";
-import { C } from "./src/legacy/theme";
+/**
+ * Raíz de MVC · Me voy contigo.
+ *
+ * Orden de arranque:
+ *  1. (solo vista previa) instalar el backend en memoria y el puente con el visor, ANTES de que nada llame a la red;
+ *  2. mantener visible la pantalla de arranque nativa;
+ *  3. cargar fuentes, leer la sesión guardada (`AuthProvider`) y el enlace/aviso que abrió la app;
+ *  4. montar la navegación con la pila inicial correcta (Bienvenida, paso de alta pendiente o Mapa) y ocultar la
+ *     pantalla de arranque en cuanto la primera pantalla está dibujada.
+ *
+ * Proveedores (de fuera adentro): ErrorBoundary → SafeAreaProvider → ConnectivityProvider → AuthProvider.
+ */
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useCallback, useEffect, type ReactElement } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { MvcLogo } from "@/brand";
+import { ConnectivityProvider, ErrorBoundary } from "@/hooks";
+import { AppNavigation } from "@/navigation/AppNavigation";
+import { useBootDeepLink } from "@/navigation/deepLinkRuntime";
+import { configureForegroundNotifications } from "@/platform/notifications";
+import { getPreviewSafeAreaMetrics } from "@/platform/previewBridge";
+import { AuthProvider, useAuth } from "@/session";
+import { colors, useAppFonts } from "@/theme";
+import { ToastHost } from "@/ui";
 
-type Screen =
-  | "home"
-  | "trips"
-  | "publish"
-  | "messages"
-  | "profile"
-  | "route"
-  | "live";
-
-function BootScreen() {
-  return (
-    <SafeAreaView style={s.boot}>
-      <Brand />
-      <ActivityIndicator color={C.blue} size="large" style={{ marginTop: 24 }} />
-      <Text style={s.bootText}>Preparando MVC…</Text>
-    </SafeAreaView>
-  );
+// Vista previa en navegador (EXPO_PUBLIC_PREVIEW=1). La condición lleva la expresión literal para que Metro la sustituya
+// y elimine el `require` (y con él todo `src/preview`) de las compilaciones de producción. Ver README.md.
+if (process.env.EXPO_PUBLIC_PREVIEW === "1") {
+  (require("@/preview/install") as { installPreviewIfEnabled: () => void }).installPreviewIfEnabled();
 }
 
-function AuthenticatedApp() {
-  const [screen, setScreen] = useState<Screen>("home");
-  const [searchParams, setSearchParams] = useState<TripSearchParams | null>(null);
-  const main = ["home", "trips", "publish", "messages", "profile"].includes(screen);
-  const navActive = main ? screen : screen === "route" ? "home" : "trips";
+/** Si el arranque se alarga (red lenta, servidor caído), se retira la pantalla nativa y se muestra «Cargando». */
+const SPLASH_MAX_MS = 10_000;
 
-  const goMain = (next: string) => {
-    if (["home", "trips", "publish", "messages", "profile"].includes(next)) {
-      setScreen(next as Screen);
-    }
-  };
-
-  function runSearch(params: TripSearchParams) {
-    setSearchParams(params);
-    setScreen("trips");
+function keepSplashVisible(): void {
+  try {
+    void SplashScreen.preventAutoHideAsync().catch(() => undefined);
+  } catch {
+    // sin pantalla de arranque nativa (web, Expo Go durante una recarga): no hay nada que mantener
   }
+}
 
+function hideSplash(): void {
+  try {
+    void SplashScreen.hideAsync().catch(() => undefined);
+  } catch {
+    // idem
+  }
+}
+
+keepSplashVisible();
+
+function BootView(): ReactElement {
   return (
-    <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      {!main ? (
-        <View style={s.subHeader}>
-          <Pressable
-            onPress={() => setScreen(screen === "live" ? "trips" : "home")}
-            style={s.back}
-          >
-            <Ionicons name="chevron-back" size={22} color={C.navy} />
-            <Text style={s.backText}>Volver</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      <View style={s.body}>
-        {screen === "home" && (
-          <HomeScreen
-            onSearch={runSearch}
-            onOpenRoute={() => setScreen("route")}
-          />
-        )}
-        {screen === "route" && (
-          <RouteScreen onLive={() => setScreen("live")} />
-        )}
-        {screen === "live" && <LiveScreen />}
-        {screen === "trips" && (
-          <TripsScreen
-            searchParams={searchParams}
-            onLive={() => setScreen("live")}
-          />
-        )}
-        {screen === "publish" && <PublishScreen />}
-        {screen === "messages" && <MessagesScreen />}
-        {screen === "profile" && <ProfileScreen />}
-      </View>
-
-      <BottomNav active={navActive} onChange={goMain} />
-    </SafeAreaView>
+    <View style={styles.boot} accessibilityRole="progressbar" accessibilityLabel="Cargando MVC">
+      <MvcLogo variant="stacked" width={200} accessibilityLabel="MVC, Me voy contigo" />
+      <ActivityIndicator color={colors.primary} size="large" style={styles.spinner} />
+    </View>
   );
 }
 
-function Root() {
-  const { booting, token, roles } = useAuth();
-  const [driverSetupDone, setDriverSetupDone] = useState(false);
+function Shell(): ReactElement {
+  const { status } = useAuth();
+  const fonts = useAppFonts();
+  const linkRead = useBootDeepLink();
+  // Si las fuentes fallan se sigue con la del sistema (`typography.ts` declara la reserva): nunca se bloquea el arranque.
+  const fontsReady = fonts.loaded || fonts.error !== null;
+  const ready = fontsReady && linkRead && status !== "booting";
 
   useEffect(() => {
-    setDriverSetupDone(false);
-  }, [token]);
+    const timer = setTimeout(hideSplash, SPLASH_MAX_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
-  if (booting) return <BootScreen />;
-  if (!token) return <AccessScreen />;
+  const onNavigationReady = useCallback(() => hideSplash(), []);
 
-  if (roles.includes("driver") && !driverSetupDone) {
-    return (
-      <DriverOnboardingScreen
-        onComplete={() => setDriverSetupDone(true)}
-      />
-    );
-  }
-
-  return <AuthenticatedApp />;
+  if (!ready) return <BootView />;
+  return <AppNavigation onReady={onNavigationReady} />;
 }
 
-export default function App() {
+export default function App(): ReactElement {
+  useEffect(() => {
+    configureForegroundNotifications();
+  }, []);
+
   return (
-    <AuthProvider>
-      <Root />
-    </AuthProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider initialMetrics={getPreviewSafeAreaMetrics()}>
+        <ConnectivityProvider>
+          <AuthProvider>
+            <StatusBar style="dark" />
+            <Shell />
+            <ToastHost />
+          </AuthProvider>
+        </ConnectivityProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
-const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
-  body: { flex: 1, backgroundColor: "#fff" },
-  subHeader: {
-    height: 42,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEF3FA",
-  },
-  back: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start" },
-  backText: { fontSize: 14, fontWeight: "800", color: C.navy },
+const styles = StyleSheet.create({
   boot: {
     flex: 1,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    padding: 24,
+    backgroundColor: colors.bg.screen,
   },
-  bootText: { marginTop: 12, color: C.muted, fontSize: 13, fontWeight: "700" },
+  spinner: { marginTop: 32 },
 });

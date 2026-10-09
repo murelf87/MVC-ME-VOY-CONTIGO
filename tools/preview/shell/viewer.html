@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="<!--MVC_CSP-->">
+<title>MVC · Me voy contigo</title>
+<meta name="description" content="Vista previa interactiva de MVC · Me voy contigo: la app real ejecutándose en tu navegador con datos de ejemplo. La nube está apagada: nada sale de tu navegador.">
+<meta name="color-scheme" content="light dark">
+<!--MVC_FAVICON-->
+<style id="mvc-viewer-css">/*MVC_CSS*/</style>
+</head>
+<body>
+<div id="v-root" class="v-root" data-state="boot">
+  <main id="v-stage" class="v-stage" aria-label="Móvil de pruebas"></main>
+  <aside id="v-panel" class="v-panel" aria-label="Panel de pruebas"></aside>
+</div>
+<noscript><p style="font:16px system-ui;padding:24px">La vista previa de MVC necesita JavaScript.</p></noscript>
+<script type="application/json" id="mvc-data">/*MVC_DATA*/</script>
+<script type="application/octet-stream" id="mvc-payload" data-enc="gzip+base64"><!--MVC_PAYLOAD--></script>
+<script id="mvc-viewer-js">/*MVC_JS*/</script>
+</body>
+</html>

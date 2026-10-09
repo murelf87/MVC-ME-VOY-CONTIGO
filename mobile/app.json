@@ -2,15 +2,102 @@
   "expo": {
     "name": "MVC - Me voy contigo",
     "slug": "mvc-me-voy-contigo",
+    "description": "Comparte coche dentro de tu provincia: viajes recurrentes, plazas, pagos y mensajes en la app.",
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "mvc",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFFFF",
+    "primaryColor": "#0054FD",
+    "icon": "./assets/brand/icon.png",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "MVC usa tu ubicación mientras la app está abierta para centrar el mapa, proponerte puntos de recogida cercanos y, durante un viaje en curso, mostrar tu posición solo a las personas que viajan contigo.",
+        "NSCameraUsageDescription": "MVC usa la cámara para que puedas hacerte la foto de perfil y completar la comprobación privada de tu cuenta.",
+        "NSPhotoLibraryUsageDescription": "MVC accede a tus fotos solo para que elijas la imagen que quieres usar como foto de perfil.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
       "predictiveBackGestureEnabled": false
-    }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/brand/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/splash.png",
+          "backgroundColor": "#FFFFFF",
+          "imageWidth": 400,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": false,
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false,
+          "isAndroidMotionActivityEnabled": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/notification-icon.png",
+          "color": "#0054FD",
+          "defaultChannel": "default"
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false,
+          "configureAndroidBackup": true
+        }
+      ]
+    ]
   }
 }

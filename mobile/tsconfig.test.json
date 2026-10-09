@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.test.ts"],
+  "exclude": ["node_modules", "dist", "dist-preview", "web-stubs/**/*.js", "src/legacy"]
+}

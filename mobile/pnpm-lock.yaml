@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@expo-google-fonts/epilogue':
+        specifier: 0.4.2
+        version: 0.4.2
       '@expo-google-fonts/roboto-condensed':
         specifier: ^0.4.2
         version: 0.4.2
@@ -477,6 +480,9 @@ packages:
   '@babel/types@7.29.8':
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
+
+  '@expo-google-fonts/epilogue@0.4.2':
+    resolution: {integrity: sha512-69gLWq6t92cfULCQ6lhbdC6zTa04sXJXlXF8BeTV4G8/wYf9PuEaBoPQUy7Wr8TJSaxgKHyOxpoJTXJbaIljTA==}
 
   '@expo-google-fonts/roboto-condensed@0.4.2':
     resolution: {integrity: sha512-O4fsLz/61XD6sY9HEmNpjNh0GNOagmEIWh+F7l+CocU0FSBq5MK1Ipzklsec7i4LQk1fWKF7AdOnOn6QhHQowg==}
@@ -3060,6 +3066,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
+
+  '@expo-google-fonts/epilogue@0.4.2': {}
 
   '@expo-google-fonts/roboto-condensed@0.4.2': {}
 

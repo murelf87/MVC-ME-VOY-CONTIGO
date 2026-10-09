@@ -1,0 +1,2316 @@
+{
+  "_about": "Respuestas REALES del backend 0.14 (rutas de src/routes/** registradas sobre Fastify, Postgres/PostGIS de prueba, proveedores falsos) capturadas con un arnes de scratch para contrastar el backend en memoria de la vista previa. Los tokens estan redactados. No es un contrato: es una fotografia (golden) de como respondia el backend al escribir mobile/src/preview.",
+  "_capturedAgainst": "backend 0.14.0",
+  "steps": [
+    {
+      "label": "start driver",
+      "method": "POST",
+      "url": "/v1/auth/phone/start",
+      "status": 202,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "challengeId": "b64254af-d549-4107-a58b-869f5b14c7d1",
+        "expiresAt": "2026-10-09T12:41:40.812Z"
+      }
+    },
+    {
+      "label": "start again (cooldown)",
+      "method": "POST",
+      "url": "/v1/auth/phone/start",
+      "status": 429,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_RESEND_TOO_SOON",
+          "message": "Wait before requesting another verification code"
+        },
+        "requestId": "req-2"
+      }
+    },
+    {
+      "label": "verify wrong",
+      "method": "POST",
+      "url": "/v1/auth/phone/verify",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_CODE_INVALID_OR_EXPIRED",
+          "message": "Verification code is invalid or expired"
+        },
+        "requestId": "req-3"
+      }
+    },
+    {
+      "label": "verify ok",
+      "method": "POST",
+      "url": "/v1/auth/phone/verify",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "token": "mvc_sess_REDACTED",
+        "expiresAt": "2026-11-08T12:31:40.849Z",
+        "user": {
+          "id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+          "roles": [
+            "driver",
+            "passenger"
+          ]
+        }
+      }
+    },
+    {
+      "label": "verify again (used)",
+      "method": "POST",
+      "url": "/v1/auth/phone/verify",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_CHALLENGE_ALREADY_USED",
+          "message": "Verification challenge has already been used"
+        },
+        "requestId": "req-5"
+      }
+    },
+    {
+      "label": "verify unknown",
+      "method": "POST",
+      "url": "/v1/auth/phone/verify",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_CHALLENGE_NOT_FOUND",
+          "message": "Verification challenge not found"
+        },
+        "requestId": "req-6"
+      }
+    },
+    {
+      "label": "session",
+      "method": "GET",
+      "url": "/v1/auth/session",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "user": {
+          "id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+          "roles": [
+            "passenger",
+            "driver"
+          ]
+        },
+        "session": {
+          "id": "516495e1-ad7c-4b04-89a0-969c828e33d7",
+          "expiresAt": "2026-11-08T12:31:40.849Z"
+        }
+      }
+    },
+    {
+      "label": "me",
+      "method": "GET",
+      "url": "/me",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "phone_e164": "+34600123456",
+        "status": "active",
+        "display_name": null,
+        "public_photo_key": null,
+        "public_photo_status": "pending",
+        "identity_status": "unverified",
+        "presence_status": null,
+        "roles": [
+          "driver",
+          "passenger"
+        ]
+      }
+    },
+    {
+      "label": "patch profile",
+      "method": "PATCH",
+      "url": "/v1/me/profile",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "display_name": "Ana García López",
+        "public_photo_status": "pending",
+        "identity_status": "unverified",
+        "presence_status": null,
+        "updated_at": "2026-10-09T12:31:40.900Z"
+      }
+    },
+    {
+      "label": "me after",
+      "method": "GET",
+      "url": "/me",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "phone_e164": "+34600123456",
+        "status": "active",
+        "display_name": "Ana García López",
+        "public_photo_key": null,
+        "public_photo_status": "pending",
+        "identity_status": "unverified",
+        "presence_status": null,
+        "roles": [
+          "driver",
+          "passenger"
+        ]
+      }
+    },
+    {
+      "label": "patch profile short",
+      "method": "PATCH",
+      "url": "/v1/me/profile",
+      "status": 500,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "message": "Internal server error"
+        },
+        "requestId": "req-b"
+      }
+    },
+    {
+      "label": "create vehicle",
+      "method": "POST",
+      "url": "/v1/me/vehicles",
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+        "make": "Seat",
+        "model": "Arona",
+        "plate": "1234 MBC",
+        "passenger_seats": 3,
+        "review_status": "pending",
+        "documentation_status": "pending",
+        "vehicle_photo_status": "pending",
+        "insurance_status": "pending",
+        "insurance_expires_on": null,
+        "created_at": "2026-10-09T12:31:40.919Z",
+        "updated_at": "2026-10-09T12:31:40.919Z"
+      }
+    },
+    {
+      "label": "create vehicle dup",
+      "method": "POST",
+      "url": "/v1/me/vehicles",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "VEHICLE_PLATE_ALREADY_EXISTS",
+          "message": "Vehicle plate already exists"
+        },
+        "requestId": "req-d"
+      }
+    },
+    {
+      "label": "list vehicles",
+      "method": "GET",
+      "url": "/v1/me/vehicles",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "vehicles": [
+          {
+            "id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "make": "Seat",
+            "model": "Arona",
+            "plate": "1234 MBC",
+            "passenger_seats": 3,
+            "review_status": "pending",
+            "documentation_status": "pending",
+            "vehicle_photo_status": "pending",
+            "vehicle_photo_document_id": null,
+            "insurance_status": "pending",
+            "insurance_expires_on": null,
+            "insurance_document_id": null,
+            "insurance_reviewed_at": null,
+            "review_reason": null,
+            "reviewed_at": null,
+            "created_at": "2026-10-09T12:31:40.919Z",
+            "updated_at": "2026-10-09T12:31:40.919Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "put vehicle",
+      "method": "PUT",
+      "url": "/v1/me/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+        "make": "SEAT",
+        "model": "Arona",
+        "plate": "1234 MBC",
+        "passenger_seats": 3,
+        "review_status": "pending",
+        "documentation_status": "pending",
+        "vehicle_photo_status": "pending",
+        "insurance_status": "pending",
+        "insurance_expires_on": null,
+        "created_at": "2026-10-09T12:31:40.919Z",
+        "updated_at": "2026-10-09T12:31:40.964Z"
+      }
+    },
+    {
+      "label": "put vehicle notfound",
+      "method": "PUT",
+      "url": "/v1/me/vehicles/d5943fe9-d176-4fdb-8959-f7b0d9fb4946",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "VEHICLE_NOT_FOUND",
+          "message": "Vehicle not found"
+        },
+        "requestId": "req-g"
+      }
+    },
+    {
+      "label": "vehicle bad seats",
+      "method": "POST",
+      "url": "/v1/me/vehicles",
+      "status": 500,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "message": "Internal server error"
+        },
+        "requestId": "req-h"
+      }
+    },
+    {
+      "label": "intent bad type",
+      "method": "POST",
+      "url": "/v1/me/uploads/intents",
+      "status": 422,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "PRIVATE_UPLOAD_TYPE_NOT_ALLOWED",
+          "message": "File type is not allowed for this upload",
+          "details": {
+            "kind": "vehicle_photo",
+            "contentType": "application/pdf"
+          }
+        },
+        "requestId": "req-i"
+      }
+    },
+    {
+      "label": "intent too big",
+      "method": "POST",
+      "url": "/v1/me/uploads/intents",
+      "status": 500,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "message": "Internal server error"
+        },
+        "requestId": "req-j"
+      }
+    },
+    {
+      "label": "intent photo",
+      "method": "POST",
+      "url": "/v1/me/uploads/intents",
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "intentId": "f22ded92-e616-417e-b8a6-ec5ac7bef214",
+        "uploadUrl": "https://upload.invalid/users/3d592090-8ea7-43f7-ad0a-44d0f79571f0/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16/vehicle_photo/f22ded92-e616-417e-b8a6-ec5ac7bef214.jpg?sig=x",
+        "headers": {
+          "content-type": "image/jpeg"
+        },
+        "expiresAt": "2026-10-09T12:41:40.984Z"
+      }
+    },
+    {
+      "label": "complete photo (not uploaded)",
+      "method": "POST",
+      "url": "/v1/me/uploads/f22ded92-e616-417e-b8a6-ec5ac7bef214/complete",
+      "status": 500,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "message": "Internal server error"
+        },
+        "requestId": "req-l"
+      }
+    },
+    {
+      "label": "complete photo",
+      "method": "POST",
+      "url": "/v1/me/uploads/f22ded92-e616-417e-b8a6-ec5ac7bef214/complete",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "document": {
+          "id": "3ef54ee6-dda1-41fe-a107-3b4fd7f5a821",
+          "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+          "kind": "vehicle_photo",
+          "content_type": "image/jpeg",
+          "size_bytes": "11",
+          "sha256": "71b6c1d53832f789a7f2435a7c629245fa3761ad8487775ebf4957330213a706",
+          "review_status": "pending",
+          "analysis_status": "not_required",
+          "detected_expires_on": null,
+          "verified_expires_on": null,
+          "created_at": "2026-10-09T12:31:40.998Z",
+          "updated_at": "2026-10-09T12:31:40.998Z"
+        },
+        "analysis": null,
+        "alreadyCompleted": false
+      }
+    },
+    {
+      "label": "complete photo again",
+      "method": "POST",
+      "url": "/v1/me/uploads/f22ded92-e616-417e-b8a6-ec5ac7bef214/complete",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "document": {
+          "id": "3ef54ee6-dda1-41fe-a107-3b4fd7f5a821",
+          "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+          "kind": "vehicle_photo",
+          "content_type": "image/jpeg",
+          "size_bytes": "11",
+          "sha256": "71b6c1d53832f789a7f2435a7c629245fa3761ad8487775ebf4957330213a706",
+          "review_status": "pending",
+          "analysis_status": "not_required",
+          "detected_expires_on": null,
+          "verified_expires_on": null,
+          "analysis_confidence": null
+        },
+        "alreadyCompleted": true
+      }
+    },
+    {
+      "label": "intent insurance",
+      "method": "POST",
+      "url": "/v1/me/uploads/intents",
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "intentId": "fac0f784-f9f6-41e9-a743-cf7bc85074fb",
+        "uploadUrl": "https://upload.invalid/users/3d592090-8ea7-43f7-ad0a-44d0f79571f0/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16/vehicle_insurance/fac0f784-f9f6-41e9-a743-cf7bc85074fb.pdf?sig=x",
+        "headers": {
+          "content-type": "application/pdf"
+        },
+        "expiresAt": "2026-10-09T12:41:41.018Z"
+      }
+    },
+    {
+      "label": "complete insurance",
+      "method": "POST",
+      "url": "/v1/me/uploads/fac0f784-f9f6-41e9-a743-cf7bc85074fb/complete",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "document": {
+          "id": "4d73917c-90cc-497e-ae97-9053d90bd8b3",
+          "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+          "kind": "vehicle_insurance",
+          "content_type": "application/pdf",
+          "size_bytes": "20",
+          "sha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+          "review_status": "pending",
+          "analysis_status": "pending",
+          "detected_expires_on": null,
+          "verified_expires_on": null,
+          "created_at": "2026-10-09T12:31:41.027Z",
+          "updated_at": "2026-10-09T12:31:41.027Z"
+        },
+        "analysis": {
+          "status": "pending",
+          "provider": "disabled"
+        },
+        "alreadyCompleted": false
+      }
+    },
+    {
+      "label": "list documents",
+      "method": "GET",
+      "url": "/v1/me/documents",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "documents": [
+          {
+            "id": "4d73917c-90cc-497e-ae97-9053d90bd8b3",
+            "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "kind": "vehicle_insurance",
+            "content_type": "application/pdf",
+            "size_bytes": "20",
+            "sha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+            "review_status": "pending",
+            "review_reason": null,
+            "reviewed_at": null,
+            "analysis_status": "pending",
+            "detected_expires_on": null,
+            "verified_expires_on": null,
+            "analysis_confidence": null,
+            "analyzer_provider": null,
+            "analyzed_at": null,
+            "expiry_verification_source": null,
+            "created_at": "2026-10-09T12:31:41.027Z",
+            "updated_at": "2026-10-09T12:31:41.027Z"
+          },
+          {
+            "id": "3ef54ee6-dda1-41fe-a107-3b4fd7f5a821",
+            "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "kind": "vehicle_photo",
+            "content_type": "image/jpeg",
+            "size_bytes": "11",
+            "sha256": "71b6c1d53832f789a7f2435a7c629245fa3761ad8487775ebf4957330213a706",
+            "review_status": "pending",
+            "review_reason": null,
+            "reviewed_at": null,
+            "analysis_status": "not_required",
+            "detected_expires_on": null,
+            "verified_expires_on": null,
+            "analysis_confidence": null,
+            "analyzer_provider": null,
+            "analyzed_at": null,
+            "expiry_verification_source": null,
+            "created_at": "2026-10-09T12:31:40.998Z",
+            "updated_at": "2026-10-09T12:31:40.998Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "download doc",
+      "method": "GET",
+      "url": "/v1/me/documents/4d73917c-90cc-497e-ae97-9053d90bd8b3/download",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "url": "https://download.invalid/users/3d592090-8ea7-43f7-ad0a-44d0f79571f0/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16/vehicle_insurance/fac0f784-f9f6-41e9-a743-cf7bc85074fb.pdf?sig=y",
+        "expiresAt": "2026-10-09T12:36:41.044Z"
+      }
+    },
+    {
+      "label": "download doc notfound",
+      "method": "GET",
+      "url": "/v1/me/documents/2765b658-8fdb-4f3d-ada8-90e54f94438c/download",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "DOCUMENT_NOT_FOUND",
+          "message": "Document not found"
+        },
+        "requestId": "req-s"
+      }
+    },
+    {
+      "label": "list vehicles after docs",
+      "method": "GET",
+      "url": "/v1/me/vehicles",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "vehicles": [
+          {
+            "id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "make": "SEAT",
+            "model": "Arona",
+            "plate": "1234 MBC",
+            "passenger_seats": 3,
+            "review_status": "pending",
+            "documentation_status": "pending",
+            "vehicle_photo_status": "pending",
+            "vehicle_photo_document_id": null,
+            "insurance_status": "pending",
+            "insurance_expires_on": null,
+            "insurance_document_id": null,
+            "insurance_reviewed_at": null,
+            "review_reason": null,
+            "reviewed_at": null,
+            "created_at": "2026-10-09T12:31:40.919Z",
+            "updated_at": "2026-10-09T12:31:41.030Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "review vehicle (forbidden)",
+      "method": "POST",
+      "url": "/v1/admin/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16/review",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Insufficient permissions"
+        },
+        "requestId": "req-u"
+      }
+    },
+    {
+      "label": "review vehicle ok",
+      "method": "POST",
+      "url": "/v1/admin/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16/review",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+        "driver_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "make": "SEAT",
+        "model": "Arona",
+        "plate": "1234 MBC",
+        "passenger_seats": 3,
+        "review_status": "approved",
+        "documentation_status": "pending",
+        "vehicle_photo_status": "pending",
+        "insurance_status": "pending",
+        "insurance_expires_on": null,
+        "review_reason": null,
+        "reviewed_at": "2026-10-09T12:31:41.069Z"
+      }
+    },
+    {
+      "label": "review docs ok",
+      "method": "POST",
+      "url": "/v1/admin/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16/review",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+        "driver_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "make": "SEAT",
+        "model": "Arona",
+        "plate": "1234 MBC",
+        "passenger_seats": 3,
+        "review_status": "approved",
+        "documentation_status": "approved",
+        "vehicle_photo_status": "pending",
+        "insurance_status": "pending",
+        "insurance_expires_on": null,
+        "review_reason": null,
+        "reviewed_at": "2026-10-09T12:31:41.075Z"
+      }
+    },
+    {
+      "label": "review reject no reason",
+      "method": "POST",
+      "url": "/v1/admin/vehicles/7b1d86c9-b4b7-4e24-ad73-531aaa7cda16/review",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "REVIEW_REASON_REQUIRED",
+          "message": "A rejection reason is required"
+        },
+        "requestId": "req-x"
+      }
+    },
+    {
+      "label": "review doc insurance no expiry",
+      "method": "POST",
+      "url": "/v1/admin/documents/4d73917c-90cc-497e-ae97-9053d90bd8b3/review",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INSURANCE_EXPIRY_REVIEW_REQUIRED",
+          "message": "Insurance expiry must be detected with sufficient confidence or manually verified"
+        },
+        "requestId": "req-y"
+      }
+    },
+    {
+      "label": "review doc insurance expired",
+      "method": "POST",
+      "url": "/v1/admin/documents/4d73917c-90cc-497e-ae97-9053d90bd8b3/review",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INSURANCE_EXPIRY_REVIEW_REQUIRED",
+          "message": "Insurance expiry must be detected with sufficient confidence or manually verified"
+        },
+        "requestId": "req-z"
+      }
+    },
+    {
+      "label": "review doc insurance ok (OCR simulated by SQL)",
+      "method": "POST",
+      "url": "/v1/admin/documents/4d73917c-90cc-497e-ae97-9053d90bd8b3/review",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "4d73917c-90cc-497e-ae97-9053d90bd8b3",
+        "owner_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+        "kind": "vehicle_insurance",
+        "content_type": "application/pdf",
+        "size_bytes": "20",
+        "sha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+        "review_status": "approved",
+        "review_reason": null,
+        "reviewed_at": "2026-10-09T12:31:41.106Z",
+        "analysis_status": "succeeded",
+        "detected_expires_on": "2027-06-30",
+        "verified_expires_on": "2027-06-30",
+        "analysis_confidence": "0.9500",
+        "expiry_verification_source": "automatic"
+      }
+    },
+    {
+      "label": "review doc photo ok",
+      "method": "POST",
+      "url": "/v1/admin/documents/3ef54ee6-dda1-41fe-a107-3b4fd7f5a821/review",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "3ef54ee6-dda1-41fe-a107-3b4fd7f5a821",
+        "owner_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+        "kind": "vehicle_photo",
+        "content_type": "image/jpeg",
+        "size_bytes": "11",
+        "sha256": "71b6c1d53832f789a7f2435a7c629245fa3761ad8487775ebf4957330213a706",
+        "review_status": "approved",
+        "review_reason": null,
+        "reviewed_at": "2026-10-09T12:31:41.116Z",
+        "analysis_status": "not_required",
+        "detected_expires_on": null,
+        "verified_expires_on": null,
+        "analysis_confidence": null,
+        "expiry_verification_source": null
+      }
+    },
+    {
+      "label": "review doc notfound",
+      "method": "POST",
+      "url": "/v1/admin/documents/a9aeda3b-838e-475a-8941-53661f10a322/review",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "DOCUMENT_NOT_FOUND",
+          "message": "Document not found"
+        },
+        "requestId": "req-12"
+      }
+    },
+    {
+      "label": "list vehicles approved",
+      "method": "GET",
+      "url": "/v1/me/vehicles",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "vehicles": [
+          {
+            "id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "make": "SEAT",
+            "model": "Arona",
+            "plate": "1234 MBC",
+            "passenger_seats": 3,
+            "review_status": "approved",
+            "documentation_status": "approved",
+            "vehicle_photo_status": "approved",
+            "vehicle_photo_document_id": "3ef54ee6-dda1-41fe-a107-3b4fd7f5a821",
+            "insurance_status": "approved",
+            "insurance_expires_on": "2027-06-30",
+            "insurance_document_id": "4d73917c-90cc-497e-ae97-9053d90bd8b3",
+            "insurance_reviewed_at": "2026-10-09T12:31:41.106Z",
+            "review_reason": null,
+            "reviewed_at": "2026-10-09T12:31:41.075Z",
+            "created_at": "2026-10-09T12:31:40.919Z",
+            "updated_at": "2026-10-09T12:31:41.116Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "list documents approved",
+      "method": "GET",
+      "url": "/v1/me/documents",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "documents": [
+          {
+            "id": "4d73917c-90cc-497e-ae97-9053d90bd8b3",
+            "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "kind": "vehicle_insurance",
+            "content_type": "application/pdf",
+            "size_bytes": "20",
+            "sha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+            "review_status": "approved",
+            "review_reason": null,
+            "reviewed_at": "2026-10-09T12:31:41.106Z",
+            "analysis_status": "succeeded",
+            "detected_expires_on": "2027-06-30",
+            "verified_expires_on": "2027-06-30",
+            "analysis_confidence": "0.9500",
+            "analyzer_provider": "fake_ocr",
+            "analyzed_at": "2026-10-09T12:31:41.102Z",
+            "expiry_verification_source": "automatic",
+            "created_at": "2026-10-09T12:31:41.027Z",
+            "updated_at": "2026-10-09T12:31:41.106Z"
+          },
+          {
+            "id": "3ef54ee6-dda1-41fe-a107-3b4fd7f5a821",
+            "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "kind": "vehicle_photo",
+            "content_type": "image/jpeg",
+            "size_bytes": "11",
+            "sha256": "71b6c1d53832f789a7f2435a7c629245fa3761ad8487775ebf4957330213a706",
+            "review_status": "approved",
+            "review_reason": null,
+            "reviewed_at": "2026-10-09T12:31:41.116Z",
+            "analysis_status": "not_required",
+            "detected_expires_on": null,
+            "verified_expires_on": null,
+            "analysis_confidence": null,
+            "analyzer_provider": null,
+            "analyzed_at": null,
+            "expiry_verification_source": null,
+            "created_at": "2026-10-09T12:31:40.998Z",
+            "updated_at": "2026-10-09T12:31:41.116Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "provinces",
+      "method": "GET",
+      "url": "/v1/provinces",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "provinces": [
+          {
+            "id": "708945a3-b123-486b-8d7d-b6ff0b3d394e",
+            "code": "41",
+            "name": "Sevilla",
+            "sourceName": "Vista previa (contorno simplificado)",
+            "sourceUrl": "https://example.invalid",
+            "sourceDate": "2026-10-04",
+            "sourceLicense": "solo simulación"
+          }
+        ]
+      }
+    },
+    {
+      "label": "province resolve ok",
+      "method": "GET",
+      "url": "/v1/provinces/resolve?latitude=37.389&longitude=-5.984",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "province": {
+          "id": "708945a3-b123-486b-8d7d-b6ff0b3d394e",
+          "code": "41",
+          "name": "Sevilla",
+          "sourceName": "Vista previa (contorno simplificado)",
+          "sourceUrl": "https://example.invalid",
+          "sourceDate": "2026-10-04",
+          "sourceLicense": "solo simulación"
+        }
+      }
+    },
+    {
+      "label": "province resolve none",
+      "method": "GET",
+      "url": "/v1/provinces/resolve?latitude=37.2614&longitude=-6.9447",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "PROVINCE_NOT_FOUND",
+          "message": "No province boundary contains the supplied point"
+        },
+        "requestId": "req-17"
+      }
+    },
+    {
+      "label": "geocode",
+      "method": "GET",
+      "url": "/v1/maps/geocode?query=Montequinto",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "results": [
+          {
+            "provider": "fake",
+            "placeId": "p1",
+            "formattedAddress": "Montequinto, Sevilla, España",
+            "location": {
+              "latitude": 37.38,
+              "longitude": -5.98
+            },
+            "types": [
+              "locality"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "reverse",
+      "method": "GET",
+      "url": "/v1/maps/reverse?latitude=37.38&longitude=-5.98",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "results": [
+          {
+            "provider": "fake",
+            "placeId": "p2",
+            "formattedAddress": "Calle Sierpes, Sevilla",
+            "location": {
+              "latitude": 37.38,
+              "longitude": -5.98
+            },
+            "types": [
+              "street_address"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "trip no auth",
+      "method": "POST",
+      "url": "/v1/me/trips",
+      "status": 500,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "message": "Internal server error"
+        },
+        "requestId": "req-1a"
+      }
+    },
+    {
+      "label": "trip past",
+      "method": "POST",
+      "url": "/v1/me/trips",
+      "status": 422,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "DEPARTURE_TIME_IN_PAST",
+          "message": "Departure time cannot be in the past"
+        },
+        "requestId": "req-1b"
+      }
+    },
+    {
+      "label": "trip seats exceed",
+      "method": "POST",
+      "url": "/v1/me/trips",
+      "status": 422,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "OFFERED_SEATS_EXCEED_VEHICLE",
+          "message": "Offered seats exceed vehicle capacity"
+        },
+        "requestId": "req-1c"
+      }
+    },
+    {
+      "label": "trip outside province",
+      "method": "POST",
+      "url": "/v1/me/trips",
+      "status": 422,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "ROUTE_POINT_OUTSIDE_PROVINCE",
+          "message": "Origin, destination and every intermediate stop must be inside the selected province",
+          "details": {
+            "pointIndex": 2
+          }
+        },
+        "requestId": "req-1d"
+      }
+    },
+    {
+      "label": "create trip",
+      "method": "POST",
+      "url": "/v1/me/trips",
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+        "driver_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+        "province_id": "708945a3-b123-486b-8d7d-b6ff0b3d394e",
+        "category": "university",
+        "kind": "single",
+        "leg": "outbound",
+        "status": "draft",
+        "departure_at": "2026-10-09T13:31:41.163Z",
+        "flexibility_minutes": 10,
+        "max_detour_m": 5000,
+        "offered_seats": 3,
+        "route_distance_m": 22722,
+        "route_duration_s": 1894,
+        "route_provider": "fake",
+        "route_provider_ref": "fake-segments-sha256:fc5b87e89c30788c972706231576d1d99e2d21bfcb69e6eb2014d2f21251532c",
+        "route_version": 1,
+        "created_at": "2026-10-09T12:31:41.199Z",
+        "updated_at": "2026-10-09T12:31:41.199Z"
+      }
+    },
+    {
+      "label": "list trips",
+      "method": "GET",
+      "url": "/v1/me/trips",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "trips": [
+          {
+            "id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "province_id": "708945a3-b123-486b-8d7d-b6ff0b3d394e",
+            "category": "university",
+            "kind": "single",
+            "leg": "outbound",
+            "status": "draft",
+            "departure_at": "2026-10-09T13:31:41.163Z",
+            "flexibility_minutes": 10,
+            "max_detour_m": 5000,
+            "offered_seats": 3,
+            "route_distance_m": 22722,
+            "route_duration_s": 1894,
+            "route_provider": "fake",
+            "route_provider_ref": "fake-segments-sha256:fc5b87e89c30788c972706231576d1d99e2d21bfcb69e6eb2014d2f21251532c",
+            "route_version": 1,
+            "created_at": "2026-10-09T12:31:41.199Z",
+            "updated_at": "2026-10-09T12:31:41.199Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "publish trip",
+      "method": "POST",
+      "url": "/v1/me/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/publish",
+      "status": 204,
+      "headers": {
+        "content-type": ""
+      },
+      "body": null
+    },
+    {
+      "label": "publish again",
+      "method": "POST",
+      "url": "/v1/me/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/publish",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "TRIP_NOT_DRAFT",
+          "message": "Only draft trips can be published"
+        },
+        "requestId": "req-1h"
+      }
+    },
+    {
+      "label": "list trips after",
+      "method": "GET",
+      "url": "/v1/me/trips",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "trips": [
+          {
+            "id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "vehicle_id": "7b1d86c9-b4b7-4e24-ad73-531aaa7cda16",
+            "province_id": "708945a3-b123-486b-8d7d-b6ff0b3d394e",
+            "category": "university",
+            "kind": "single",
+            "leg": "outbound",
+            "status": "published",
+            "departure_at": "2026-10-09T13:31:41.163Z",
+            "flexibility_minutes": 10,
+            "max_detour_m": 5000,
+            "offered_seats": 3,
+            "route_distance_m": 22722,
+            "route_duration_s": 1894,
+            "route_provider": "fake",
+            "route_provider_ref": "fake-segments-sha256:fc5b87e89c30788c972706231576d1d99e2d21bfcb69e6eb2014d2f21251532c",
+            "route_version": 1,
+            "created_at": "2026-10-09T12:31:41.199Z",
+            "updated_at": "2026-10-09T12:31:41.224Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "search",
+      "method": "GET",
+      "url": "/v1/trips/search?provinceId=708945a3-b123-486b-8d7d-b6ff0b3d394e&originLatitude=37.3256&originLongitude=-5.9396&destinationLatitude=37.3796&destinationLongitude=-5.9919",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "trips": [
+          {
+            "tripId": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "category": "university",
+            "leg": "outbound",
+            "departureAt": "2026-10-09T13:31:41.163Z",
+            "fromSegmentSeq": 0,
+            "toSegmentSeq": 2,
+            "pickupDistanceM": 0,
+            "dropoffDistanceM": 0,
+            "roadDistanceM": 22722,
+            "estimatedDurationS": 1894,
+            "availableSeats": 3,
+            "driverDisplayName": "Ana García López"
+          }
+        ]
+      }
+    },
+    {
+      "label": "search radius",
+      "method": "GET",
+      "url": "/v1/trips/search?provinceId=708945a3-b123-486b-8d7d-b6ff0b3d394e&originLatitude=37.3256&originLongitude=-5.9396&destinationLatitude=37.3796&destinationLongitude=-5.9919&radiusM=100&limit=5",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "trips": [
+          {
+            "tripId": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "category": "university",
+            "leg": "outbound",
+            "departureAt": "2026-10-09T13:31:41.163Z",
+            "fromSegmentSeq": 0,
+            "toSegmentSeq": 2,
+            "pickupDistanceM": 0,
+            "dropoffDistanceM": 0,
+            "roadDistanceM": 22722,
+            "estimatedDurationS": 1894,
+            "availableSeats": 3,
+            "driverDisplayName": "Ana García López"
+          }
+        ]
+      }
+    },
+    {
+      "label": "search window bad",
+      "method": "GET",
+      "url": "/v1/trips/search?provinceId=708945a3-b123-486b-8d7d-b6ff0b3d394e&originLatitude=37.3256&originLongitude=-5.9396&destinationLatitude=37.3796&destinationLongitude=-5.9919&departureAfter=2030-01-01T00%3A00%3A00Z&departureBefore=2029-01-01T00%3A00%3A00Z",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INVALID_SEARCH_WINDOW",
+          "message": "departureBefore must be after departureAfter"
+        },
+        "requestId": "req-1l"
+      }
+    },
+    {
+      "label": "start passenger",
+      "method": "POST",
+      "url": "/v1/auth/phone/start",
+      "status": 202,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "challengeId": "a5a7d41f-b8d6-437b-bae3-c5cb1b2a36af",
+        "expiresAt": "2026-10-09T12:41:41.301Z"
+      }
+    },
+    {
+      "label": "verify passenger",
+      "method": "POST",
+      "url": "/v1/auth/phone/verify",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "token": "mvc_sess_REDACTED",
+        "expiresAt": "2026-11-08T12:31:41.315Z",
+        "user": {
+          "id": "975aa7af-b86d-4663-af86-5b625925258c",
+          "roles": [
+            "passenger"
+          ]
+        }
+      }
+    },
+    {
+      "label": "passenger session",
+      "method": "GET",
+      "url": "/v1/auth/session",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "user": {
+          "id": "975aa7af-b86d-4663-af86-5b625925258c",
+          "roles": [
+            "passenger"
+          ]
+        },
+        "session": {
+          "id": "91e6dcfa-741a-4c26-8d90-15bba9a0d5bb",
+          "expiresAt": "2026-11-08T12:31:41.315Z"
+        }
+      }
+    },
+    {
+      "label": "passenger me",
+      "method": "GET",
+      "url": "/me",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "975aa7af-b86d-4663-af86-5b625925258c",
+        "phone_e164": "+34612345678",
+        "status": "active",
+        "display_name": null,
+        "public_photo_key": null,
+        "public_photo_status": "pending",
+        "identity_status": "unverified",
+        "presence_status": null,
+        "roles": [
+          "passenger"
+        ]
+      }
+    },
+    {
+      "label": "passenger vehicles (no role needed)",
+      "method": "GET",
+      "url": "/v1/me/vehicles",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "vehicles": []
+      }
+    },
+    {
+      "label": "passenger create vehicle (not driver)",
+      "method": "POST",
+      "url": "/v1/me/vehicles",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Insufficient permissions"
+        },
+        "requestId": "req-1r"
+      }
+    },
+    {
+      "label": "request bad range",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INVALID_SEGMENT_RANGE",
+          "message": "Segment range is invalid"
+        },
+        "requestId": "req-1s"
+      }
+    },
+    {
+      "label": "request out of range",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INVALID_SEGMENT_RANGE",
+          "message": "Requested segment range is not contiguous"
+        },
+        "requestId": "req-1t"
+      }
+    },
+    {
+      "label": "request ok",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+        "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+        "passenger_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+        "from_segment_seq": 0,
+        "to_segment_seq": 2,
+        "status": "pending",
+        "requested_at": "2026-10-09T12:31:41.355Z",
+        "updated_at": "2026-10-09T12:31:41.355Z"
+      }
+    },
+    {
+      "label": "request dup",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "DUPLICATE_OPEN_REQUEST",
+          "message": "An open request already exists for this segment range"
+        },
+        "requestId": "req-1v"
+      }
+    },
+    {
+      "label": "request own trip (driver)",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "DRIVER_CANNOT_REQUEST_OWN_TRIP",
+          "message": "Driver cannot request a seat on their own trip"
+        },
+        "requestId": "req-1w"
+      }
+    },
+    {
+      "label": "my requests",
+      "method": "GET",
+      "url": "/v1/me/ride-requests",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "requests": [
+          {
+            "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+            "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "from_segment_seq": 0,
+            "to_segment_seq": 2,
+            "status": "pending",
+            "requested_at": "2026-10-09T12:31:41.355Z",
+            "updated_at": "2026-10-09T12:31:41.355Z",
+            "hold_expires_at": null
+          }
+        ]
+      }
+    },
+    {
+      "label": "trip requests (driver)",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "requests": [
+          {
+            "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+            "passenger_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+            "from_segment_seq": 0,
+            "to_segment_seq": 2,
+            "status": "pending",
+            "requested_at": "2026-10-09T12:31:41.355Z",
+            "updated_at": "2026-10-09T12:31:41.355Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "trip requests (passenger forbidden)",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Insufficient permissions"
+        },
+        "requestId": "req-1z"
+      }
+    },
+    {
+      "label": "decide (passenger forbidden)",
+      "method": "POST",
+      "url": "/v1/ride-requests/eef98f3b-ebd3-4acd-becf-83c736910945/decision",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Insufficient permissions"
+        },
+        "requestId": "req-20"
+      }
+    },
+    {
+      "label": "decide accept",
+      "method": "POST",
+      "url": "/v1/ride-requests/eef98f3b-ebd3-4acd-becf-83c736910945/decision",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "request": {
+          "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+          "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+          "passenger_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+          "from_segment_seq": 0,
+          "to_segment_seq": 2,
+          "status": "payment_pending",
+          "updated_at": "2026-10-09T12:31:41.411Z"
+        },
+        "hold": {
+          "id": "6b859218-356e-4fe9-bbf1-a74cfb4b715b",
+          "expiresAt": "2026-10-09T12:41:41.411Z"
+        }
+      }
+    },
+    {
+      "label": "decide again",
+      "method": "POST",
+      "url": "/v1/ride-requests/eef98f3b-ebd3-4acd-becf-83c736910945/decision",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "REQUEST_NOT_PENDING",
+          "message": "Only pending requests can be decided"
+        },
+        "requestId": "req-22"
+      }
+    },
+    {
+      "label": "my requests after accept",
+      "method": "GET",
+      "url": "/v1/me/ride-requests",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "requests": [
+          {
+            "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+            "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "from_segment_seq": 0,
+            "to_segment_seq": 2,
+            "status": "payment_pending",
+            "requested_at": "2026-10-09T12:31:41.355Z",
+            "updated_at": "2026-10-09T12:31:41.411Z",
+            "hold_expires_at": "2026-10-09T12:41:41.411Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "trip requests after",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/requests",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "requests": [
+          {
+            "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+            "passenger_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+            "from_segment_seq": 0,
+            "to_segment_seq": 2,
+            "status": "payment_pending",
+            "requested_at": "2026-10-09T12:31:41.355Z",
+            "updated_at": "2026-10-09T12:31:41.411Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "search after hold",
+      "method": "GET",
+      "url": "/v1/trips/search?provinceId=708945a3-b123-486b-8d7d-b6ff0b3d394e&originLatitude=37.3256&originLongitude=-5.9396&destinationLatitude=37.3796&destinationLongitude=-5.9919",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "trips": [
+          {
+            "tripId": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "category": "university",
+            "leg": "outbound",
+            "departureAt": "2026-10-09T13:31:41.163Z",
+            "fromSegmentSeq": 0,
+            "toSegmentSeq": 2,
+            "pickupDistanceM": 0,
+            "dropoffDistanceM": 0,
+            "roadDistanceM": 22722,
+            "estimatedDurationS": 1894,
+            "availableSeats": 2,
+            "driverDisplayName": "Ana García López"
+          }
+        ]
+      }
+    },
+    {
+      "label": "confirmProviderPayment (service)",
+      "method": "-",
+      "url": "-",
+      "status": 0,
+      "headers": {},
+      "body": {
+        "status": "confirmed",
+        "bookingId": "bbff54ce-b452-4669-bf47-e49b88a73ca7"
+      }
+    },
+    {
+      "label": "my requests confirmed",
+      "method": "GET",
+      "url": "/v1/me/ride-requests",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "requests": [
+          {
+            "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+            "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "from_segment_seq": 0,
+            "to_segment_seq": 2,
+            "status": "confirmed",
+            "requested_at": "2026-10-09T12:31:41.355Z",
+            "updated_at": "2026-10-09T12:31:41.475Z",
+            "hold_expires_at": null
+          }
+        ]
+      }
+    },
+    {
+      "label": "pickup code (trip not live)",
+      "method": "POST",
+      "url": "/v1/bookings/bbff54ce-b452-4669-bf47-e49b88a73ca7/pickup-code",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "TRIP_NOT_LIVE",
+          "message": "Pickup code is available only while the trip is active"
+        },
+        "requestId": "req-27"
+      }
+    },
+    {
+      "label": "location get (not active)",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "location": null
+      }
+    },
+    {
+      "label": "live map empty",
+      "method": "GET",
+      "url": "/v1/live/map?provinceId=708945a3-b123-486b-8d7d-b6ff0b3d394e",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "trips": []
+      }
+    },
+    {
+      "label": "start trip (not driver)",
+      "method": "POST",
+      "url": "/v1/me/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/start",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Insufficient permissions"
+        },
+        "requestId": "req-2a"
+      }
+    },
+    {
+      "label": "start trip",
+      "method": "POST",
+      "url": "/v1/me/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/start",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+        "status": "active",
+        "started_at": "2026-10-09T12:31:41.511Z"
+      }
+    },
+    {
+      "label": "start trip again",
+      "method": "POST",
+      "url": "/v1/me/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/start",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "TRIP_NOT_STARTABLE",
+          "message": "Only a published trip may be started"
+        },
+        "requestId": "req-2c"
+      }
+    },
+    {
+      "label": "location post",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "eventRowId": "1",
+        "duplicate": false,
+        "acceptedAsCurrent": true
+      }
+    },
+    {
+      "label": "location dup",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "eventRowId": "1",
+        "duplicate": true,
+        "acceptedAsCurrent": true
+      }
+    },
+    {
+      "label": "location post non-v4 uuid",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "INVALID_LOCATION_EVENT",
+          "message": "eventId must be a UUID"
+        },
+        "requestId": "req-2f"
+      }
+    },
+    {
+      "label": "location future",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 422,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "LOCATION_EVENT_FROM_FUTURE",
+          "message": "GPS timestamp is too far in the future"
+        },
+        "requestId": "req-2g"
+      }
+    },
+    {
+      "label": "location post (passenger forbidden)",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "LOCATION_FORBIDDEN",
+          "message": "Only the trip driver may publish location"
+        },
+        "requestId": "req-2h"
+      }
+    },
+    {
+      "label": "location get anon",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "location": {
+          "tripId": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+          "precision": "approximate",
+          "latitude": 37.33,
+          "longitude": -5.94,
+          "recordedAt": "2026-10-09T12:31:41.527Z",
+          "receivedAt": "2026-10-09T12:31:41.531Z",
+          "stale": false,
+          "ageSeconds": 0
+        }
+      }
+    },
+    {
+      "label": "location get passenger",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "location": {
+          "tripId": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+          "precision": "precise",
+          "latitude": 37.3256,
+          "longitude": -5.9396,
+          "recordedAt": "2026-10-09T12:31:41.527Z",
+          "receivedAt": "2026-10-09T12:31:41.531Z",
+          "stale": false,
+          "ageSeconds": 0,
+          "accuracyM": 5,
+          "speedMps": 12.5,
+          "headingDegrees": 90
+        }
+      }
+    },
+    {
+      "label": "location get driver",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "location": {
+          "tripId": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+          "precision": "precise",
+          "latitude": 37.3256,
+          "longitude": -5.9396,
+          "recordedAt": "2026-10-09T12:31:41.527Z",
+          "receivedAt": "2026-10-09T12:31:41.531Z",
+          "stale": false,
+          "ageSeconds": 0,
+          "accuracyM": 5,
+          "speedMps": 12.5,
+          "headingDegrees": 90
+        }
+      }
+    },
+    {
+      "label": "location get notfound",
+      "method": "GET",
+      "url": "/v1/trips/35c99d47-8cbb-49c4-aec2-6097aa587cb8/location",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "TRIP_NOT_FOUND",
+          "message": "Trip not found"
+        },
+        "requestId": "req-2l"
+      }
+    },
+    {
+      "label": "live map",
+      "method": "GET",
+      "url": "/v1/live/map?provinceId=708945a3-b123-486b-8d7d-b6ff0b3d394e",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "trips": [
+          {
+            "tripId": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "latitude": 37.33,
+            "longitude": -5.94,
+            "recordedAt": "2026-10-09T12:31:41.527Z",
+            "stale": false,
+            "ageSeconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "label": "pickup code",
+      "method": "POST",
+      "url": "/v1/bookings/bbff54ce-b452-4669-bf47-e49b88a73ca7/pickup-code",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "bookingId": "bbff54ce-b452-4669-bf47-e49b88a73ca7",
+        "code": "350472",
+        "generatedAt": "2026-10-09T12:31:41.611Z"
+      }
+    },
+    {
+      "label": "pickup code (driver forbidden)",
+      "method": "POST",
+      "url": "/v1/bookings/bbff54ce-b452-4669-bf47-e49b88a73ca7/pickup-code",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "BOOKING_NOT_OWNED",
+          "message": "Only the booked passenger may generate the pickup code"
+        },
+        "requestId": "req-2o"
+      }
+    },
+    {
+      "label": "pickup verify wrong",
+      "method": "POST",
+      "url": "/v1/bookings/bbff54ce-b452-4669-bf47-e49b88a73ca7/pickup-verify",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "PICKUP_CODE_INVALID",
+          "message": "Pickup code is invalid",
+          "details": {
+            "attempts": 1,
+            "maxAttempts": 5
+          }
+        },
+        "requestId": "req-2p"
+      }
+    },
+    {
+      "label": "pickup verify ok",
+      "method": "POST",
+      "url": "/v1/bookings/bbff54ce-b452-4669-bf47-e49b88a73ca7/pickup-verify",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "bookingId": "bbff54ce-b452-4669-bf47-e49b88a73ca7",
+        "pickedUpAt": "2026-10-09T12:31:41.640Z",
+        "alreadyVerified": false
+      }
+    },
+    {
+      "label": "pickup verify again",
+      "method": "POST",
+      "url": "/v1/bookings/bbff54ce-b452-4669-bf47-e49b88a73ca7/pickup-verify",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "bookingId": "bbff54ce-b452-4669-bf47-e49b88a73ca7",
+        "pickedUpAt": "2026-10-09T12:31:41.640Z",
+        "alreadyVerified": true
+      }
+    },
+    {
+      "label": "chat send",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/3d592090-8ea7-43f7-ad0a-44d0f79571f0/messages",
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "36473f5a-f5e3-412e-8e23-b1781ceb20da",
+        "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+        "sender_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+        "recipient_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "client_message_id": "2fefc172-dcef-4c4f-85ed-045e786b187a",
+        "body": "Hola Ana, ya estoy",
+        "created_at": "2026-10-09T12:31:41.666Z",
+        "duplicate": false
+      }
+    },
+    {
+      "label": "chat send dup",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/3d592090-8ea7-43f7-ad0a-44d0f79571f0/messages",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "36473f5a-f5e3-412e-8e23-b1781ceb20da",
+        "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+        "sender_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+        "recipient_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "client_message_id": "2fefc172-dcef-4c4f-85ed-045e786b187a",
+        "body": "Hola Ana, ya estoy",
+        "created_at": "2026-10-09T12:31:41.666Z",
+        "duplicate": true
+      }
+    },
+    {
+      "label": "chat send conflict",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/3d592090-8ea7-43f7-ad0a-44d0f79571f0/messages",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "CHAT_IDEMPOTENCY_CONFLICT",
+          "message": "clientMessageId was already used for different content"
+        },
+        "requestId": "req-2u"
+      }
+    },
+    {
+      "label": "chat reply",
+      "method": "POST",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/975aa7af-b86d-4663-af86-5b625925258c/messages",
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "fe12ada0-5cd9-4540-9607-13322d484846",
+        "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+        "sender_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+        "recipient_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+        "client_message_id": "49510eda-db0d-4cde-962b-65dc3eaface2",
+        "body": "Perfecto",
+        "created_at": "2026-10-09T12:31:41.703Z",
+        "duplicate": false
+      }
+    },
+    {
+      "label": "chat list",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/3d592090-8ea7-43f7-ad0a-44d0f79571f0/messages",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "messages": [
+          {
+            "id": "36473f5a-f5e3-412e-8e23-b1781ceb20da",
+            "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "sender_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+            "recipient_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+            "client_message_id": "2fefc172-dcef-4c4f-85ed-045e786b187a",
+            "body": "Hola Ana, ya estoy",
+            "created_at": "2026-10-09T12:31:41.666Z"
+          },
+          {
+            "id": "fe12ada0-5cd9-4540-9607-13322d484846",
+            "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "sender_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+            "recipient_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+            "client_message_id": "49510eda-db0d-4cde-962b-65dc3eaface2",
+            "body": "Perfecto",
+            "created_at": "2026-10-09T12:31:41.703Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "chat list limit",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/3d592090-8ea7-43f7-ad0a-44d0f79571f0/messages?limit=1",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "messages": [
+          {
+            "id": "36473f5a-f5e3-412e-8e23-b1781ceb20da",
+            "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "sender_user_id": "975aa7af-b86d-4663-af86-5b625925258c",
+            "recipient_user_id": "3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+            "client_message_id": "2fefc172-dcef-4c4f-85ed-045e786b187a",
+            "body": "Hola Ana, ya estoy",
+            "created_at": "2026-10-09T12:31:41.666Z"
+          }
+        ]
+      }
+    },
+    {
+      "label": "chat self",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/975aa7af-b86d-4663-af86-5b625925258c/messages",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "CHAT_SELF_FORBIDDEN",
+          "message": "Cannot open a trip chat with yourself"
+        },
+        "requestId": "req-2y"
+      }
+    },
+    {
+      "label": "block",
+      "method": "PUT",
+      "url": "/v1/me/blocks/3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+      "status": 204,
+      "headers": {
+        "content-type": ""
+      },
+      "body": null
+    },
+    {
+      "label": "chat blocked",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/chat/3d592090-8ea7-43f7-ad0a-44d0f79571f0/messages",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "CHAT_BLOCKED",
+          "message": "Chat is unavailable because one participant blocked the other"
+        },
+        "requestId": "req-30"
+      }
+    },
+    {
+      "label": "unblock",
+      "method": "DELETE",
+      "url": "/v1/me/blocks/3d592090-8ea7-43f7-ad0a-44d0f79571f0",
+      "status": 204,
+      "headers": {
+        "content-type": ""
+      },
+      "body": null
+    },
+    {
+      "label": "block self",
+      "method": "PUT",
+      "url": "/v1/me/blocks/975aa7af-b86d-4663-af86-5b625925258c",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "BLOCK_SELF_FORBIDDEN",
+          "message": "Cannot block yourself"
+        },
+        "requestId": "req-32"
+      }
+    },
+    {
+      "label": "block unknown",
+      "method": "PUT",
+      "url": "/v1/me/blocks/43d34df3-51ee-4bc8-82d1-e65095297ba0",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "USER_NOT_FOUND",
+          "message": "User not found"
+        },
+        "requestId": "req-33"
+      }
+    },
+    {
+      "label": "complete trip",
+      "method": "POST",
+      "url": "/v1/me/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/complete",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+        "status": "completed",
+        "completed_at": "2026-10-09T12:31:41.787Z"
+      }
+    },
+    {
+      "label": "complete again",
+      "method": "POST",
+      "url": "/v1/me/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/complete",
+      "status": 409,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "TRIP_NOT_COMPLETABLE",
+          "message": "Only an active trip may be completed"
+        },
+        "requestId": "req-35"
+      }
+    },
+    {
+      "label": "location get completed",
+      "method": "GET",
+      "url": "/v1/trips/e0cbc8f7-c343-444b-b216-c15a110bc95c/location",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "location": null
+      }
+    },
+    {
+      "label": "my requests final",
+      "method": "GET",
+      "url": "/v1/me/ride-requests",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "requests": [
+          {
+            "id": "eef98f3b-ebd3-4acd-becf-83c736910945",
+            "trip_id": "e0cbc8f7-c343-444b-b216-c15a110bc95c",
+            "from_segment_seq": 0,
+            "to_segment_seq": 2,
+            "status": "confirmed",
+            "requested_at": "2026-10-09T12:31:41.355Z",
+            "updated_at": "2026-10-09T12:31:41.475Z",
+            "hold_expires_at": null
+          }
+        ]
+      }
+    },
+    {
+      "label": "logout",
+      "method": "POST",
+      "url": "/v1/auth/logout",
+      "status": 204,
+      "headers": {
+        "content-type": ""
+      },
+      "body": null
+    },
+    {
+      "label": "session after logout",
+      "method": "GET",
+      "url": "/v1/auth/session",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_INVALID_OR_EXPIRED",
+          "message": "Session is invalid or expired"
+        },
+        "requestId": "req-39"
+      }
+    },
+    {
+      "label": "me after logout",
+      "method": "GET",
+      "url": "/me",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "error": {
+          "code": "AUTH_INVALID_OR_EXPIRED",
+          "message": "Session is invalid or expired"
+        },
+        "requestId": "req-3a"
+      }
+    }
+  ]
+}

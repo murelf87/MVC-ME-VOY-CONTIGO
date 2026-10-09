@@ -1,148 +1,112 @@
-import * as SecureStore from "expo-secure-store";
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { Platform } from "react-native";
-import { apiRequest } from "../api/client";
-import type {
-  MeProfile,
-  Role,
-  SessionInfo,
-  SessionPayload,
-  VerificationStart,
-} from "../api/types";
+/**
+ * Proveedor y hook de la sesión.
+ *
+ *   const { status, me, roles, isStaff, activeRole, setActiveRole, refreshMe, signIn, signOut } = useAuth();
+ *
+ * El estado vive en `sessionStore` (almacén externo) y los flujos en `sessionService`; este fichero solo los
+ * conecta a React: arranque, caducidad de sesión (401) y refresco de `/me` al volver la conexión.
+ */
+import { createContext, useContext, useEffect, useMemo, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
+import { onAuthExpired } from "@/api/runtime";
+import type { AnyRole, MeProfile, SessionPayload } from "@/api/types";
+import { useOnReconnect } from "@/hooks/useConnectivity";
+import { getFirstName, getOnboardingRequirements, hasStaffRole, type OnboardingRequirement } from "./selectors";
+import { sessionService } from "./session";
+import { sessionStore } from "./sessionStore";
+import type { ActiveRole, SessionStatus, SignOutReason } from "./types";
 
-const TOKEN_KEY = "mvc.session.token";
-
-async function readStoredToken(): Promise<string | null> {
-  if (Platform.OS === "web") {
-    return globalThis.localStorage?.getItem(TOKEN_KEY) ?? null;
-  }
-  return SecureStore.getItemAsync(TOKEN_KEY);
-}
-
-async function writeStoredToken(token: string): Promise<void> {
-  if (Platform.OS === "web") {
-    globalThis.localStorage?.setItem(TOKEN_KEY, token);
-    return;
-  }
-  await SecureStore.setItemAsync(TOKEN_KEY, token, {
-    keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-  });
-}
-
-async function clearStoredToken(): Promise<void> {
-  if (Platform.OS === "web") {
-    globalThis.localStorage?.removeItem(TOKEN_KEY);
-    return;
-  }
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
-}
-
-type AuthContextValue = {
-  booting: boolean;
+export interface AuthContextValue {
+  /** booting (leyendo el token) · guest (explorando sin cuenta) · signedOut · signedIn. */
+  status: SessionStatus;
   token: string | null;
-  profile: MeProfile | null;
-  roles: Role[];
-  startVerification(phone: string, roles: Role[]): Promise<VerificationStart>;
-  verifyCode(challengeId: string, code: string): Promise<void>;
-  refreshProfile(): Promise<void>;
-  logout(): Promise<void>;
-};
+  /** Respuesta real de `GET /me`. `null` sin sesión (o con sesión recordada pero aún sin poder cargarla). */
+  me: MeProfile | null;
+  /** Roles reales de `/me`, incluidos los de personal. `[]` sin sesión. */
+  roles: readonly AnyRole[];
+  /** Personal administrativo: admin, verification_admin, finance_admin o support_admin. */
+  isStaff: boolean;
+  hasRole(role: AnyRole): boolean;
+  /** Rol con el que se usa la app (pasajero/conductor). Persistido por usuario. `null` sin sesión o solo personal. */
+  activeRole: ActiveRole | null;
+  /** Cambia de rol. Devuelve `false` si el usuario no tiene ese rol. */
+  setActiveRole(role: ActiveRole): boolean;
+  /** Vuelve a pedir `/me`. Resuelve con el perfil, o `null` si no se pudo. */
+  refreshMe(): Promise<MeProfile | null>;
+  /** Guarda la sesión que devolvió `verifyPhoneCode` y carga `/me`. Rechaza solo si el servidor rechaza el token. */
+  signIn(payload: Pick<SessionPayload, "token">): Promise<MeProfile | null>;
+  /** Cierra la sesión (revoca el token en el servidor y borra el almacén local). */
+  signOut(): Promise<void>;
+  /** «Explorar sin registrarme»: entra a MapHome sin cuenta. */
+  continueAsGuest(): void;
+
+  isGuest: boolean;
+  isSignedIn: boolean;
+  /** Primer nombre para saludos; `null` si aún no hay. */
+  firstName: string | null;
+  /** Qué le falta para completar el alta (`role`, `photo`), derivado de `/me`. `[]` si está completa. */
+  onboardingRequirements: readonly OnboardingRequirement[];
+  /** Por qué no hay sesión, si la había (para explicarlo en Bienvenida). */
+  signOutReason: SignOutReason | null;
+  /** `me` es una copia guardada (arranque sin red); se refresca solo al volver la conexión. */
+  meStale: boolean;
+  /** Sube con cada entrada/salida de sesión (la navegación recoloca la pila al cambiar). */
+  epoch: number;
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [booting, setBooting] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
-  const [profile, setProfile] = useState<MeProfile | null>(null);
+const NO_ROLES: readonly AnyRole[] = [];
+const NO_REQUIREMENTS: readonly OnboardingRequirement[] = [];
 
-  async function loadProfile(activeToken: string): Promise<MeProfile> {
-    const me = await apiRequest<MeProfile>("/me", { token: activeToken });
-    setProfile(me);
-    return me;
-  }
+const actions = {
+  setActiveRole: (role: ActiveRole) => sessionService.setActiveRole(role),
+  refreshMe: () => sessionService.refreshMe(),
+  signIn: (payload: Pick<SessionPayload, "token">) => sessionService.signIn(payload),
+  signOut: () => sessionService.signOut("user"),
+  continueAsGuest: () => sessionService.continueAsGuest(),
+};
+
+export function AuthProvider({ children }: { children: ReactNode }): ReactElement {
+  const state = useSyncExternalStore(sessionStore.subscribe, sessionStore.getState, sessionStore.getState);
 
   useEffect(() => {
-    let mounted = true;
-    void (async () => {
-      try {
-        const stored = await readStoredToken();
-        if (!stored) return;
-        await apiRequest<SessionInfo>("/v1/auth/session", { token: stored });
-        if (!mounted) return;
-        setToken(stored);
-        await loadProfile(stored);
-      } catch {
-        await clearStoredToken().catch(() => undefined);
-        if (mounted) {
-          setToken(null);
-          setProfile(null);
-        }
-      } finally {
-        if (mounted) setBooting(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
+    const stopListening = onAuthExpired((event) => sessionService.handleAuthExpired(event));
+    void sessionService.boot();
+    return stopListening;
   }, []);
 
-  async function startVerification(
-    phone: string,
-    requestedRoles: Role[]
-  ): Promise<VerificationStart> {
-    return apiRequest<VerificationStart>("/v1/auth/phone/start", {
-      method: "POST",
-      body: { phone, roles: requestedRoles },
-    });
-  }
+  // Si arrancó sin red con una copia de `/me`, al volver la conexión se pone al día.
+  useOnReconnect(() => {
+    if (sessionStore.getState().meStale) void sessionService.refreshMe();
+  });
 
-  async function verifyCode(challengeId: string, code: string): Promise<void> {
-    const result = await apiRequest<SessionPayload>("/v1/auth/phone/verify", {
-      method: "POST",
-      body: { challengeId, code },
-    });
-    await writeStoredToken(result.token);
-    setToken(result.token);
-    await loadProfile(result.token);
-  }
-
-  async function refreshProfile(): Promise<void> {
-    if (!token) return;
-    await loadProfile(token);
-  }
-
-  async function logout(): Promise<void> {
-    const activeToken = token;
-    setToken(null);
-    setProfile(null);
-    await clearStoredToken();
-    if (activeToken) {
-      await apiRequest<void>("/v1/auth/logout", {
-        method: "POST",
-        token: activeToken,
-      }).catch(() => undefined);
-    }
-  }
-
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      booting,
+  const { status, token, me, activeRole, epoch, signOutReason, meStale } = state;
+  const value = useMemo<AuthContextValue>(() => {
+    const roles = me?.roles ?? NO_ROLES;
+    return {
+      status,
       token,
-      profile,
-      roles: profile?.roles ?? [],
-      startVerification,
-      verifyCode,
-      refreshProfile,
-      logout,
-    }),
-    [booting, token, profile]
-  );
+      me,
+      roles,
+      isStaff: hasStaffRole(roles),
+      hasRole: (role) => roles.includes(role),
+      activeRole,
+      ...actions,
+      isGuest: status === "guest",
+      isSignedIn: status === "signedIn",
+      firstName: getFirstName(me),
+      onboardingRequirements: me ? getOnboardingRequirements(me) : NO_REQUIREMENTS,
+      signOutReason,
+      meStale,
+      epoch,
+    };
+  }, [status, token, me, activeRole, epoch, signOutReason, meStale]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used inside AuthProvider");
+  if (!context) throw new Error("useAuth debe usarse dentro de <AuthProvider>.");
   return context;
 }
