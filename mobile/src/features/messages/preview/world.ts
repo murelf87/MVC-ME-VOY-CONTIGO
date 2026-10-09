@@ -67,6 +67,12 @@ export const messagesSeedVariants: Readonly<Record<string, string>> = {
   "messages-chat": "Lámina 26 (reloj 07:22): chat de Miguel con Ana (Sevilla Centro → Isla Mágica, 07:25–07:45, «2 plazas»), dentro de la ventana de llamada.",
   "messages-chat-early": "Igual que «messages-chat» pero el viaje es mañana: la ventana de «Llamar a Ana» aún no se ha abierto.",
   "messages-chat-blocked": "Miguel ha bloqueado a Ana: el chat responde 403 CHAT_BLOCKED.",
+  "messages-notifications": "Lámina 27 (reloj 07:22): cuatro avisos de Miguel (recogida en 5 min, cambio de hora, solicitud aceptada y pago completado) y los dos interruptores de tipos.",
+  "messages-notifications-empty": "Miguel sin ningún aviso: estados vacíos de cada filtro.",
+  "messages-notifications-many": "Más de 20 avisos de las cuatro categorías para probar la paginación, los filtros y «Marcar todas como leídas».",
+  "messages-cancel": "Lámina 28 (reloj 07:17): Miguel cancela su reserva de 1 plaza con Ana (Sevilla Centro → Isla Mágica, hoy 07:25).",
+  "messages-cancel-started": "Igual que «messages-cancel» pero el viaje ya ha empezado: el servidor no deja cancelar (TRIP_ALREADY_STARTED).",
+  "messages-cancel-closed": "La reserva de Miguel ya estaba cancelada (BOOKING_ALREADY_CANCELLED).",
   "messages-chat-closed": "La reserva de Miguel con Ana está cancelada: el chat responde 403 CHAT_FORBIDDEN y la conversación sale de la bandeja.",
 };
 
@@ -369,9 +375,13 @@ export interface WorldPlan {
   /** Conserva el historial de 12 viajes y añade siete reservas más (bandeja larga). */
   many: boolean;
   state: "open" | "blocked" | "closed";
+  /** Avisos de la lámina 27: los cuatro de la lámina, ninguno o una lista larga (paginación). */
+  notices: "none" | "board" | "many";
+  /** El viaje de Ana ya ha empezado (lámina 28: no se puede cancelar). */
+  started: boolean;
 }
 
-const DEFAULT_PLAN: WorldPlan = { ana: "chat", islaDayOffset: 0, seats: 1, others: true, many: false, state: "open" };
+const DEFAULT_PLAN: WorldPlan = { ana: "chat", islaDayOffset: 0, seats: 1, others: true, many: false, state: "open", notices: "none", started: false };
 
 export const WORLD_PLANS: Readonly<Record<string, Partial<WorldPlan>>> = {
   "messages-inbox": { ana: "inbox" },
@@ -381,7 +391,54 @@ export const WORLD_PLANS: Readonly<Record<string, Partial<WorldPlan>>> = {
   "messages-chat-early": { ana: "chat", seats: 2, islaDayOffset: 1 },
   "messages-chat-blocked": { ana: "chat", seats: 2, state: "blocked" },
   "messages-chat-closed": { ana: "chat", seats: 2, state: "closed" },
+  "messages-notifications": { ana: "inbox", notices: "board" },
+  "messages-notifications-empty": { ana: "none", others: false, notices: "none" },
+  "messages-notifications-many": { ana: "inbox", notices: "many" },
+  "messages-cancel": { ana: "inbox", others: false, seats: 1 },
+  "messages-cancel-started": { ana: "inbox", others: false, seats: 1, started: true },
+  "messages-cancel-closed": { ana: "inbox", others: false, seats: 1, state: "closed" },
 };
+
+// ── Avisos (lámina 27) ───────────────────────────────────────────────────────────────────────────────────────────
+
+function notice(db: PreviewDb, input: { at: number; category: "trip" | "message" | "payment" | "system"; kind: string; title: string; body: string; data: Record<string, unknown>; read: boolean }): void {
+  tablesOf(db).notifications.insert({
+    id: db.ids.uuid(),
+    user_id: ME,
+    category: input.category,
+    kind: input.kind,
+    title: input.title,
+    body: input.body,
+    data: input.data,
+    essential: !(input.kind.startsWith("arrival_") || input.category === "message"),
+    read_at: input.read ? input.at + 60_000 : null,
+    created_at: input.at,
+    delivery_state: "delivered",
+  });
+}
+
+function seedNotices(db: PreviewDb, mode: WorldPlan["notices"], trip: Readonly<TripRow>, mine: Booked): void {
+  if (mode === "none") return;
+  const data = { tripId: trip.id, bookingId: mine.bookingId };
+  const conversationId = directConversationId(trip.id, ME);
+  notice(db, { at: localAt(db, "16:04", -1), category: "trip", kind: "request_accepted", title: "Tu solicitud ha sido aceptada", body: "Ana ha confirmado tu reserva para hoy. ¡Buen viaje!", data: { ...data, requestId: mine.requestId }, read: true });
+  notice(db, { at: localAt(db, "16:03", -1), category: "payment", kind: "payment_completed", title: "Pago del viaje completado", body: "Gracias por viajar con MVC. Propuesta: 4,00 €.", data: { bookingId: mine.bookingId }, read: true });
+  notice(db, { at: localAt(db, "07:05"), category: "trip", kind: "eta_changed", title: "Ha cambiado la hora estimada", body: "Nueva hora de recogida: 07:30 (antes 07:25). Ana te ha enviado un mensaje.", data: { tripId: trip.id, bookingId: mine.bookingId, conversationId }, read: false });
+  notice(db, { at: localAt(db, "07:20"), category: "trip", kind: "pickup_soon", title: "Tu recogida en 5 min", body: "Ana está de camino. Llegará sobre las 07:25 al aparcamiento P1.", data, read: false });
+  if (mode !== "many") return;
+  for (let i = 0; i < 24; i += 1) {
+    const kind = i % 4;
+    notice(db, {
+      at: localAt(db, "09:00", -2 - i),
+      category: kind === 0 ? "trip" : kind === 1 ? "message" : kind === 2 ? "payment" : "system",
+      kind: kind === 0 ? "booking_confirmed" : kind === 1 ? "chat_message" : kind === 2 ? "payment_confirmed" : "support_reply",
+      title: kind === 0 ? "Reserva confirmada" : kind === 1 ? "Mensaje nuevo de Ana" : kind === 2 ? "Pago confirmado" : "Respuesta de soporte",
+      body: `Aviso de ejemplo número ${i + 1} para probar la paginación.`,
+      data: kind === 1 ? { conversationId } : { bookingId: mine.bookingId },
+      read: i % 3 !== 0,
+    });
+  }
+}
 
 /** Mundo de una variante cuyo plan es «solo conversaciones» (las de avisos y cancelación lo amplían en sus módulos). */
 export function buildWorld(db: PreviewDb, partial: Partial<WorldPlan>): { trip: Readonly<TripRow> | null; mine: Booked | null } {
@@ -399,6 +456,8 @@ export function buildWorld(db: PreviewDb, partial: Partial<WorldPlan>): { trip: 
   if (plan.many) seedManyConversations(db);
   if (plan.state === "blocked") blockAna(db);
   if (plan.state === "closed") cancelMine(db, mine);
+  if (plan.started) db.trips.update(trip.id, { status: "active", started_at: localAt(db, "07:10") });
+  seedNotices(db, plan.notices, trip, mine);
   return { trip, mine };
 }
 

@@ -1,0 +1,10 @@
+{
+  "screen": "28",
+  "variant": "",
+  "profile": "passenger",
+  "route": "CancelBooking",
+  "params": { "bookingId": { "$ref": "booking.isla" } },
+  "seed": "messages-cancel",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 28. Reserva de 1 plaza con Ana (Sevilla Centro → Isla Mágica, hoy 07:25–07:45). Aporte ilustrativo de 4,00 €; «Gestión de la plataforma» sale «Por definir» porque no hay política aprobada."
+}

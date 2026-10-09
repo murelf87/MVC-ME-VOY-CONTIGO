@@ -9,6 +9,9 @@
  */
 import type { PreviewDb, PreviewProfileId, PreviewRouter } from "@/preview";
 import { registerConversations } from "./conversations";
+import { registerCancellation } from "./cancellation";
+import { registerNotifications } from "./notifications";
+import { registerSafety } from "./safety";
 import { declareTables } from "./rows";
 import { messagesSeedVariants, registerMessagesRefs, seedConversationVariant } from "./world";
 
@@ -16,6 +19,9 @@ export function registerPreview(r: PreviewRouter, db: PreviewDb): void {
   declareTables(db);
   registerMessagesRefs();
   registerConversations(r, db);
+  registerNotifications(r, db);
+  registerSafety(r, db);
+  registerCancellation(r, db);
 }
 
 export function seedSlice(db: PreviewDb, profile: PreviewProfileId, seed: string): void {

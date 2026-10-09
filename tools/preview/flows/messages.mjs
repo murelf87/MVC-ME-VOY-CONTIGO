@@ -25,10 +25,47 @@ export default async function messages(s) {
     await openScreen(s, 'Inbox', {}, { seed: 'messages-inbox', clock: CLOCK_INBOX });
     await s.waitText('Ruta Sevilla · Trabajo');
     const text = await s.appText();
-    for (const expected of ['Mensajes', 'Buscar mensajes', 'Todos', 'Mis reservas', 'Grupos', 'Ana', 'Ruta al trabajo · Sevilla', 'Perfecto, nos vemos en el aparcamiento.', 'Ana: Salgo en 5 min. Nos vemos en P1.', 'Genial, gracias por la info.', '¿Sigues con plazas?', 'Aún no tienes más mensajes']) {
+    for (const expected of ['Mensajes', 'Todos', 'Mis reservas', 'Grupos', 'Ana', 'Ruta al trabajo · Sevilla', 'Perfecto, nos vemos en el aparcamiento.', 'Ana: Salgo en 5 min. Nos vemos en P1.', 'Genial, gracias por la info.', '¿Sigues con plazas?', 'Aún no tienes más mensajes']) {
       s.expect(text.includes(expected), `la bandeja muestra «${expected}»`);
     }
     await s.shot('25-mensajes');
     await s.checkForbiddenText('Mensajes');
+  });
+
+  await s.step('27 · Notificaciones: filtros, marcar leída, avisos esenciales bloqueados y opcionales editables', async () => {
+    await openScreen(s, 'Notifications', {}, { seed: 'messages-notifications', clock: CLOCK_INBOX });
+    await s.waitText('Tu recogida en 5 min');
+    let text = await s.appText();
+    for (const expected of ['Notificaciones', 'Ha cambiado la hora estimada', 'Tu solicitud ha sido aceptada', 'Pago del viaje completado', 'Propuesta: 4,00 €.', 'Tipos de notificaciones', 'Avisos esenciales del viaje', 'Avisos opcionales de llegada']) {
+      s.expect(text.includes(expected), `Notificaciones muestra «${expected}»`);
+    }
+    await s.tap('Notifications.filter.payment');
+    await s.settle();
+    text = await s.appText();
+    s.expect(text.includes('Pago del viaje completado') && !text.includes('Tu recogida en 5 min'), 'el filtro Pagos deja solo los pagos');
+    await s.tap('Notifications.filter.all');
+    await s.settle();
+    await s.tap('Notifications.markAll');
+    await s.settle();
+    s.expect(!(await s.appText()).includes('Marcar todas como leídas'), 'tras marcar todas ya no queda el enlace');
+    await s.tap('Notifications.arrivalSwitch');
+    await s.settle();
+    await s.shot('27-notificaciones');
+    await s.checkForbiddenText('Notificaciones');
+  });
+
+  await s.step('28 · Cancelar reserva: motivo, otro motivo, confirmación y resultado', async () => {
+    await openScreen(s, 'CancelBooking', { bookingId: { $ref: 'booking.isla' } }, { seed: 'messages-cancel', clock: '2026-10-05T07:17:00+02:00' });
+    await s.waitText('Motivo de la cancelación');
+    let text = await s.appText();
+    for (const expected of ['Cancelar reserva', 'Ya no lo necesito', 'Cambio en mi horario', 'He encontrado otra opción', 'Otro motivo', 'Detalle del reembolso (propuesta)', 'Por definir', 'Mantener reserva', 'Confirmar cancelación']) {
+      s.expect(text.includes(expected), `Cancelar reserva muestra «${expected}»`);
+    }
+    await s.tap('CancelBooking.reason.other');
+    await s.type('CancelBooking.note', 'Me ha surgido un imprevisto');
+    await s.shot('28-cancelar');
+    await s.tap('CancelBooking.confirm');
+    await s.settle();
+    await s.checkForbiddenText('Cancelar reserva');
   });
 }

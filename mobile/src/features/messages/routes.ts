@@ -13,6 +13,8 @@
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { BookingChatScreen } from "./screens/BookingChatScreen";
+import { NotificationsScreen } from "./screens/NotificationsScreen";
+import { CancelBookingScreen } from "./screens/CancelBookingScreen";
 import { InboxScreen } from "./screens/InboxScreen";
 
 export type MessagesParams = {
@@ -38,8 +40,8 @@ export const messagesRoutes: RouteDef[] = [
     title: "Chat de reserva",
     previewParams: { conversationId: { $ref: "conversation.mine" } },
   }),
-  defineRoute({ name: "Notifications", component: PendingScreen, access: "auth", screen: "27", title: "Notificaciones" }),
-  defineRoute({ name: "CancelBooking", component: PendingScreen, access: "auth", screen: "28", title: "Cancelar reserva" }),
+  defineRoute({ name: "Notifications", component: NotificationsScreen, access: "auth", screen: "27", title: "Notificaciones" }),
+  defineRoute({ name: "CancelBooking", component: CancelBookingScreen, access: "auth", screen: "28", title: "Cancelar reserva" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "NotificationSettings", component: PendingScreen, access: "auth", title: "Ajustes de notificaciones" }),
   defineRoute({ name: "BlockedUsers", component: PendingScreen, access: "auth", title: "Personas bloqueadas" }),
