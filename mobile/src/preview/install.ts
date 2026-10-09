@@ -247,12 +247,13 @@ function resolveBundledAsset(key: string): string | null {
   if (!match) return null;
   try {
     const assets = require("@/assets") as typeof import("@/assets");
-    const rn = require("react-native") as typeof import("react-native");
+    const { Asset } = require("expo-asset") as typeof import("expo-asset");
     const slug = match[1] as keyof typeof assets.images.avatars;
     const asset = assets.images.avatars[slug];
     if (!asset) return null;
-    const resolved = rn.Image.resolveAssetSource(asset.source as number);
-    return resolved?.uri ?? null;
+    // `Image.resolveAssetSource` no existe en react-native-web: expo-asset resuelve el recurso en web y en móvil.
+    const uri = Asset.fromModule(asset.source as number).uri;
+    return typeof uri === "string" && uri !== "" ? uri : null;
   } catch {
     return null;
   }

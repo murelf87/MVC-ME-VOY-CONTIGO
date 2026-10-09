@@ -16,7 +16,7 @@ import type {
   TrustVerificationOverview,
 } from "@/api/types/trust";
 import type { PreviewDb } from "@/preview";
-import { STORAGE_PROVIDER_NAME, iso } from "@/preview";
+import { STORAGE_PROVIDER_NAME, iso, resolvePreviewAsset } from "@/preview";
 import { reviewTables, type EvidenceRow, type ReviewItemRow } from "../../admin/preview/reviewWorld/store";
 import { currentDocument, trustTables } from "./trustStore";
 
@@ -96,7 +96,7 @@ export function photoState(db: PreviewDb, userId: string): ProfilePhotoState {
   const state: ProfilePhotoState["state"] = approved ? "approved" : row === undefined ? "none" : row.state === "rejected" ? "rejected" : row.state === "approved" ? "approved" : "in_review";
   let publicPhotoUrl: string | null = null;
   if (approved && profile?.public_photo_key) {
-    publicPhotoUrl = profile.public_photo_key.startsWith("preview-asset://") ? profile.public_photo_key : ownPreviewUrl(db, profile.public_photo_key);
+    publicPhotoUrl = profile.public_photo_key.startsWith("preview-asset://") ? resolvePreviewAsset(profile.public_photo_key) : ownPreviewUrl(db, profile.public_photo_key);
   }
   return { state, required: true, publicPhotoUrl, latest, uploadAvailable: uploadAvailable(db) };
 }
