@@ -311,7 +311,7 @@ export function driverInbox(db: PreviewDb, principal: Principal, query: InboxQue
   entries.sort(
     query.status === "all"
       ? (a, b) => b.sortRequested - a.sortRequested || (a.id < b.id ? -1 : 1)
-      : (a, b) => a.sortDeparture - b.sortDeparture || a.sortRequested - b.sortRequested || (a.id < b.id ? -1 : 1),
+      : (a, b) => a.sortDeparture - b.sortDeparture || b.sortRequested - a.sortRequested || (a.id < b.id ? -1 : 1),
   );
   const slice = entries.slice(query.offset, query.offset + query.limit);
   const next = query.offset + query.limit;

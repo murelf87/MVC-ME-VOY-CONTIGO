@@ -4,8 +4,13 @@
  * `mobile/src/preview/handlers/*.ts` y contrato de los endpoints en `docs/contracts/<módulo>.md`.
  */
 import type { PreviewDb, PreviewProfileId, PreviewRouter } from "@/preview";
+import { registerInbox } from "./publishInbox";
+import { registerReadiness } from "./publishReadiness";
 
-export function registerPublishPreview(_r: PreviewRouter, _db: PreviewDb): void {}
+export function registerPublishPreview(r: PreviewRouter, db: PreviewDb): void {
+  registerReadiness(r, db);
+  registerInbox(r, db);
+}
 
 export function seedPublish(_db: PreviewDb, _profile: PreviewProfileId, _seed: string): void {}
 
