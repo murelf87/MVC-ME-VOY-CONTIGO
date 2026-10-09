@@ -368,6 +368,7 @@ export const profileStrings = {
     fontSize: { title: "Tamaño de letra y más", subtitle: "En Ajustes" },
     loadErrorTitle: "No hemos podido cargar tu perfil",
     unsaved: "Tienes cambios sin guardar.",
+    offlineSave: "Sin conexión: podrás guardar los cambios cuando la recuperes.",
     discardTitle: "¿Salir sin guardar?",
     discardMessage: "Perderás los cambios que has hecho en tu nombre.",
     discardConfirm: "Salir sin guardar",

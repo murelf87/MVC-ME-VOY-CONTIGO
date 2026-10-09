@@ -1,19 +1,18 @@
 /**
  * Rutas del slice `profile` (lámina 08: perfil, mis viajes, favoritos y rutina, planes).
  *
- * ANDAMIAJE: cada ruta apunta a `PendingScreen` hasta que el agente del slice escribe la pantalla real. Este fichero
- * es suyo desde ese momento: cambia `component`, ajusta los tipos de `ProfileParams` y añade las rutas nuevas
- * (legal, permisos, recibos…) que necesite. Reglas:
+ * Todas las rutas apuntan a su pantalla real. Reglas:
  *  - `ProfileParams` es un `type` (no `interface`) y SOLO lleva datos serializables (ids, textos, números).
  *  - Los nombres de ruta son únicos en TODA la app (el registro falla al arrancar si se repiten).
  *  - `access`: "public" (también invitados) · "auth" (por defecto) · "staff".
  *  - Pantalla = componente que recibe `AppScreenProps<"Nombre">`; navega con `useAppNavigation()` y lee los
  *    parámetros con `useAppRoute("Nombre")`.
  */
-import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { BookingDetailScreen } from "./screens/BookingDetailScreen";
 import { WeeklyReservationScreen } from "./screens/WeeklyReservationScreen";
+import { EditProfileScreen } from "./screens/EditProfileScreen";
+import { VerificationStatusScreen } from "./screens/VerificationStatusScreen";
 import { PlansScreen } from "./screens/PlansScreen";
 import { RoutineEntryFormScreen } from "./screens/RoutineEntryFormScreen";
 import { FavoriteFormScreen } from "./screens/FavoriteFormScreen";
@@ -45,8 +44,8 @@ export const profileRoutes: RouteDef[] = [
   defineRoute({ name: "FavoritesRoutine", component: FavoritesRoutineScreen, access: "auth", screen: "31", title: "Favoritos y rutina" }),
   defineRoute({ name: "Plans", component: PlansScreen, access: "auth", screen: "32", title: "Planes" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
-  defineRoute({ name: "EditProfile", component: PendingScreen, access: "auth", title: "Editar perfil" }),
-  defineRoute({ name: "VerificationStatus", component: PendingScreen, access: "auth", title: "Verificación y seguridad" }),
+  defineRoute({ name: "EditProfile", component: EditProfileScreen, access: "auth", title: "Editar perfil" }),
+  defineRoute({ name: "VerificationStatus", component: VerificationStatusScreen, access: "auth", title: "Verificación y seguridad" }),
   defineRoute({ name: "WeeklyReservation", component: WeeklyReservationScreen, access: "auth", title: "Reserva semanal", previewParams: { reservationId: { $ref: "weekly.miguel" } }, previewSeed: "req-weekly-awaiting-payment", previewClock: "2026-10-05T07:58:00+02:00" }),
   defineRoute({ name: "BookingDetail", component: BookingDetailScreen, access: "auth", title: "Detalle de la reserva", previewParams: { bookingId: { $ref: "booking.mine" } } }),
   defineRoute({ name: "FavoriteForm", component: FavoriteFormScreen, access: "auth", title: "Destino favorito" }),

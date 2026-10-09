@@ -78,4 +78,30 @@ export default async function profile(s) {
     await s.shot('weekly-reservation');
     await s.checkForbiddenText('Reserva semanal');
   });
+
+  await s.step('Editar perfil: validación del nombre, guardar y descartar', async () => {
+    await openScreen(s, 'EditProfile', {});
+    await s.waitText('Editar perfil');
+    await s.type('EditProfile.name', 'A');
+    await s.settle();
+    let text = await s.appText();
+    s.expect(text.includes('al menos 2 caracteres'), 'un nombre de 1 letra da error');
+    await s.type('EditProfile.name', 'Miguel Ángel Ruiz');
+    await s.settle();
+    await s.shot('edit-profile');
+    await s.tap('EditProfile.save');
+    await s.settle();
+    const here = await s.inApp(() => window.__mvc.route());
+    s.expect(here !== 'EditProfile', `guardar vuelve atrás (está en ${here})`);
+  });
+
+  await s.step('Verificación y seguridad: móvil, foto, comprobación e identidad', async () => {
+    await openScreen(s, 'VerificationStatus', {});
+    await s.waitText('Verificación y seguridad');
+    await s.waitText('Identidad y documentos');
+    const text = await s.appText();
+    for (const expected of ['Móvil', 'Foto de perfil', 'Comprobación privada']) s.expect(text.includes(expected), `muestra «${expected}»`);
+    await s.shot('verification');
+    await s.checkForbiddenText('Verificación');
+  });
 }
