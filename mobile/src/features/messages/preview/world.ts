@@ -510,6 +510,7 @@ export function registerMessagesRefs(): void {
   });
   registerSeedRef("conversation.miguelAngel", (db) => existing(db, directConversationId(SEED_TRIP_IDS.miguelAngelReturn, ME)));
   registerSeedRef("conversation.laura", (db) => existing(db, directConversationId(WORLD.tripHospital, ME)));
+  registerSeedRef("user.ana", () => ANA);
   registerSeedRef("trip.isla", (db) => (db.trips.has(WORLD.tripIsla) ? WORLD.tripIsla : undefined));
   registerSeedRef("trip.lauraHospital", (db) => (db.trips.has(WORLD.tripHospital) ? WORLD.tripHospital : undefined));
   registerSeedRef("booking.isla", (db) => {

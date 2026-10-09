@@ -28,6 +28,7 @@ export const messagesStrings = {
     offlineDetail: "Comprueba tu Internet. Mostramos lo último que tenías cargado.",
     updating: "Actualizando…",
     loadMore: "Cargando más…",
+    seeMore: "Ver más",
     loadMoreError: "No hemos podido cargar más.",
   },
 
@@ -306,6 +307,7 @@ export const messagesStrings = {
     systemRetry: "Comprobar de nuevo",
     registerFailed: "No hemos podido registrar este móvil para recibir avisos. Inténtalo más tarde.",
     registered: "Este móvil quedará registrado para recibir avisos.",
+    registerAction: "Registrar este móvil",
     deviceCount: (count: number) => (count === 0 ? "Ningún móvil registrado" : count === 1 ? "1 móvil registrado" : `${count} móviles registrados`),
     pushUnavailableTitle: "Avisos fuera de la app: aún no disponibles",
     pushUnavailableBody: "El servidor todavía no envía notificaciones al móvil. Mientras tanto, los avisos aparecen dentro de la app.",

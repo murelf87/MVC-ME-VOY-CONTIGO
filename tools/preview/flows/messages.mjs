@@ -68,4 +68,70 @@ export default async function messages(s) {
     await s.settle();
     await s.checkForbiddenText('Cancelar reserva');
   });
+
+  await s.step('Reserva cancelada: resultado honesto (propuesta en revisión, sin promesas)', async () => {
+    await openScreen(s, 'CancelBooking', { bookingId: { $ref: 'booking.isla' } }, { seed: 'messages-cancel', clock: CLOCK_INBOX });
+    await s.waitText('Motivo de la cancelación');
+    await s.tap('CancelBooking.confirm');
+    await s.settle();
+    await s.tap('CancelBooking.dialog.confirm');
+    await s.waitText('Tu reserva está cancelada');
+    const text = await s.appText();
+    for (const expected of ['Qué pasa ahora', 'Administración', 'Ver mis viajes', 'Buscar otro viaje']) s.expect(text.includes(expected), `el resultado muestra «${expected}»`);
+    s.expect(!/devolución garantizada|te devolveremos|recibirás tu dinero/i.test(text), 'el resultado no promete devolución');
+    await s.shot('28b-reserva-cancelada');
+    await s.checkForbiddenText('Reserva cancelada');
+  });
+
+  await s.step('Ajustes de notificaciones: esencial fijo, opcionales guardan, permiso del móvil', async () => {
+    await openScreen(s, 'NotificationSettings', undefined, { seed: 'messages-notifications', clock: CLOCK_INBOX });
+    await s.waitText('Tipos de avisos');
+    const text = await s.appText();
+    for (const expected of ['Avisos esenciales del viaje', 'Avisos opcionales de llegada', 'Avisos de mensajes nuevos', 'Este móvil']) s.expect(text.includes(expected), `ajustes muestran «${expected}»`);
+    await s.tap('NotificationSettings.messagesSwitch');
+    await s.settle();
+    await s.tap('NotificationSettings.arrivalSwitch');
+    await s.settle();
+    await s.shot('27b-ajustes-avisos');
+    await s.checkForbiddenText('Ajustes de notificaciones');
+  });
+
+  await s.step('Personas bloqueadas: lista, desbloquear con confirmación y estado vacío', async () => {
+    await openScreen(s, 'BlockedUsers', undefined, { seed: 'messages-chat-blocked', clock: CLOCK_INBOX });
+    await s.waitText('Ana');
+    s.expect((await s.appText()).includes('Bloqueada el'), 'la fila indica cuándo se bloqueó');
+    await s.shot('bloqueados');
+    await s.app.locator('[data-testid^="BlockedUsers.unblock."]').first().click();
+    await s.settle();
+    await s.tap('BlockedUsers.dialog.confirm');
+    await s.waitText('No has bloqueado a nadie');
+    await s.checkForbiddenText('Personas bloqueadas');
+  });
+
+  await s.step('Denunciar: validación, motivo, pruebas, envío y confirmación', async () => {
+    await openScreen(s, 'ReportUser', { userId: { $ref: 'user.ana' }, conversationId: { $ref: 'conversation.ana' } }, { seed: 'messages-chat', clock: CLOCK_CHAT });
+    await s.waitText('¿Qué ha pasado?');
+    await s.tap('ReportUser.submit');
+    await s.settle();
+    s.expect((await s.appText()).includes('Elige un motivo'), 'sin motivo no se envía y se explica');
+    await s.tap('ReportUser.reason.other');
+    await s.tap('ReportUser.submit');
+    await s.settle();
+    s.expect((await s.appText()).includes('al menos 10 letras'), '«Otro motivo» exige descripción');
+    await s.type('ReportUser.details', 'Me escribió insistentemente fuera del viaje');
+    await s.shot('denunciar');
+    await s.tap('ReportUser.submit');
+    await s.waitText('Denuncia enviada');
+    s.expect((await s.appText()).includes('Referencia'), 'se muestra la referencia');
+    await s.checkForbiddenText('Denuncia enviada');
+  });
+
+  await s.step('Información del chat: persona, viaje, reserva y acciones', async () => {
+    await openScreen(s, 'ConversationInfo', { conversationId: { $ref: 'conversation.ana' } }, { seed: 'messages-chat', clock: CLOCK_CHAT });
+    await s.waitText('Tu privacidad');
+    const text = await s.appText();
+    for (const expected of ['Persona', 'Viaje', 'Reserva', 'Sevilla Centro', 'Isla Mágica', 'Denunciar a Ana', 'Bloquear a Ana']) s.expect(text.includes(expected), `la información muestra «${expected}»`);
+    await s.shot('info-chat');
+    await s.checkForbiddenText('Información del chat');
+  });
 }

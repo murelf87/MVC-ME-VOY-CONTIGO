@@ -20,7 +20,7 @@ import { Icon } from "@/icons";
 import type { AppScreenProps } from "@/navigation/types";
 import { colors } from "@/theme";
 import { Avatar, Banner, BottomSheet, Button, ConfirmDialog, ErrorStateCard, RadioRow, Screen, ScreenHeader, SectionHeader, Skeleton, Text, TextArea } from "@/ui";
-import { useCancelBooking, useCancellationPreview } from "../hooks/useCancellation";
+import { rememberCancelOutcome, useCancelBooking, useCancellationPreview } from "../hooks/useCancellation";
 import { messagesStrings } from "../strings";
 
 const copy = messagesStrings.cancel;
@@ -105,7 +105,10 @@ export function CancelBookingScreen({ navigation, route }: AppScreenProps<"Cance
     const trimmed = note.trim();
     const result = await cancel.mutate({ reason, ...(reason === "other" && trimmed !== "" ? { note: trimmed } : {}) });
     setConfirmOpen(false);
-    if (result) navigation.replace("CancelBookingResult", { bookingId });
+    if (result) {
+      rememberCancelOutcome(bookingId, { response: result, driverName });
+      navigation.replace("CancelBookingResult", { bookingId });
+    }
     else void query.refetch();
   };
 

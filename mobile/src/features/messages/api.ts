@@ -48,6 +48,7 @@ import type {
   PeerCallContact,
   PushTokenInfo,
   PushTokenRegistration,
+  RefundView,
   ReportMessageRequest,
   SendChatMessageRequest,
   UserReport,
@@ -177,7 +178,7 @@ export function reportChatMessage(
   conversationId: string,
   messageId: string,
   body: ReportMessageRequest,
-  options: CallOptions = {},
+  options: WriteOptions = {},
 ): Promise<UserReport> {
   return apiRequest<UserReport>(`/v1/conversations/${enc(conversationId)}/messages/${enc(messageId)}/report`, { method: "POST", body, ...options });
 }
@@ -268,4 +269,11 @@ export function cancelBooking(
   options: CallOptions & { idempotencyKey: string },
 ): Promise<CancelBookingResponse> {
   return apiRequest<CancelBookingResponse>(`/v1/bookings/${enc(bookingId)}/cancel`, { method: "POST", body, ...options });
+}
+
+// ── Devoluciones del pasajero (resultado de cancelar) ────────────────────────────────────────────────────────────
+
+/** `GET /v1/me/refunds` (módulo de pagos): devoluciones propuestas o decididas del pasajero. */
+export function listMyRefunds(query: { limit?: number; cursor?: string | null } = {}, options: CallOptions = {}): Promise<Page<RefundView>> {
+  return apiRequest<Page<RefundView>>("/v1/me/refunds", { query: { limit: query.limit ?? 50, cursor: query.cursor ?? null }, ...options });
 }

@@ -46,3 +46,4 @@ export function cancelResultKey(bookingId: string): readonly unknown[] {
 export function myRefundsKey(): readonly unknown[] {
   return ["my-refunds"];
 }
+export const PUSH_TOKENS_KEY = ["push-tokens"] as const;

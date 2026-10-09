@@ -10,11 +10,15 @@
  *  - Pantalla = componente que recibe `AppScreenProps<"Nombre">`; navega con `useAppNavigation()` y lee los
  *    parámetros con `useAppRoute("Nombre")`.
  */
-import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { BookingChatScreen } from "./screens/BookingChatScreen";
 import { NotificationsScreen } from "./screens/NotificationsScreen";
 import { CancelBookingScreen } from "./screens/CancelBookingScreen";
+import { CancelBookingResultScreen } from "./screens/CancelBookingResultScreen";
+import { NotificationSettingsScreen } from "./screens/NotificationSettingsScreen";
+import { BlockedUsersScreen } from "./screens/BlockedUsersScreen";
+import { ReportUserScreen } from "./screens/ReportUserScreen";
+import { ConversationInfoScreen } from "./screens/ConversationInfoScreen";
 import { InboxScreen } from "./screens/InboxScreen";
 
 export type MessagesParams = {
@@ -43,9 +47,9 @@ export const messagesRoutes: RouteDef[] = [
   defineRoute({ name: "Notifications", component: NotificationsScreen, access: "auth", screen: "27", title: "Notificaciones" }),
   defineRoute({ name: "CancelBooking", component: CancelBookingScreen, access: "auth", screen: "28", title: "Cancelar reserva" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
-  defineRoute({ name: "NotificationSettings", component: PendingScreen, access: "auth", title: "Ajustes de notificaciones" }),
-  defineRoute({ name: "BlockedUsers", component: PendingScreen, access: "auth", title: "Personas bloqueadas" }),
-  defineRoute({ name: "ReportUser", component: PendingScreen, access: "auth", title: "Denunciar" }),
-  defineRoute({ name: "CancelBookingResult", component: PendingScreen, access: "auth", title: "Reserva cancelada" }),
-  defineRoute({ name: "ConversationInfo", component: PendingScreen, access: "auth", title: "Información del chat" }),
+  defineRoute({ name: "NotificationSettings", component: NotificationSettingsScreen, access: "auth", title: "Ajustes de notificaciones" }),
+  defineRoute({ name: "BlockedUsers", component: BlockedUsersScreen, access: "auth", title: "Personas bloqueadas" }),
+  defineRoute({ name: "ReportUser", component: ReportUserScreen, access: "auth", title: "Denunciar" }),
+  defineRoute({ name: "CancelBookingResult", component: CancelBookingResultScreen, access: "auth", title: "Reserva cancelada", previewParams: { bookingId: { $ref: "booking.mine" } } }),
+  defineRoute({ name: "ConversationInfo", component: ConversationInfoScreen, previewParams: { conversationId: { $ref: "conversation.mine" } }, access: "auth", title: "Información del chat" }),
 ];
