@@ -19,7 +19,7 @@ const copy = publishStrings.published;
 export function RoutePublishedScreen(): React.JSX.Element {
   const navigation = useAppNavigation();
   const { params } = useAppRoute("RoutePublished");
-  const summary = params.summary;
+  const summary = params?.summary;
 
   const rows: { label: string; value: string }[] = [];
   if (summary !== undefined) {
@@ -76,8 +76,8 @@ export function RoutePublishedScreen(): React.JSX.Element {
           ))}
         </View>
       ) : null}
-      {params.tripId !== undefined ? (
-        <Button label={copy.seeTrip} variant="outline" chevron={false} onPress={() => navigation.navigate("DriverTripManage", { tripId: params.tripId as string })} testID="RoutePublished.seeTrip" style={styles.seeTrip} />
+      {params?.tripId !== undefined ? (
+        <Button label={copy.seeTrip} variant="outline" chevron={false} onPress={() => navigation.navigate("DriverTripManage", { tripId: params?.tripId as string })} testID="RoutePublished.seeTrip" style={styles.seeTrip} />
       ) : null}
     </Screen>
   );

@@ -14,6 +14,10 @@ import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { DriverConsoleScreen } from "./ops/screens/DriverConsoleScreen";
 import { PickupVerifyScreen } from "./ops/screens/PickupVerifyScreen";
+import { DriverCancelTripScreen } from "./ops/screens/DriverCancelTripScreen";
+import { DriverTripFinishedScreen } from "./ops/screens/DriverTripFinishedScreen";
+import { DriverTripManageScreen } from "./ops/screens/DriverTripManageScreen";
+import { ProposeRouteChangeScreen } from "./ops/screens/ProposeRouteChangeScreen";
 import { PublishRouteScreen } from "./publish/screens/PublishRouteScreen";
 import { StopsRouteScreen } from "./publish/screens/StopsRouteScreen";
 import { RoutePublishedScreen } from "./publish/screens/RoutePublishedScreen";
@@ -53,7 +57,7 @@ export type DriverParams = {
   DriverCancelTrip: { tripId: string; bookingId?: string };
   DriverConsole: { tripId: string };
   PickupVerify: { tripId: string; bookingId?: string };
-  ProposeRouteChange: { tripId: string };
+  ProposeRouteChange: { tripId: string; stop?: PlaceParam };
   DriverTripFinished: { tripId: string };
 };
 
@@ -67,10 +71,10 @@ export const driverRoutes: RouteDef[] = [
   defineRoute({ name: "VehicleDocuments", component: VehicleDocumentsScreen, access: "auth", title: "Documentación del vehículo" }),
   defineRoute({ name: "RoutePublished", component: RoutePublishedScreen, access: "auth", title: "Ruta publicada" }),
   defineRoute({ name: "DriverRequestDetail", component: DriverRequestDetailScreen, access: "auth", title: "Detalle de la solicitud" }),
-  defineRoute({ name: "DriverTripManage", component: PendingScreen, access: "auth", title: "Tu viaje publicado" }),
-  defineRoute({ name: "DriverCancelTrip", component: PendingScreen, access: "auth", title: "Cancelar el viaje" }),
+  defineRoute({ name: "DriverTripManage", component: DriverTripManageScreen, access: "auth", title: "Tu viaje publicado" }),
+  defineRoute({ name: "DriverCancelTrip", component: DriverCancelTripScreen, access: "auth", title: "Cancelar el viaje" }),
   defineRoute({ name: "DriverConsole", component: DriverConsoleScreen, access: "auth", title: "Consola del conductor" }),
   defineRoute({ name: "PickupVerify", component: PickupVerifyScreen, access: "auth", title: "Código de recogida" }),
-  defineRoute({ name: "ProposeRouteChange", component: PendingScreen, access: "auth", title: "Proponer cambio de ruta" }),
-  defineRoute({ name: "DriverTripFinished", component: PendingScreen, access: "auth", title: "Viaje terminado (conductor)" }),
+  defineRoute({ name: "ProposeRouteChange", component: ProposeRouteChangeScreen, access: "auth", title: "Proponer cambio de ruta" }),
+  defineRoute({ name: "DriverTripFinished", component: DriverTripFinishedScreen, access: "auth", title: "Viaje terminado (conductor)" }),
 ];

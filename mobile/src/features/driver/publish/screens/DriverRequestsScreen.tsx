@@ -190,7 +190,7 @@ export function DriverRequestsScreen(): React.JSX.Element {
         ) : (
           <>
             {visibleSections.map((section) => (
-              <View key={section.key} testID={`DriverRequests.section.${section.key}`}>
+              <View key={section.key} testID={`DriverRequests.section.${section.key}Group`}>
                 {showTitles ? (
                   <Text variant="heading" color="heading" size={21} accessibilityRole="header" style={styles.sectionTitle}>
                     {section.title}

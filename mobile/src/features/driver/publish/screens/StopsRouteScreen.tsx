@@ -38,8 +38,8 @@ export function StopsRouteScreen(): React.JSX.Element {
   const { width: windowWidth } = useWindowDimensions();
   const mapWidth = Math.min(windowWidth, 600) - 2 * DRIVER_SIDE;
   const { params } = useAppRoute("StopsRoute");
-  const draftId = params.draftId;
-  const stored = useRouteDraft(draftId);
+  const draftId = params?.draftId ?? "";
+  const stored = useRouteDraft(draftId === "" ? undefined : draftId);
   // Solo vista previa: los borradores «preview-…» se crean al abrir la lámina directamente.
   React.useEffect(() => {
     if (stored === undefined && draftId.startsWith("preview-")) routeDraftStore.ensure(draftId, 3);

@@ -35,7 +35,7 @@ export function VehicleDocumentsScreen(): React.JSX.Element {
   const readiness = useDriverReadiness();
   const upload = useUploadFlow();
   const [opening, setOpening] = React.useState<string | null>(null);
-  const vehicle = vehicles.data?.find((v) => v.id === params.vehicleId);
+  const vehicle = vehicles.data?.find((v) => v.id === params?.vehicleId);
 
   const header = <DriverHeader title={copy.title} testID="VehicleDocuments.header" />;
   const frame = { paddingTop: DRIVER_TOP_GAP } as const;
