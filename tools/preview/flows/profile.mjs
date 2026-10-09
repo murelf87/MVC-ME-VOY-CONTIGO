@@ -40,4 +40,30 @@ export default async function profile(s) {
     await s.shot('32-planes');
     await s.checkForbiddenText('Planes');
   });
+
+  await s.step('Detalle de la reserva: confirmada con sus acciones', async () => {
+    await openScreen(s, 'BookingDetail', { bookingId: { $ref: 'booking.isla' } }, { seed: 'messages-cancel' });
+    await s.waitText('Detalle de la reserva');
+    await s.waitText('Conductor');
+    const text = await s.appText();
+    for (const expected of ['Reserva confirmada', 'Recorrido', 'Importe', 'Cancelar reserva', 'Compartir viaje', 'Escribir al conductor']) {
+      s.expect(text.includes(expected), `el detalle muestra «${expected}»`);
+    }
+    s.expect(!/devolución garantizada|te devolveremos/i.test(text), 'no promete reembolsos');
+    await s.shot('booking-detail');
+    await s.tap('BookingDetail.action.chat');
+    await s.settle();
+    const here = await s.inApp(() => window.__mvc.route());
+    s.expect(here === 'BookingChat', `«Escribir al conductor» abre el chat (está en ${here})`);
+  });
+
+  await s.step('30 · Mis viajes: tarjetas reales con su estado y sin errores', async () => {
+    await openScreen(s, 'MyTrips', {}, { seed: 'messages-cancel' });
+    await s.waitText('Mis viajes');
+    await s.waitText('Próximos');
+    const text = await s.appText();
+    s.expect(!/No hemos podido cargar/.test(text), 'Mis viajes carga sin error');
+    await s.shot('30-mis-viajes');
+    await s.checkForbiddenText('Mis viajes');
+  });
 }

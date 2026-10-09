@@ -12,6 +12,7 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { BookingDetailScreen } from "./screens/BookingDetailScreen";
 import { PlansScreen } from "./screens/PlansScreen";
 import { RoutineEntryFormScreen } from "./screens/RoutineEntryFormScreen";
 import { FavoriteFormScreen } from "./screens/FavoriteFormScreen";
@@ -46,7 +47,7 @@ export const profileRoutes: RouteDef[] = [
   defineRoute({ name: "EditProfile", component: PendingScreen, access: "auth", title: "Editar perfil" }),
   defineRoute({ name: "VerificationStatus", component: PendingScreen, access: "auth", title: "Verificación y seguridad" }),
   defineRoute({ name: "WeeklyReservation", component: PendingScreen, access: "auth", title: "Reserva semanal" }),
-  defineRoute({ name: "BookingDetail", component: PendingScreen, access: "auth", title: "Detalle de la reserva" }),
+  defineRoute({ name: "BookingDetail", component: BookingDetailScreen, access: "auth", title: "Detalle de la reserva", previewParams: { bookingId: { $ref: "booking.mine" } } }),
   defineRoute({ name: "FavoriteForm", component: FavoriteFormScreen, access: "auth", title: "Destino favorito" }),
   defineRoute({ name: "RoutineEntryForm", component: RoutineEntryFormScreen, access: "auth", title: "Fila de rutina" }),
 ];

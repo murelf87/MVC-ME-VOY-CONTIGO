@@ -56,7 +56,8 @@ export function stepperOf(stepper: RequestStepper): { labels: string[]; states: 
   const states = stepper.steps.map<StepState>((step) => {
     switch (step.state) {
       case "done":
-        return "reached";
+        // «Confirmada» cierra la línea: el último paso hecho se pinta relleno, como el paso actual.
+        return step.key === stepper.current ? "complete" : "reached";
       case "current":
         return "complete";
       case "pending":

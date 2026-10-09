@@ -21,11 +21,13 @@
 import type { PreviewDb, PreviewProfileId, PreviewRouter } from "@/preview";
 import { registerPlansPreview } from "./plans";
 import { registerRoutinePreview } from "./routine";
+import { registerTripsOverviewPreview } from "./trips";
 import { PROFILE_SEED_VARIANTS, seedProfileSlice } from "./seed";
 
 export function registerPreview(r: PreviewRouter, db: PreviewDb): void {
   registerRoutinePreview(r, db);
   registerPlansPreview(r, db);
+  registerTripsOverviewPreview(r, db);
 }
 
 export function seedSlice(db: PreviewDb, profile: PreviewProfileId, seed: string): void {

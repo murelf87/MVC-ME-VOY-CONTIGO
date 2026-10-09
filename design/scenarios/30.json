@@ -1,0 +1,9 @@
+{
+  "screen": "30",
+  "variant": "",
+  "profile": "passenger",
+  "route": "MyTrips",
+  "seed": "messages-cancel",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 30: Mis viajes del pasajero. Con los datos de la reserva a Isla Mágica; las reservas semanales y el viaje en curso aparecen cuando existen en los datos."
+}
