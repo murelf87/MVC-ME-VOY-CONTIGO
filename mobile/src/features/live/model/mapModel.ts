@@ -113,3 +113,19 @@ export function liveMapModel(input: LiveMapInput): LiveMapModel {
 
   return { markers, routes, fit, car: mode };
 }
+
+/**
+ * Mapa de la vista pública de «Compartir viaje»: SOLO una zona aproximada (~1 km). Nunca coche, rumbo ni trayectoria, ni
+ * recogida: el enlace no revela más de lo que el servidor ya redondeó.
+ */
+export function sharedMapModel(position: { location: GeoPoint } | null): LiveMapModel {
+  if (position === null) return { markers: [], routes: [], fit: [], car: "none" };
+  const center = toMapPoint(position.location);
+  const radius = 1000;
+  return {
+    markers: [{ id: "zone", kind: "label", position: center, chip: { title: copy.zoneLabel, tone: "muted", size: "sm", align: "center" }, zIndex: 25 }],
+    routes: [{ id: "zone", kind: "alt", points: ringPoints(center, radius), width: 3 }],
+    fit: ringExtremes(center, radius),
+    car: "zone",
+  };
+}

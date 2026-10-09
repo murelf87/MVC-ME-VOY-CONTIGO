@@ -121,7 +121,7 @@ export function registerShares(r: PreviewRouter, db: PreviewDb): void {
         last_viewed_at: null,
         view_count: 0,
       });
-      const created: LiveShareCreated = { ...shareWire(row, now), token, url: null };
+      const created: LiveShareCreated = { ...shareWire(row, now), token, url: `https://mvc.example/t/${token}` };
       return reply.created(created);
     }
   );

@@ -5,8 +5,8 @@ export const meta = { description: 'pasajero en directo: cambio de ruta (aceptar
 
 const CLOCK = '2026-10-05T07:17:00+02:00';
 
-async function openScreen(s, route, params, seed) {
-  await s.inApp(([name, p, o]) => window.__mvc.open(name, p, o), [route, params, { profile: 'passenger', seed, clock: CLOCK }]);
+async function openScreen(s, route, params, seed, profile = 'passenger') {
+  await s.inApp(([name, p, o]) => window.__mvc.open(name, p, o), [route, params, { profile, seed, clock: CLOCK }]);
   await s.inApp(() => (window.__mvc.idle ? window.__mvc.idle(4000) : undefined));
   await s.settle();
 }
@@ -105,5 +105,73 @@ export default async function live(s) {
   await s.step('Detalle de incidencia · una que no existe dice que no existe', async () => {
     await openScreen(s, 'IncidentDetail', { reportId: '00000000-0000-4000-8000-000000000000' }, 'live-incidents');
     await s.until(() => !!document.querySelector('[data-testid="IncidentDetail.notFound"], [data-testid="IncidentDetail.error"]'), null, 'error de carga', 8000);
+  });
+
+  await s.step('Compartir viaje · crea el enlace, lo muestra una vez y se puede copiar', async () => {
+    await openScreen(s, 'ShareTrip', { bookingId: { $ref: 'live.booking' } }, 'live-in-car');
+    await s.waitText('No verá');
+    await s.tap('ShareTrip.create');
+    await s.waitText('Enlace creado');
+    const text = await s.appText();
+    s.expect(text.includes('https://mvc.example/t/'), 'muestra el enlace');
+    s.expect(text.includes('Solo se muestra ahora'), 'avisa de que solo se muestra una vez');
+    await s.tap('ShareTrip.copy');
+    await s.waitText('Enlace copiado');
+    await s.shot('compartir-creado');
+    await s.checkForbiddenText('compartir viaje');
+  });
+
+  await s.step('Compartir viaje · con un enlace activo se puede retirar con confirmación', async () => {
+    await openScreen(s, 'ShareTrip', { bookingId: { $ref: 'live.booking' } }, 'live-shared');
+    await s.waitText('Tienes un enlace activo');
+    await s.tap('ShareTrip.revoke');
+    await s.waitText('¿Retirar el enlace?');
+    await s.tap('ShareTrip.revokeDialog.confirm');
+    await s.waitText('Enlace retirado');
+    await s.until(() => !document.body.innerText.includes('Tienes un enlace activo'), null, 'el enlace ya no consta como activo', 8000);
+  });
+
+  await s.step('Viaje compartido (público) · muestra lo permitido y nada más', async () => {
+    await openScreen(s, 'SharedTripView', { token: { $ref: 'live.shareToken' } }, 'live-shared');
+    await s.waitText('Viaje compartido');
+    await s.waitText('Ruta');
+    const text = await s.appText();
+    s.expect(text.includes('Matrícula no compartida'), 'no enseña la matrícula si no se incluyó');
+    s.expect(!/\+34|6\d{8}/.test(text), 'no enseña ningún teléfono');
+    await s.shot('compartido-publico');
+    await s.checkForbiddenText('viaje compartido');
+  });
+
+  await s.step('Viaje compartido · un enlace que no existe lo dice', async () => {
+    await openScreen(s, 'SharedTripView', { token: 'mvc_s_no-existe' }, 'live-shared');
+    await s.waitText('Este enlace no existe');
+  });
+
+  await s.step('Privacidad en directo · el cambio se guarda en el servidor', async () => {
+    await openScreen(s, 'LivePrivacy', undefined, 'live-in-car');
+    await s.waitText('Mostrar mi nombre y foto');
+    await s.tap('LivePrivacy.profile');
+    await s.waitText('Preferencia guardada');
+    await s.shot('privacidad-directo');
+  });
+
+  await s.step('Valorar viaje · pasajero valora a quien condujo', async () => {
+    await openScreen(s, 'RateTrip', { tripId: { $ref: 'live.finishedTrip' }, bookingId: { $ref: 'live.finishedBooking' } }, 'live-finished');
+    await s.waitText('Enviar valoración');
+    await s.tap('RateTrip.submit');
+    await s.waitText('Elige entre 1 y 5 estrellas.');
+    await s.tap('RateTrip.stars.5');
+    await s.tap('RateTrip.submit');
+    await s.waitText('Gracias por valorar');
+  });
+
+  await s.step('Valorar viaje · conductor elige a quién valorar', async () => {
+    await openScreen(s, 'RateTrip', { tripId: { $ref: 'live.finishedTrip' } }, 'live-finished', 'driver');
+    await s.waitText('¿A quién quieres valorar?');
+    await s.app.locator('[data-testid^="RateTrip.passenger."]').first().click({ timeout: 10000 });
+    await s.waitText('Enviar valoración');
+    await s.tap('RateTrip.stars.4');
+    await s.tap('RateTrip.submit');
+    await s.waitText('Gracias por valorar');
   });
 }

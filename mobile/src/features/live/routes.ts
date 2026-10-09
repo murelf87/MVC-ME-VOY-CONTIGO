@@ -17,6 +17,10 @@ import { IncidentReportsScreen } from "./screens/IncidentReportsScreen";
 import { InCarScreen } from "./screens/InCarScreen";
 import { LiveRouteMapScreen } from "./screens/LiveRouteMapScreen";
 import { TripFinishedScreen } from "./screens/TripFinishedScreen";
+import { LivePrivacyScreen } from "./screens/LivePrivacyScreen";
+import { ShareTripScreen } from "./screens/ShareTripScreen";
+import { SharedTripViewScreen } from "./screens/SharedTripViewScreen";
+import { RateTripScreen } from "./screens/RateTripScreen";
 import { ReportIncidentScreen } from "./screens/ReportIncidentScreen";
 import { RouteChangeScreen } from "./screens/RouteChangeScreen";
 import { WaitingForCarScreen } from "./screens/WaitingForCarScreen";
@@ -44,12 +48,12 @@ export const liveRoutes: RouteDef[] = [
   defineRoute({ name: "InCar", component: InCarScreen, access: "auth", screen: "23", title: "En el coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
   defineRoute({ name: "TripFinished", component: TripFinishedScreen, access: "auth", screen: "24", title: "Viaje terminado" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
-  defineRoute({ name: "RateTrip", component: PendingScreen, access: "auth", title: "Valora el viaje" }),
+  defineRoute({ name: "RateTrip", component: RateTripScreen, access: "auth", title: "Valora el viaje" }),
   defineRoute({ name: "ReportIncident", component: ReportIncidentScreen, access: "auth", title: "Reportar incidencia" }),
   defineRoute({ name: "IncidentReports", component: IncidentReportsScreen, access: "auth", title: "Mis incidencias" }),
   defineRoute({ name: "IncidentDetail", component: IncidentDetailScreen, access: "auth", title: "Detalle de la incidencia" }),
-  defineRoute({ name: "ShareTrip", component: PendingScreen, access: "auth", title: "Compartir viaje" }),
-  defineRoute({ name: "SharedTripView", component: PendingScreen, access: "public", title: "Viaje compartido" }),
-  defineRoute({ name: "LivePrivacy", component: PendingScreen, access: "auth", title: "Privacidad del viaje en vivo" }),
+  defineRoute({ name: "ShareTrip", component: ShareTripScreen, access: "auth", title: "Compartir viaje" }),
+  defineRoute({ name: "SharedTripView", component: SharedTripViewScreen, access: "public", title: "Viaje compartido" }),
+  defineRoute({ name: "LivePrivacy", component: LivePrivacyScreen, access: "auth", title: "Privacidad del viaje en vivo" }),
   defineRoute({ name: "LiveRouteMap", component: LiveRouteMapScreen, access: "auth", title: "Ruta del coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
 ];
