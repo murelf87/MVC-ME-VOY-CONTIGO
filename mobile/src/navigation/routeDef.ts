@@ -41,6 +41,10 @@ export interface RouteDef {
   title?: string;
   /** Parámetros de ejemplo para abrir la ruta directamente en la vista previa (solo desarrollo). */
   previewParams?: Record<string, unknown> | null;
+  /** Variante de datos de la vista previa en la que existen los datos de `previewParams` (por defecto, la base). */
+  previewSeed?: string;
+  /** Reloj fijo de la vista previa para esos datos (ISO con zona). */
+  previewClock?: string;
   options?: RouteOptions;
 }
 
@@ -52,6 +56,10 @@ export function defineRoute<Name extends AppRouteName>(def: {
   screen?: string;
   title?: string;
   previewParams?: Record<string, unknown> | null;
+  /** Variante de datos de la vista previa en la que existen los datos de `previewParams` (por defecto, la base). */
+  previewSeed?: string;
+  /** Reloj fijo de la vista previa para esos datos (ISO con zona). */
+  previewClock?: string;
   options?: RouteOptions;
 }): RouteDef {
   // Borde tipado: la comprobación fina ya se hizo arriba; el registro almacena componentes de props heterogéneas.
@@ -96,6 +104,8 @@ export interface RouteCatalogEntry {
   screen?: string;
   title?: string;
   params?: Record<string, unknown> | null;
+  seed?: string;
+  clock?: string;
 }
 
 /** Catálogo de rutas para `window.__mvc.routes()` de la vista previa. */
@@ -107,5 +117,7 @@ export function toRouteCatalog(routes: readonly RegisteredRoute[]): RouteCatalog
     ...(route.screen !== undefined ? { screen: route.screen } : {}),
     ...(route.title !== undefined ? { title: route.title } : {}),
     ...(route.previewParams !== undefined ? { params: route.previewParams } : {}),
+    ...(route.previewSeed !== undefined ? { seed: route.previewSeed } : {}),
+    ...(route.previewClock !== undefined ? { clock: route.previewClock } : {}),
   }));
 }

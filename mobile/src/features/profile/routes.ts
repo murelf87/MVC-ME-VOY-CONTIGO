@@ -47,7 +47,7 @@ export const profileRoutes: RouteDef[] = [
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "EditProfile", component: PendingScreen, access: "auth", title: "Editar perfil" }),
   defineRoute({ name: "VerificationStatus", component: PendingScreen, access: "auth", title: "Verificación y seguridad" }),
-  defineRoute({ name: "WeeklyReservation", component: WeeklyReservationScreen, access: "auth", title: "Reserva semanal", previewParams: { reservationId: { $ref: "weekly.miguel" } } }),
+  defineRoute({ name: "WeeklyReservation", component: WeeklyReservationScreen, access: "auth", title: "Reserva semanal", previewParams: { reservationId: { $ref: "weekly.miguel" } }, previewSeed: "req-weekly-awaiting-payment", previewClock: "2026-10-05T07:58:00+02:00" }),
   defineRoute({ name: "BookingDetail", component: BookingDetailScreen, access: "auth", title: "Detalle de la reserva", previewParams: { bookingId: { $ref: "booking.mine" } } }),
   defineRoute({ name: "FavoriteForm", component: FavoriteFormScreen, access: "auth", title: "Destino favorito" }),
   defineRoute({ name: "RoutineEntryForm", component: RoutineEntryFormScreen, access: "auth", title: "Fila de rutina" }),

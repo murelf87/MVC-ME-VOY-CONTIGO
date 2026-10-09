@@ -40,7 +40,7 @@ export default async function routes(s) {
       const violationsBefore = s.violations.length;
       const t0 = Date.now();
       try {
-        await s.inApp(([name, params, opts]) => window.__mvc.open(name, params || {}, opts), [r.name, r.params || {}, { profile }]);
+        await s.inApp(([name, params, opts]) => window.__mvc.open(name, params || {}, opts), [r.name, r.params || {}, { profile, ...(r.seed ? { seed: r.seed } : {}), ...(r.clock ? { clock: r.clock } : {}) }]);
         if (!(await s.hasBridge())) await s.refreshApp(true);
         await s.inApp(() => (window.__mvc.idle ? window.__mvc.idle(3000) : undefined));
         await s.settle();
