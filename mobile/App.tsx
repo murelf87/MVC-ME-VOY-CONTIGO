@@ -10,20 +10,20 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { TripSearchParams } from "./src/api/types";
-import { BottomNav, Brand } from "./src/components/UI";
+import { BottomNav, Brand } from "./src/legacy/components/UI";
 import { AuthProvider, useAuth } from "./src/session/AuthContext";
-import { AccessScreen } from "./src/screens/AccessScreen";
-import { HomeScreen } from "./src/screens/HomeScreen";
-import { RouteScreen } from "./src/screens/RouteScreen";
-import { LiveScreen } from "./src/screens/LiveScreen";
-import { ProfileScreen } from "./src/screens/ProfileScreen";
-import { DriverOnboardingScreen } from "./src/screens/DriverOnboardingScreen";
+import { AccessScreen } from "./src/legacy/screens/AccessScreen";
+import { HomeScreen } from "./src/legacy/screens/HomeScreen";
+import { RouteScreen } from "./src/legacy/screens/RouteScreen";
+import { LiveScreen } from "./src/legacy/screens/LiveScreen";
+import { ProfileScreen } from "./src/legacy/screens/ProfileScreen";
+import { DriverOnboardingScreen } from "./src/legacy/screens/DriverOnboardingScreen";
 import {
   MessagesScreen,
   TripsScreen,
-} from "./src/screens/OtherScreens";
-import { PublishScreen } from "./src/screens/PublishScreen";
-import { C } from "./src/theme";
+} from "./src/legacy/screens/OtherScreens";
+import { PublishScreen } from "./src/legacy/screens/PublishScreen";
+import { C } from "./src/legacy/theme";
 
 type Screen =
   | "home"

@@ -8,10 +8,10 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, ApiError } from "../api/client";
-import type { TripSearchParams, TripSearchResult } from "../api/types";
+import { apiRequest, ApiError } from "../../api/client";
+import type { TripSearchParams, TripSearchResult } from "../../api/types";
 import { Card, PrimaryButton } from "../components/UI";
-import { useAuth } from "../session/AuthContext";
+import { useAuth } from "../../session/AuthContext";
 import { C } from "../theme";
 
 type Mode = "available" | "mine" | "driver";

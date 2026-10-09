@@ -2,6 +2,7 @@ import test,{after,before,beforeEach} from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import pg from "pg";
+import "../src/db/types.js";
 import type { AuthPrincipal } from "../src/auth/session.js";
 import type { InsuranceOcrProvider } from "../src/documents/insurance-ocr-provider.js";
 import { completePrivateUploadIntent,createPrivateUploadIntent } from "../src/documents/private-upload-service.js";

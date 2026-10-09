@@ -1,9 +1,9 @@
 import * as ImagePicker from "expo-image-picker";
-import { apiRequest, ApiError } from "../api/client";
+import { apiRequest, ApiError } from "../../api/client";
 import type {
   CompletePrivateUpload,
   PrivateUploadIntent,
-} from "../api/types";
+} from "../../api/types";
 
 export type VehicleUploadKind = "vehicle_photo" | "vehicle_insurance";
 

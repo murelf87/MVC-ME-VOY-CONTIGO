@@ -10,10 +10,10 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, ApiError } from "../api/client";
-import type { GeocodeResult, Province, Vehicle } from "../api/types";
+import { apiRequest, ApiError } from "../../api/client";
+import type { GeocodeResult, Province, Vehicle } from "../../api/types";
 import { Card, FieldRow, PrimaryButton } from "../components/UI";
-import { useAuth } from "../session/AuthContext";
+import { useAuth } from "../../session/AuthContext";
 import { C } from "../theme";
 
 type PickerMode = "province" | "origin" | "destination" | "vehicle" | null;

@@ -6,3 +6,10 @@ dist/
 coverage/
 *.log
 .DS_Store
+
+# Material de diseño de entrada/derivado (se regenera con tools/design/slice_boards.py)
+design/boards/
+design/screens/
+design/screens-raw/
+design/logo-src/
+design/out/

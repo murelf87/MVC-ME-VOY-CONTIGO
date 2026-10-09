@@ -10,14 +10,14 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { apiRequest, ApiError } from "../api/client";
+import { apiRequest, ApiError } from "../../api/client";
 import type {
   CompletePrivateUpload,
   PrivateDocument,
   Vehicle,
-} from "../api/types";
+} from "../../api/types";
 import { Brand, Card, PrimaryButton } from "../components/UI";
-import { useAuth } from "../session/AuthContext";
+import { useAuth } from "../../session/AuthContext";
 import { C } from "../theme";
 import {
   pickVehicleImage,

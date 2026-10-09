@@ -1,0 +1,1493 @@
+{
+ "scale": 2,
+ "viewport": [
+  393,
+  852
+ ],
+ "boards": [
+  {
+   "id": "e3c876ab",
+   "board": "01",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "0fa52456",
+   "board": "02",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    5,
+    6,
+    7,
+    8
+   ]
+  },
+  {
+   "id": "647e77cf",
+   "board": "03",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "id": "94f0c2a7",
+   "board": "04a",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    13,
+    14,
+    15,
+    16
+   ]
+  },
+  {
+   "id": "9946a6cc",
+   "board": "04b",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    13,
+    14,
+    15,
+    16
+   ]
+  },
+  {
+   "id": "ef66f2a7",
+   "board": "05",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    17,
+    18,
+    19,
+    20
+   ]
+  },
+  {
+   "id": "4935dd58",
+   "board": "06",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    21,
+    22,
+    23,
+    24
+   ]
+  },
+  {
+   "id": "4b3da40f",
+   "board": "07",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    25,
+    26,
+    27,
+    28
+   ]
+  },
+  {
+   "id": "161c43cd",
+   "board": "08",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    29,
+    30,
+    31,
+    32
+   ]
+  },
+  {
+   "id": "635cb7c8",
+   "board": "09a",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    33,
+    34,
+    35,
+    36
+   ]
+  },
+  {
+   "id": "b1e81622",
+   "board": "09b",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    33,
+    34,
+    35,
+    36
+   ]
+  },
+  {
+   "id": "2241038a",
+   "board": "10a",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    37,
+    38,
+    39,
+    40
+   ]
+  },
+  {
+   "id": "088f251c",
+   "board": "10b",
+   "size": [
+    1536,
+    1024
+   ],
+   "screens": [
+    37,
+    38,
+    39,
+    40
+   ]
+  }
+ ],
+ "screens": [
+  {
+   "screen": "01",
+   "number": 1,
+   "variant": "",
+   "board": "01",
+   "bezelBox": [
+    27,
+    168,
+    363,
+    729
+   ],
+   "screenBox": [
+    28,
+    170,
+    387,
+    888
+   ],
+   "rawSize": [
+    359,
+    718
+   ],
+   "aspect": 0.5,
+   "designHeightPt": 786.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "02",
+   "number": 2,
+   "variant": "",
+   "board": "01",
+   "bezelBox": [
+    401,
+    168,
+    362,
+    729
+   ],
+   "screenBox": [
+    402,
+    171,
+    761,
+    889
+   ],
+   "rawSize": [
+    359,
+    718
+   ],
+   "aspect": 0.5,
+   "designHeightPt": 786.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "03",
+   "number": 3,
+   "variant": "",
+   "board": "01",
+   "bezelBox": [
+    775,
+    168,
+    361,
+    729
+   ],
+   "screenBox": [
+    776,
+    170,
+    1135,
+    888
+   ],
+   "rawSize": [
+    359,
+    718
+   ],
+   "aspect": 0.5,
+   "designHeightPt": 786.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "04",
+   "number": 4,
+   "variant": "",
+   "board": "01",
+   "bezelBox": [
+    1149,
+    168,
+    360,
+    729
+   ],
+   "screenBox": [
+    1150,
+    170,
+    1509,
+    888
+   ],
+   "rawSize": [
+    359,
+    718
+   ],
+   "aspect": 0.5,
+   "designHeightPt": 786.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "05",
+   "number": 5,
+   "variant": "",
+   "board": "02",
+   "bezelBox": [
+    25,
+    179,
+    359,
+    756
+   ],
+   "screenBox": [
+    26,
+    194,
+    383,
+    945
+   ],
+   "rawSize": [
+    357,
+    751
+   ],
+   "aspect": 0.4754,
+   "designHeightPt": 826.7,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "06",
+   "number": 6,
+   "variant": "",
+   "board": "02",
+   "bezelBox": [
+    400,
+    179,
+    359,
+    756
+   ],
+   "screenBox": [
+    401,
+    182,
+    758,
+    933
+   ],
+   "rawSize": [
+    357,
+    751
+   ],
+   "aspect": 0.4754,
+   "designHeightPt": 826.7,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "07",
+   "number": 7,
+   "variant": "",
+   "board": "02",
+   "bezelBox": [
+    775,
+    179,
+    362,
+    756
+   ],
+   "screenBox": [
+    776,
+    181,
+    1133,
+    932
+   ],
+   "rawSize": [
+    357,
+    751
+   ],
+   "aspect": 0.4754,
+   "designHeightPt": 826.7,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "08",
+   "number": 8,
+   "variant": "",
+   "board": "02",
+   "bezelBox": [
+    1153,
+    179,
+    357,
+    756
+   ],
+   "screenBox": [
+    1154,
+    181,
+    1511,
+    932
+   ],
+   "rawSize": [
+    357,
+    751
+   ],
+   "aspect": 0.4754,
+   "designHeightPt": 826.7,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "09",
+   "number": 9,
+   "variant": "",
+   "board": "03",
+   "bezelBox": [
+    20,
+    226,
+    365,
+    741
+   ],
+   "screenBox": [
+    21,
+    228,
+    384,
+    953
+   ],
+   "rawSize": [
+    363,
+    725
+   ],
+   "aspect": 0.5007,
+   "designHeightPt": 784.9,
+   "ptPerRawPx": 1.0826
+  },
+  {
+   "screen": "10",
+   "number": 10,
+   "variant": "",
+   "board": "03",
+   "bezelBox": [
+    396,
+    226,
+    364,
+    741
+   ],
+   "screenBox": [
+    397,
+    228,
+    760,
+    953
+   ],
+   "rawSize": [
+    363,
+    725
+   ],
+   "aspect": 0.5007,
+   "designHeightPt": 784.9,
+   "ptPerRawPx": 1.0826
+  },
+  {
+   "screen": "11",
+   "number": 11,
+   "variant": "",
+   "board": "03",
+   "bezelBox": [
+    771,
+    226,
+    368,
+    741
+   ],
+   "screenBox": [
+    772,
+    228,
+    1135,
+    953
+   ],
+   "rawSize": [
+    363,
+    725
+   ],
+   "aspect": 0.5007,
+   "designHeightPt": 784.9,
+   "ptPerRawPx": 1.0826
+  },
+  {
+   "screen": "12",
+   "number": 12,
+   "variant": "",
+   "board": "03",
+   "bezelBox": [
+    1150,
+    225,
+    365,
+    742
+   ],
+   "screenBox": [
+    1151,
+    228,
+    1514,
+    953
+   ],
+   "rawSize": [
+    363,
+    725
+   ],
+   "aspect": 0.5007,
+   "designHeightPt": 784.9,
+   "ptPerRawPx": 1.0826
+  },
+  {
+   "screen": "13a",
+   "number": 13,
+   "variant": "a",
+   "board": "04a",
+   "bezelBox": [
+    24,
+    200,
+    362,
+    785
+   ],
+   "screenBox": [
+    25,
+    201,
+    384,
+    982
+   ],
+   "rawSize": [
+    359,
+    781
+   ],
+   "aspect": 0.4597,
+   "designHeightPt": 855.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "14a",
+   "number": 14,
+   "variant": "a",
+   "board": "04a",
+   "bezelBox": [
+    400,
+    209,
+    361,
+    776
+   ],
+   "screenBox": [
+    401,
+    224,
+    760,
+    1005
+   ],
+   "rawSize": [
+    359,
+    781
+   ],
+   "aspect": 0.4597,
+   "designHeightPt": 855.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "15a",
+   "number": 15,
+   "variant": "a",
+   "board": "04a",
+   "bezelBox": [
+    775,
+    200,
+    364,
+    785
+   ],
+   "screenBox": [
+    776,
+    201,
+    1135,
+    982
+   ],
+   "rawSize": [
+    359,
+    781
+   ],
+   "aspect": 0.4597,
+   "designHeightPt": 855.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "16a",
+   "number": 16,
+   "variant": "a",
+   "board": "04a",
+   "bezelBox": [
+    1152,
+    201,
+    359,
+    784
+   ],
+   "screenBox": [
+    1153,
+    202,
+    1512,
+    983
+   ],
+   "rawSize": [
+    359,
+    781
+   ],
+   "aspect": 0.4597,
+   "designHeightPt": 855.0,
+   "ptPerRawPx": 1.0947
+  },
+  {
+   "screen": "13b",
+   "number": 13,
+   "variant": "b",
+   "board": "04b",
+   "bezelBox": [
+    24,
+    209,
+    362,
+    776
+   ],
+   "screenBox": [
+    25,
+    223,
+    385,
+    982
+   ],
+   "rawSize": [
+    360,
+    759
+   ],
+   "aspect": 0.4743,
+   "designHeightPt": 828.6,
+   "ptPerRawPx": 1.0917
+  },
+  {
+   "screen": "14b",
+   "number": 14,
+   "variant": "b",
+   "board": "04b",
+   "bezelBox": [
+    400,
+    209,
+    362,
+    776
+   ],
+   "screenBox": [
+    401,
+    223,
+    761,
+    982
+   ],
+   "rawSize": [
+    360,
+    759
+   ],
+   "aspect": 0.4743,
+   "designHeightPt": 828.6,
+   "ptPerRawPx": 1.0917
+  },
+  {
+   "screen": "15b",
+   "number": 15,
+   "variant": "b",
+   "board": "04b",
+   "bezelBox": [
+    775,
+    209,
+    364,
+    776
+   ],
+   "screenBox": [
+    776,
+    224,
+    1136,
+    983
+   ],
+   "rawSize": [
+    360,
+    759
+   ],
+   "aspect": 0.4743,
+   "designHeightPt": 828.6,
+   "ptPerRawPx": 1.0917
+  },
+  {
+   "screen": "16b",
+   "number": 16,
+   "variant": "b",
+   "board": "04b",
+   "bezelBox": [
+    1152,
+    209,
+    359,
+    776
+   ],
+   "screenBox": [
+    1153,
+    224,
+    1513,
+    983
+   ],
+   "rawSize": [
+    360,
+    759
+   ],
+   "aspect": 0.4743,
+   "designHeightPt": 828.6,
+   "ptPerRawPx": 1.0917
+  },
+  {
+   "screen": "17",
+   "number": 17,
+   "variant": "",
+   "board": "05",
+   "bezelBox": [
+    24,
+    179,
+    360,
+    761
+   ],
+   "screenBox": [
+    25,
+    182,
+    382,
+    938
+   ],
+   "rawSize": [
+    357,
+    756
+   ],
+   "aspect": 0.4722,
+   "designHeightPt": 832.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "18",
+   "number": 18,
+   "variant": "",
+   "board": "05",
+   "bezelBox": [
+    399,
+    180,
+    359,
+    760
+   ],
+   "screenBox": [
+    400,
+    182,
+    757,
+    938
+   ],
+   "rawSize": [
+    357,
+    756
+   ],
+   "aspect": 0.4722,
+   "designHeightPt": 832.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "19",
+   "number": 19,
+   "variant": "",
+   "board": "05",
+   "bezelBox": [
+    774,
+    180,
+    362,
+    760
+   ],
+   "screenBox": [
+    775,
+    182,
+    1132,
+    938
+   ],
+   "rawSize": [
+    357,
+    756
+   ],
+   "aspect": 0.4722,
+   "designHeightPt": 832.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "20",
+   "number": 20,
+   "variant": "",
+   "board": "05",
+   "bezelBox": [
+    1151,
+    180,
+    358,
+    760
+   ],
+   "screenBox": [
+    1152,
+    182,
+    1509,
+    938
+   ],
+   "rawSize": [
+    357,
+    756
+   ],
+   "aspect": 0.4722,
+   "designHeightPt": 832.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "21",
+   "number": 21,
+   "variant": "",
+   "board": "06",
+   "bezelBox": [
+    24,
+    150,
+    362,
+    775
+   ],
+   "screenBox": [
+    25,
+    152,
+    386,
+    923
+   ],
+   "rawSize": [
+    361,
+    771
+   ],
+   "aspect": 0.4682,
+   "designHeightPt": 839.3,
+   "ptPerRawPx": 1.0886
+  },
+  {
+   "screen": "22",
+   "number": 22,
+   "variant": "",
+   "board": "06",
+   "bezelBox": [
+    396,
+    149,
+    364,
+    776
+   ],
+   "screenBox": [
+    397,
+    150,
+    758,
+    921
+   ],
+   "rawSize": [
+    361,
+    771
+   ],
+   "aspect": 0.4682,
+   "designHeightPt": 839.3,
+   "ptPerRawPx": 1.0886
+  },
+  {
+   "screen": "23",
+   "number": 23,
+   "variant": "",
+   "board": "06",
+   "bezelBox": [
+    775,
+    149,
+    365,
+    776
+   ],
+   "screenBox": [
+    776,
+    151,
+    1137,
+    922
+   ],
+   "rawSize": [
+    361,
+    771
+   ],
+   "aspect": 0.4682,
+   "designHeightPt": 839.3,
+   "ptPerRawPx": 1.0886
+  },
+  {
+   "screen": "24",
+   "number": 24,
+   "variant": "",
+   "board": "06",
+   "bezelBox": [
+    1151,
+    149,
+    362,
+    776
+   ],
+   "screenBox": [
+    1152,
+    152,
+    1513,
+    923
+   ],
+   "rawSize": [
+    361,
+    771
+   ],
+   "aspect": 0.4682,
+   "designHeightPt": 839.3,
+   "ptPerRawPx": 1.0886
+  },
+  {
+   "screen": "25",
+   "number": 25,
+   "variant": "",
+   "board": "07",
+   "bezelBox": [
+    25,
+    149,
+    360,
+    778
+   ],
+   "screenBox": [
+    26,
+    164,
+    384,
+    926
+   ],
+   "rawSize": [
+    358,
+    762
+   ],
+   "aspect": 0.4698,
+   "designHeightPt": 836.5,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "26",
+   "number": 26,
+   "variant": "",
+   "board": "07",
+   "bezelBox": [
+    400,
+    149,
+    361,
+    778
+   ],
+   "screenBox": [
+    401,
+    164,
+    759,
+    926
+   ],
+   "rawSize": [
+    358,
+    762
+   ],
+   "aspect": 0.4698,
+   "designHeightPt": 836.5,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "27",
+   "number": 27,
+   "variant": "",
+   "board": "07",
+   "bezelBox": [
+    775,
+    149,
+    363,
+    778
+   ],
+   "screenBox": [
+    776,
+    164,
+    1134,
+    926
+   ],
+   "rawSize": [
+    358,
+    762
+   ],
+   "aspect": 0.4698,
+   "designHeightPt": 836.5,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "28",
+   "number": 28,
+   "variant": "",
+   "board": "07",
+   "bezelBox": [
+    1152,
+    149,
+    358,
+    778
+   ],
+   "screenBox": [
+    1153,
+    164,
+    1511,
+    926
+   ],
+   "rawSize": [
+    358,
+    762
+   ],
+   "aspect": 0.4698,
+   "designHeightPt": 836.5,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "29",
+   "number": 29,
+   "variant": "",
+   "board": "08",
+   "bezelBox": [
+    25,
+    163,
+    360,
+    744
+   ],
+   "screenBox": [
+    26,
+    165,
+    383,
+    904
+   ],
+   "rawSize": [
+    357,
+    739
+   ],
+   "aspect": 0.4831,
+   "designHeightPt": 813.5,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "30",
+   "number": 30,
+   "variant": "",
+   "board": "08",
+   "bezelBox": [
+    400,
+    163,
+    359,
+    744
+   ],
+   "screenBox": [
+    401,
+    166,
+    758,
+    905
+   ],
+   "rawSize": [
+    357,
+    739
+   ],
+   "aspect": 0.4831,
+   "designHeightPt": 813.5,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "31",
+   "number": 31,
+   "variant": "",
+   "board": "08",
+   "bezelBox": [
+    775,
+    163,
+    363,
+    744
+   ],
+   "screenBox": [
+    776,
+    166,
+    1133,
+    905
+   ],
+   "rawSize": [
+    357,
+    739
+   ],
+   "aspect": 0.4831,
+   "designHeightPt": 813.5,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "32",
+   "number": 32,
+   "variant": "",
+   "board": "08",
+   "bezelBox": [
+    1153,
+    163,
+    357,
+    744
+   ],
+   "screenBox": [
+    1154,
+    166,
+    1511,
+    905
+   ],
+   "rawSize": [
+    357,
+    739
+   ],
+   "aspect": 0.4831,
+   "designHeightPt": 813.5,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "33a",
+   "number": 33,
+   "variant": "a",
+   "board": "09a",
+   "bezelBox": [
+    25,
+    178,
+    360,
+    759
+   ],
+   "screenBox": [
+    26,
+    193,
+    384,
+    921
+   ],
+   "rawSize": [
+    358,
+    728
+   ],
+   "aspect": 0.4918,
+   "designHeightPt": 799.2,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "34a",
+   "number": 34,
+   "variant": "a",
+   "board": "09a",
+   "bezelBox": [
+    400,
+    178,
+    360,
+    759
+   ],
+   "screenBox": [
+    401,
+    193,
+    759,
+    921
+   ],
+   "rawSize": [
+    358,
+    728
+   ],
+   "aspect": 0.4918,
+   "designHeightPt": 799.2,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "35a",
+   "number": 35,
+   "variant": "a",
+   "board": "09a",
+   "bezelBox": [
+    775,
+    179,
+    362,
+    758
+   ],
+   "screenBox": [
+    776,
+    193,
+    1134,
+    921
+   ],
+   "rawSize": [
+    358,
+    728
+   ],
+   "aspect": 0.4918,
+   "designHeightPt": 799.2,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "36a",
+   "number": 36,
+   "variant": "a",
+   "board": "09a",
+   "bezelBox": [
+    1152,
+    178,
+    358,
+    759
+   ],
+   "screenBox": [
+    1153,
+    193,
+    1511,
+    921
+   ],
+   "rawSize": [
+    358,
+    728
+   ],
+   "aspect": 0.4918,
+   "designHeightPt": 799.2,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "33b",
+   "number": 33,
+   "variant": "b",
+   "board": "09b",
+   "bezelBox": [
+    25,
+    179,
+    360,
+    758
+   ],
+   "screenBox": [
+    26,
+    180,
+    384,
+    920
+   ],
+   "rawSize": [
+    358,
+    740
+   ],
+   "aspect": 0.4838,
+   "designHeightPt": 812.3,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "34b",
+   "number": 34,
+   "variant": "b",
+   "board": "09b",
+   "bezelBox": [
+    400,
+    178,
+    360,
+    759
+   ],
+   "screenBox": [
+    401,
+    180,
+    759,
+    920
+   ],
+   "rawSize": [
+    358,
+    740
+   ],
+   "aspect": 0.4838,
+   "designHeightPt": 812.3,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "35b",
+   "number": 35,
+   "variant": "b",
+   "board": "09b",
+   "bezelBox": [
+    775,
+    178,
+    362,
+    759
+   ],
+   "screenBox": [
+    776,
+    193,
+    1134,
+    933
+   ],
+   "rawSize": [
+    358,
+    740
+   ],
+   "aspect": 0.4838,
+   "designHeightPt": 812.3,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "36b",
+   "number": 36,
+   "variant": "b",
+   "board": "09b",
+   "bezelBox": [
+    1152,
+    178,
+    358,
+    759
+   ],
+   "screenBox": [
+    1153,
+    181,
+    1511,
+    921
+   ],
+   "rawSize": [
+    358,
+    740
+   ],
+   "aspect": 0.4838,
+   "designHeightPt": 812.3,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "37a",
+   "number": 37,
+   "variant": "a",
+   "board": "10a",
+   "bezelBox": [
+    25,
+    137,
+    360,
+    775
+   ],
+   "screenBox": [
+    26,
+    152,
+    383,
+    898
+   ],
+   "rawSize": [
+    357,
+    746
+   ],
+   "aspect": 0.4786,
+   "designHeightPt": 821.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "38a",
+   "number": 38,
+   "variant": "a",
+   "board": "10a",
+   "bezelBox": [
+    401,
+    137,
+    359,
+    775
+   ],
+   "screenBox": [
+    402,
+    152,
+    759,
+    898
+   ],
+   "rawSize": [
+    357,
+    746
+   ],
+   "aspect": 0.4786,
+   "designHeightPt": 821.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "39a",
+   "number": 39,
+   "variant": "a",
+   "board": "10a",
+   "bezelBox": [
+    776,
+    137,
+    361,
+    775
+   ],
+   "screenBox": [
+    777,
+    152,
+    1134,
+    898
+   ],
+   "rawSize": [
+    357,
+    746
+   ],
+   "aspect": 0.4786,
+   "designHeightPt": 821.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "40a",
+   "number": 40,
+   "variant": "a",
+   "board": "10a",
+   "bezelBox": [
+    1153,
+    137,
+    358,
+    775
+   ],
+   "screenBox": [
+    1154,
+    152,
+    1511,
+    898
+   ],
+   "rawSize": [
+    357,
+    746
+   ],
+   "aspect": 0.4786,
+   "designHeightPt": 821.2,
+   "ptPerRawPx": 1.1008
+  },
+  {
+   "screen": "37b",
+   "number": 37,
+   "variant": "b",
+   "board": "10b",
+   "bezelBox": [
+    25,
+    137,
+    360,
+    775
+   ],
+   "screenBox": [
+    26,
+    152,
+    384,
+    904
+   ],
+   "rawSize": [
+    358,
+    752
+   ],
+   "aspect": 0.4761,
+   "designHeightPt": 825.5,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "38b",
+   "number": 38,
+   "variant": "b",
+   "board": "10b",
+   "bezelBox": [
+    400,
+    137,
+    360,
+    775
+   ],
+   "screenBox": [
+    401,
+    140,
+    759,
+    892
+   ],
+   "rawSize": [
+    358,
+    752
+   ],
+   "aspect": 0.4761,
+   "designHeightPt": 825.5,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "39b",
+   "number": 39,
+   "variant": "b",
+   "board": "10b",
+   "bezelBox": [
+    776,
+    137,
+    361,
+    775
+   ],
+   "screenBox": [
+    777,
+    152,
+    1135,
+    904
+   ],
+   "rawSize": [
+    358,
+    752
+   ],
+   "aspect": 0.4761,
+   "designHeightPt": 825.5,
+   "ptPerRawPx": 1.0978
+  },
+  {
+   "screen": "40b",
+   "number": 40,
+   "variant": "b",
+   "board": "10b",
+   "bezelBox": [
+    1153,
+    137,
+    358,
+    775
+   ],
+   "screenBox": [
+    1154,
+    140,
+    1512,
+    892
+   ],
+   "rawSize": [
+    358,
+    752
+   ],
+   "aspect": 0.4761,
+   "designHeightPt": 825.5,
+   "ptPerRawPx": 1.0978
+  }
+ ]
+}

@@ -11,11 +11,11 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ApiError } from "../api/client";
-import type { Role } from "../api/types";
+import { ApiError } from "../../api/client";
+import type { Role } from "../../api/types";
 import { Card, PrimaryButton } from "../components/UI";
 import { OfficialLogo } from "../components/OfficialLogo";
-import { useAuth } from "../session/AuthContext";
+import { useAuth } from "../../session/AuthContext";
 import { C, shadow } from "../theme";
 
 export function AccessScreen() {

@@ -22,6 +22,7 @@ import { registerGeocodingRoutes } from "./routes/geocoding-routes.js";
 import { buildPrivateObjectStorage } from "./storage/provider.js";
 import { buildInsuranceOcrProvider } from "./documents/insurance-ocr-provider.js";
 import { registerPrivateUploadRoutes } from "./routes/private-upload-routes.js";
+import { registerModules } from "./modules/register.js";
 
 export async function buildApp() {
   const config = loadConfig();
@@ -134,6 +135,7 @@ export async function buildApp() {
     insuranceOcr,
     config.privateUploadTtlSeconds
   );
+  await registerModules(app, { pool, config, privateStorage, routeProvider, geocodingProvider });
 
   return app;
 }

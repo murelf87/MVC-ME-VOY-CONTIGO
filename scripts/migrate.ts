@@ -11,7 +11,15 @@ async function main(): Promise<void> {
   `);
 
   const dir = path.resolve("migrations");
-  const files = (await fs.readdir(dir)).filter(f => f.endsWith(".sql")).sort();
+  // MIGRATIONS_EXCLUDE="040-099,120" omite migraciones por prefijo numérico (desarrollo en paralelo por módulo).
+  const excluded = (process.env.MIGRATIONS_EXCLUDE ?? "")
+    .split(",").map(s => s.trim()).filter(Boolean)
+    .map(r => { const [a, b] = r.split("-").map(Number); return [a ?? 0, b ?? a ?? 0] as const; });
+  const isExcluded = (filename: string) => {
+    const n = Number(/^(\d+)_/.exec(filename)?.[1] ?? NaN);
+    return excluded.some(([a, b]) => n >= a && n <= b);
+  };
+  const files = (await fs.readdir(dir)).filter(f => f.endsWith(".sql") && !isExcluded(f)).sort();
 
   for (const filename of files) {
     const exists = await pool.query("select 1 from schema_migrations where filename=$1", [filename]);

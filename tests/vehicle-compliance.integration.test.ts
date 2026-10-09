@@ -1,6 +1,7 @@
 import test,{after,before,beforeEach} from "node:test";
 import assert from "node:assert/strict";
 import pg from "pg";
+import "../src/db/types.js";
 import { DomainError } from "../src/errors.js";
 import { assertVehicleCanDrive } from "../src/vehicles/compliance-service.js";
 
