@@ -1,0 +1,10 @@
+{
+  "screen": "22",
+  "variant": "",
+  "profile": "passenger",
+  "route": "RouteChange",
+  "params": { "proposalId": { "$ref": "live.routeChange" } },
+  "seed": "live-route-change",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 22. Ana propone una parada nueva; Miguel ve el cambio de hora y precio y aún no ha respondido."
+}

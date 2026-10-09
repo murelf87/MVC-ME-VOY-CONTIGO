@@ -4,7 +4,7 @@
  * equivalente más cercano o a un identificador que no existe, de modo que la pantalla se abre en su estado «no encontrado»
  * en lugar de fallar. SIMULACIÓN (solo vista previa).
  */
-import { SEED_TRIP_IDS, SEED_USER_IDS, registerSeedRef, resolveSeedRef } from "@/preview";
+import { SEED_TRIP_IDS, SEED_USER_IDS, registerSeedRef, resolveSeedRef, routeChangeTables } from "@/preview";
 import type { PreviewDb } from "@/preview";
 import { liveIncidents, liveShares } from "./rows";
 import { ABSENT_ID, ABSENT_SHARE_TOKEN, SCENE_BOOKING_ID, SCENE_TRIP_ID, sceneShareToken } from "./scenes";
@@ -38,6 +38,10 @@ export function registerLiveSeedRefs(): void {
   registerSeedRef("live.finishedTrip", (db) => {
     if (db.trips.get(SCENE_TRIP_ID)) return SCENE_TRIP_ID;
     return tripOfBooking(db, latestCompletedBookingOfMiguel(db) ?? ABSENT_ID) ?? ABSENT_ID;
+  });
+  registerSeedRef("live.routeChange", (db) => {
+    const proposal = routeChangeTables(db).proposals.filter((row) => row.trip_id === SCENE_TRIP_ID).sort((a, b) => b.created_at - a.created_at)[0];
+    return proposal?.id ?? ABSENT_ID;
   });
   registerSeedRef("live.incident", (db) => {
     const mine = liveIncidents(db)

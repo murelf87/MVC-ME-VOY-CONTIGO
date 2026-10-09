@@ -14,6 +14,7 @@ import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { InCarScreen } from "./screens/InCarScreen";
 import { LiveRouteMapScreen } from "./screens/LiveRouteMapScreen";
+import { RouteChangeScreen } from "./screens/RouteChangeScreen";
 import { WaitingForCarScreen } from "./screens/WaitingForCarScreen";
 
 export type LiveParams = {
@@ -35,7 +36,7 @@ export type LiveParams = {
 
 export const liveRoutes: RouteDef[] = [
   defineRoute({ name: "WaitingForCar", component: WaitingForCarScreen, access: "auth", screen: "21", title: "Esperando el coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
-  defineRoute({ name: "RouteChange", component: PendingScreen, access: "auth", screen: "22", title: "Cambio de ruta" }),
+  defineRoute({ name: "RouteChange", component: RouteChangeScreen, access: "auth", screen: "22", title: "Cambio de ruta" }),
   defineRoute({ name: "InCar", component: InCarScreen, access: "auth", screen: "23", title: "En el coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
   defineRoute({ name: "TripFinished", component: PendingScreen, access: "auth", screen: "24", title: "Viaje terminado" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)

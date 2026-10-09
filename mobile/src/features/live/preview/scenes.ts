@@ -14,6 +14,7 @@ import {
   SEED_USER_IDS,
   SEED_VEHICLE_IDS,
   actingAs,
+  createRouteChange,
   bearingDeg,
   completeOwnedTrip,
   generateOwnPickupCode,
@@ -357,6 +358,19 @@ const SCENES: Readonly<Record<string, Scene>> = {
   "live-at-pickup": {
     description: "Lámina 23: el coche está en la recogida (a menos de 100 m) y Miguel aún no ha dado el código; la llegada al destino es a las 08:20.",
     build: (db) => sceneEnRoute(db, { remainingS: 5, ageSeconds: 12 }),
+  },
+  "live-route-change": {
+    description: "Lámina 22: Ana, de camino a la recogida (sin señal desde hace 2 min), propone una parada nueva (Plaza de Armas) que cambia la hora de llegada de Miguel; Miguel aún no ha respondido.",
+    build: (db) => {
+      sceneEnRoute(db, { remainingS: 480, ageSeconds: 130 });
+      // Con 10 min de margen casi nada es «material»: Ana ha dejado 3 min de margen para este viaje.
+      db.trips.update(SCENE_TRIP_ID, { flexibility_minutes: 3 });
+      // El tramo recogida → parada intermedia de las láminas es muy lento (39 min para 5,8 km): aquí se deja a ritmo urbano
+      // real (10 min) para que dar un rodeo por la parada nueva sí sume minutos y el cambio sea material.
+      const segment = db.tripSegments.get(`${SCENE_TRIP_ID}:1`);
+      if (segment) db.tripSegments.update(`${SCENE_TRIP_ID}:1`, { duration_s: 600 });
+      createRouteChange(db, actingAs(db, "ana"), { tripId: SCENE_TRIP_ID, stop: { lat: 37.3896, lng: -5.9993, label: "Plaza de Armas" } });
+    },
   },
   "live-stale": {
     description: "Sin señal: la última posición del coche es de hace 2 min (nunca se presenta como «en directo»).",
