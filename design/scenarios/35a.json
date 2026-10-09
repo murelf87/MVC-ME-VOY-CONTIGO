@@ -1,0 +1,10 @@
+{
+  "screen": "35a",
+  "variant": "a",
+  "profile": "driver",
+  "route": "HelpCenter",
+  "params": { "tripId": { "$ref": "help.tripCamas" } },
+  "seed": "help-center",
+  "clock": "2025-05-16T09:41:00+02:00",
+  "note": "Lámina 35a = «Centro de ayuda» (primera versión: sin la tarjeta «Si es urgente», texto de introducción algo mayor y en dos líneas distintas). La lámina 36b es la versión final del mismo diseño, que es la que implementa la app."
+}

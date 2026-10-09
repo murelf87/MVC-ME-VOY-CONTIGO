@@ -1,0 +1,10 @@
+{
+  "screen": "36b",
+  "variant": "b",
+  "profile": "driver",
+  "route": "HelpCenter",
+  "params": { "tripId": { "$ref": "help.tripCamas" } },
+  "seed": "help-center",
+  "clock": "2025-05-16T07:17:00+02:00",
+  "note": "Lámina 36b = «Centro de ayuda» (versión final, con la tarjeta «Si es urgente»). El manifest numera las láminas por tablero: 34a = Ajustes (primera versión), 34b = Pagos y cobros (conductor), 35a = Centro de ayuda (primera versión), 35b = Ajustes (final), 36a = Estados de error, 36b = Centro de ayuda (final). El viaje «Vie, 16 may · Sevilla → Camas» es el completado que siembra la variante help-center; los tres tipos de consulta salen sin marcar como en la lámina."
+}

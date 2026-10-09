@@ -1,0 +1,10 @@
+{
+  "screen": "33a",
+  "variant": "a",
+  "profile": "passenger",
+  "route": "PaymentsEarnings",
+  "params": { "mode": "passenger" },
+  "seed": "money-resumen",
+  "clock": "2025-05-15T09:41:00+02:00",
+  "note": "Lámina 33a = «Mis pagos y cobros», pestaña «Soy pasajero» de una cuenta con los dos roles y la economía sin definir: «--,-- €» en «Pendiente este mes» y «A cobrar este mes», «Mis movimientos» mezcla un viaje (pagas) y un cobro. El reloj es el del 15 de mayo de 2025 para que «Mañana, 07:25» y «Vie, 16 may» coincidan con la lámina."
+}

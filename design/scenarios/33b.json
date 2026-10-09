@@ -1,0 +1,10 @@
+{
+  "screen": "33b",
+  "variant": "b",
+  "profile": "passenger",
+  "route": "PaymentsEarnings",
+  "params": { "mode": "passenger" },
+  "seed": "money-con-importes",
+  "clock": "2025-05-14T07:37:00+02:00",
+  "note": "Lámina 33b = «Mis pagos y cobros», pestaña «Soy pasajero» de una cuenta de pasajero con dos pagos de 12,00 € (importes ILUSTRATIVOS de la vista previa: la lámina los muestra como ejemplo; en producción serían «Por definir» hasta activar la economía). El reloj es el del 14 de mayo de 2025 para que «Mañana, 07:25» y «Vie, 16 may» coincidan con la lámina."
+}

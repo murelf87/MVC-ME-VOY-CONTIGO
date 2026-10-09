@@ -1,0 +1,8 @@
+{
+  "screen": "35b",
+  "variant": "b",
+  "profile": "driver",
+  "route": "Settings",
+  "seed": "help-settings-driver",
+  "note": "Lámina 35b = «Ajustes» (versión final: «Conductora», texto de ayuda bajo «Eliminar cuenta»). El manifest numera las láminas por tablero: 34a = Ajustes (primera versión), 34b = Pagos y cobros (conductor), 35a = Centro de ayuda, 35b = Ajustes, 36a = Estados de error, 36b = Centro de ayuda con «Si es urgente»."
+}

@@ -1,0 +1,9 @@
+{
+  "screen": "02",
+  "variant": "",
+  "profile": "new",
+  "route": "ChooseRole",
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Elige tu perfil: sin ninguna tarjeta elegida (estado de la lámina), con las dos tarjetas con su chevron."
+}

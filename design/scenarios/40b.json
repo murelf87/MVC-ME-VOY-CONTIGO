@@ -1,0 +1,11 @@
+{
+  "screen": "40b",
+  "variant": "b",
+  "profile": "admin",
+  "route": "AdminTariffsOps",
+  "params": { "tab": "tariffs" },
+  "seed": "admin-ops-tariff-b",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "waitFor": "[data-testid='OpsTariffs.example.amount']",
+  "note": "Lámina 40b = misma pantalla con comisiones DEFINIDAS (10 % conductor y 10 % pasajero, campos numéricos con «%») y tarifa 0,18 €/km; cuota Premium «Por definir». El «Precio final para el pasajero (ejemplo)» sale de POST /v1/admin/tariffs/example: 18 km × 0,18 €/km = 3,24 € de aportación + 0,32 € de comisión = 3,56 € (la lámina dice 3,24 € con «comisiones (por definir)»: con comisión definida el contrato devuelve 3,56 €)."
+}

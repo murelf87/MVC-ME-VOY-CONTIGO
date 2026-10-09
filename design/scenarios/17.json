@@ -1,0 +1,10 @@
+{
+  "screen": "17",
+  "variant": "",
+  "profile": "driver",
+  "route": "MyVehicle",
+  "params": { "vehicleId": { "$ref": "vehicle.anaArona" } },
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 17. SEAT Arona 1234 MBC, 3 plazas, permiso y seguro subidos. Con seed «fresh-driver» (sin vehículo) se ve el alta desde cero."
+}

@@ -1,0 +1,9 @@
+{
+  "screen": "01",
+  "variant": "",
+  "profile": "new",
+  "route": "Welcome",
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 01. Sin sesión. La lámina dibuja un chevron «<» arriba a la izquierda que aquí no existe: Bienvenida es la raíz de la pila y un botón «atrás» que no lleva a ninguna parte sería un botón muerto."
+}

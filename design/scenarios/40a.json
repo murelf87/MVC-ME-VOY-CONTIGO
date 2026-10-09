@@ -1,0 +1,11 @@
+{
+  "screen": "40a",
+  "variant": "a",
+  "profile": "admin",
+  "route": "AdminTariffsOps",
+  "params": { "tab": "tariffs" },
+  "seed": "admin-ops-tariff-a",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "waitFor": "[data-testid='OpsTariffs.example.amount']",
+  "note": "Lámina 40a = «Panel MVC · Tarifas y operaciones», pestaña Tarifas con el borrador pendiente: 0,30 €/km, comisiones de conductor y pasajero y cuota Premium «Por definir» (selectores con sufijo «€» como en la lámina mientras no hay valor) y ejemplo de aportación 18 km × 0,30 €/km = 5,40 € (importe ILUSTRATIVO que devuelve POST /v1/admin/tariffs/example)."
+}

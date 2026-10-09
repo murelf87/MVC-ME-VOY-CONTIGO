@@ -1,0 +1,10 @@
+{
+  "screen": "26",
+  "variant": "",
+  "profile": "passenger",
+  "route": "BookingChat",
+  "params": { "conversationId": { "$ref": "conversation.ana" } },
+  "seed": "messages-chat",
+  "clock": "2026-10-05T07:22:00+02:00",
+  "note": "Lámina 26. El reloj son las 07:22 para que los mensajes de las 07:18–07:21 ya existan y «Llamar a Ana» esté dentro de la ventana (salida 07:25). La cabecera dice «2 plazas» (la lámina 28 dice «1 plaza» para la misma reserva: son dos reservas distintas en la vista previa, la del escenario 28 con 1 plaza)."
+}

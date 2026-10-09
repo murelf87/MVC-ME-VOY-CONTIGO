@@ -1,0 +1,10 @@
+{
+  "screen": "20",
+  "variant": "",
+  "profile": "driver",
+  "route": "DriverRequests",
+  "params": { "tripId": { "$ref": "trip.anaMorning" } },
+  "seed": "request-pending",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 20. Miguel (4,8 ★, 12 viajes) acaba de pedir plaza en el viaje de Ana; también esperan Hugo y Nuria."
+}
