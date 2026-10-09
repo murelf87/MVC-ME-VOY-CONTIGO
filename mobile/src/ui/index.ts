@@ -13,6 +13,8 @@ export type { ScreenHeaderProps, ScreenHeaderRightAction, ScreenHeaderRightAvata
 
 export { Button } from "./Button";
 export type { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
+export { LargeButton, LARGE_BUTTON_HEIGHT } from "./LargeButton";
+export type { LargeButtonProps } from "./LargeButton";
 export { IconButton } from "./IconButton";
 export type { IconButtonProps, IconButtonVariant } from "./IconButton";
 

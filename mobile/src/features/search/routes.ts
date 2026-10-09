@@ -16,6 +16,7 @@ import { PickupPointScreen } from "./request/screens/PickupPointScreen";
 import { ReviewRequestScreen } from "./request/screens/ReviewRequestScreen";
 import type { IsoDate, LocalTime, SearchMode, TripCategory, TripLeg, Weekday } from "@/api/types";
 import { MapHomeScreen } from "./browse/screens/MapHomeScreen";
+import { DefineRouteScreen } from "./browse/screens/DefineRouteScreen";
 import { PlaceSearchScreen } from "./browse/screens/PlaceSearchScreen";
 import type { PickupSummary } from "./request/types";
 
@@ -101,7 +102,7 @@ export type SearchParams = {
 
 export const searchRoutes: RouteDef[] = [
   defineRoute({ name: "MapHome", component: MapHomeScreen, access: "public", screen: "09", title: "Mapa" }),
-  defineRoute({ name: "DefineRoute", component: PendingScreen, access: "public", screen: "10", title: "Define tu recorrido" }),
+  defineRoute({ name: "DefineRoute", component: DefineRouteScreen, access: "public", screen: "10", title: "Define tu recorrido" }),
   defineRoute({ name: "TripResults", component: PendingScreen, access: "public", screen: "11", title: "Resultados" }),
   defineRoute({ name: "TripDetail", component: PendingScreen, access: "public", screen: "12", title: "Detalle del viaje" }),
   defineRoute({ name: "PickupPoint", component: PickupPointScreen, access: "public", screen: "13", title: "Punto de recogida" }),

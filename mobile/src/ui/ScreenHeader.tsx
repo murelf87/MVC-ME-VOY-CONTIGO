@@ -171,7 +171,8 @@ export function ScreenHeader({
 }
 
 const styles = StyleSheet.create({
-  row: { minHeight: layout.headerRow, flexDirection: "row", alignItems: "center", paddingHorizontal: 18 },
+  /** El título de las láminas queda ≈ 10 pt más arriba de lo que daría centrarlo en la fila: se sube la fila y se conserva su alto total. */
+  row: { minHeight: layout.headerRow, flexDirection: "row", alignItems: "center", paddingHorizontal: 18, marginTop: -10, paddingBottom: 10 },
   side: { width: SIDE, minHeight: layout.headerRow, justifyContent: "center" },
   sideLeft: { alignItems: "flex-start" },
   sideRight: { alignItems: "flex-end" },

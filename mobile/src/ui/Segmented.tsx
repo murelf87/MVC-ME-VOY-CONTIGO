@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   buttonsContainer: { flexDirection: "row", gap: 9 },
   segment: {
     flex: 1,
-    minHeight: 48,
+    minHeight: 52,
     borderRadius: radii.lg,
     paddingHorizontal: 8,
     flexDirection: "row",

@@ -1,0 +1,9 @@
+{
+  "screen": "10",
+  "variant": "",
+  "profile": "passenger",
+  "route": "DefineRoute",
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Define tu recorrido: formulario vacío con llegada 08:30, regreso 18:00 y semanal de lunes a viernes."
+}
