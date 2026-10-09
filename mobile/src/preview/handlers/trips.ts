@@ -1,5 +1,6 @@
 /** Viajes del conductor, búsqueda, solicitudes y ejecución (`trip-draft`, `trip-search`, `ride-request`, `trip-execution`). */
 import type { PreviewDb } from "../core/db";
+import { ApiFailure } from "../core/errors";
 import { reply, type PreviewRouter } from "../core/router";
 import type { GeoLatLng } from "../core/types";
 import {
@@ -11,6 +12,7 @@ import {
 import {
   createRideRequest,
   decideRideRequest,
+  getExtendedRideRequestCreator,
   listOwnRideRequests,
   listTripRideRequests,
   type DecisionKind,
@@ -105,25 +107,39 @@ export function registerTrips(r: PreviewRouter, db: PreviewDb): void {
     (req) => ({ trips: searchPublishedTrips(db, req.query) })
   );
 
-  r.post<{ Params: { tripId: string }; Body: { fromSegmentSeq: number; toSegmentSeq: number } }>(
+  r.post<{ Params: { tripId: string }; Body: Record<string, unknown> & { fromSegmentSeq?: number; toSegmentSeq?: number } }>(
     "/v1/trips/:tripId/requests",
     {
-      summary: "Solicitar plaza (forma heredada 0.14)",
+      summary: "Solicitar plaza (forma heredada 0.14 o ampliada con punto de recogida)",
       tags: ["requests"],
+      idempotent: true,
       schema: {
         params: uuidParam("tripId"),
         body: {
           type: "object",
           additionalProperties: false,
-          required: ["fromSegmentSeq", "toSegmentSeq"],
           properties: {
             fromSegmentSeq: { type: "integer", minimum: 0 },
             toSegmentSeq: { type: "integer", minimum: 1 },
+            pickupPointId: { type: "string", maxLength: 300 },
+            dropoffStopSeq: { type: "integer", minimum: 1 },
+            message: { type: "string", maxLength: 300 },
           },
         },
       },
     },
-    (req) => reply.created(createRideRequest(db, req.auth(), { tripId: req.params.tripId, ...req.body }, req.requestId))
+    (req) => {
+      const body = req.body;
+      const legacyOnly = Object.keys(body).every((key) => key === "fromSegmentSeq" || key === "toSegmentSeq");
+      const extended = getExtendedRideRequestCreator();
+      if (!legacyOnly && extended) return reply.created(extended(db, req.auth(), req.params.tripId, body, req.requestId));
+      if (typeof body.fromSegmentSeq !== "number" || typeof body.toSegmentSeq !== "number") {
+        throw new ApiFailure("INVALID_REQUEST_SHAPE", "Indica un punto de recogida o un rango de tramos.", 422);
+      }
+      return reply.created(
+        createRideRequest(db, req.auth(), { tripId: req.params.tripId, fromSegmentSeq: body.fromSegmentSeq, toSegmentSeq: body.toSegmentSeq }, req.requestId)
+      );
+    }
   );
 
   r.get("/v1/me/ride-requests", { summary: "Mis solicitudes de plaza", tags: ["requests"] }, (req) => ({

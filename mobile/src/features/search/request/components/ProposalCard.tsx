@@ -36,24 +36,24 @@ export function ProposalCard({ view, tone, selected, onPress, testID }: Proposal
         <PinBadge letter={view.code} tone={tone} width={40} />
       </View>
       <View style={styles.text}>
-        <Text variant="rowTitle" color="strong" size={20} lineHeight={24} letterSpacing={-0.3} numberOfLines={1}>
+        <Text variant="rowTitle" color="strong" size={18} lineHeight={22} letterSpacing={-0.3} numberOfLines={1}>
           {view.title}
         </Text>
         {view.subtitle !== null ? (
-          <Text variant="body" color="body" size={20} lineHeight={24} letterSpacing={-0.3} numberOfLines={1}>
+          <Text variant="body" color="body" size={18} lineHeight={22} letterSpacing={-0.3} numberOfLines={1}>
             {view.subtitle}
           </Text>
         ) : null}
         <View style={styles.details}>
           <View style={styles.detail}>
-            <Icon name="walk" size={26} color={colors.text.deep} />
-            <Text variant="body" color="body" size={18} lineHeight={22} letterSpacing={-0.3}>
+            <Icon name="walk" size={22} color={colors.text.deep} />
+            <Text variant="body" color="body" size={16} lineHeight={20} letterSpacing={-0.3} numberOfLines={1}>
               {copy.walk(view.walkMinutes)}
             </Text>
           </View>
           <View style={styles.detail}>
-            <Icon name="car" size={26} color={colors.text.deep} />
-            <Text variant="body" color="body" size={18} lineHeight={22} letterSpacing={-0.3}>
+            <Icon name="car" size={22} color={colors.text.deep} />
+            <Text variant="body" color="body" size={16} lineHeight={20} letterSpacing={-0.3} numberOfLines={1}>
               {copy.detour(view.detourMinutes)}
             </Text>
           </View>
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
   pressed: { backgroundColor: colors.bg.tintSoft },
   pin: { width: 40, alignItems: "center", marginRight: 21 },
   text: { flex: 1, marginRight: 8 },
-  details: { flexDirection: "row", alignItems: "center", marginTop: 4, gap: 14 },
-  detail: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 },
+  details: { flexDirection: "row", alignItems: "center", marginTop: 4, gap: 12 },
+  detail: { flexDirection: "row", alignItems: "center", gap: 5, flexShrink: 1 },
 });

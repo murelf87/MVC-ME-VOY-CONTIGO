@@ -2,14 +2,14 @@
   "screen": "07",
   "variant": "",
   "profile": "driver",
-  "route": "PrivateCheckCapture",
+  "route": "PrivateCheckPrivacy",
   "seed": "default",
   "clock": "2026-10-05T07:17:00+02:00",
   "perm": "granted",
   "steps": [
-    { "wait": 800 },
-    { "click": "[data-testid='PrivateCheckCapture.start']" },
-    { "wait": 1500 }
+    {
+      "wait": 1200
+    }
   ],
-  "note": "Privacidad de la comprobación: se llega de verdad desde «Iniciar» con la captura de muestra del visor."
+  "note": "Privacidad de la comprobación (lámina 07)."
 }

@@ -88,8 +88,9 @@ export function ReviewRequestScreen({ navigation, route }: AppScreenProps<"Revie
       weekly: weekly ?? null,
       pickup: pickup ?? null,
       dropoffStopSeq,
+      criteria: criteria ?? null,
     });
-  }, [trip.data, quote.data, preview.data, weekly, pickup, dropoffStopSeq]);
+  }, [trip.data, quote.data, preview.data, weekly, pickup, dropoffStopSeq, criteria]);
 
   const openRequestId = trip.data?.viewer.openRequest?.id ?? null;
 

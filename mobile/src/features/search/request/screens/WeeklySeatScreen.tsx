@@ -86,7 +86,7 @@ export function WeeklySeatScreen(_props: AppScreenProps<"WeeklySeat">): React.JS
     navigation.navigate("ReviewRequest", params);
   }, [tripId, pickupPointId, pickup, criteria, dropoffStopSeq, navigation]);
 
-  const bar = data !== undefined ? routeBar(data) : null;
+  const bar = data !== undefined ? routeBar(data, criteria?.origin.label) : null;
   const legTo = bar?.to ?? "";
   const returnOffered = recurrence?.returnLocal !== null && recurrence?.returnLocal !== undefined;
 

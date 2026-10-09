@@ -48,6 +48,8 @@ export interface ReviewSources {
   /** Lo que enseñó la pantalla 13 del punto elegido (nombre, dirección, minutos a pie). */
   pickup: PickupSummary | null;
   dropoffStopSeq: number | null;
+  /** Lo que la persona buscó (origen y destino con su nombre): la barra y el destino usan ESOS nombres. */
+  criteria?: { origin: { label: string }; destination: { label: string } } | null;
 }
 
 export interface RouteBarModel {
@@ -94,11 +96,14 @@ const clean = (text: string | null | undefined): string | null => {
   return trimmed === "" ? null : trimmed;
 };
 
-/** Barra «Sevilla Centro → Universidad»: origen del viaje y categoría del destino (o su nombre si es «Otros»). */
-export function routeBar(trip: Pick<TripDetail, "stops" | "category">): RouteBarModel {
+/**
+ * Barra «Sevilla Centro → Universidad»: el origen que la persona buscó (si lo hay; si no, el del viaje) y la categoría
+ * del destino (o su nombre si es «Otros»).
+ */
+export function routeBar(trip: Pick<TripDetail, "stops" | "category">, searchedOrigin?: string | null): RouteBarModel {
   const first = trip.stops[0];
   const last = trip.stops[trip.stops.length - 1];
-  const from = clean(first?.label) ?? copy.originFallback;
+  const from = clean(searchedOrigin) ?? clean(first?.label) ?? copy.originFallback;
   const to = trip.category === "other" ? (clean(last?.label) ?? copy.destinationFallback) : strings.categories[trip.category];
   return { from, to, category: trip.category };
 }
@@ -117,7 +122,14 @@ export function driverCard(trip: Pick<TripDetail, "driver" | "vehicle" | "kind">
 }
 
 /** Nombre del destino de la persona: el de la bajada elegida o, si no, el del último punto del viaje. */
-export function dropoffLabel(trip: Pick<TripDetail, "stops">, quote: TripQuoteResponse | null, dropoffStopSeq: number | null): string {
+export function dropoffLabel(
+  trip: Pick<TripDetail, "stops">,
+  quote: TripQuoteResponse | null,
+  dropoffStopSeq: number | null,
+  searchedDestination?: string | null,
+): string {
+  const searched = clean(searchedDestination);
+  if (searched !== null) return searched;
   const fromQuote = clean(quote?.dropoff.label);
   if (fromQuote !== null) return fromQuote;
   const stop = dropoffStopSeq !== null ? trip.stops.find((s) => s.seq === dropoffStopSeq) : undefined;
@@ -200,17 +212,17 @@ export function blockOf(sources: ReviewSources): ReviewBlock | null {
 }
 
 export function buildReviewModel(sources: ReviewSources): ReviewModel {
-  const { trip, quote, preview, weekly, dropoffStopSeq } = sources;
+  const { trip, quote, preview, weekly, dropoffStopSeq, criteria } = sources;
   const source: TripQuote | null = weekly !== null && preview !== null ? preview.quote : (quote?.quote ?? preview?.quote ?? null);
   const distanceM = quote?.roadDistanceM ?? source?.basis.roadDistanceM ?? trip.totals.roadDistanceM;
   const quoteView = buildQuoteView(source ?? emptyQuote(distanceM), distanceM);
   return {
-    route: routeBar(trip),
+    route: routeBar(trip, criteria?.origin.label),
     distance: formatDistance(distanceM),
     driver: driverCard(trip),
     seat: seatRow(sources),
     pickup: pickupRow(sources),
-    dropoff: { title: copy.dropoff, lines: [dropoffLabel(trip, quote, dropoffStopSeq)] },
+    dropoff: { title: copy.dropoff, lines: [dropoffLabel(trip, quote, dropoffStopSeq, criteria?.destination.label)] },
     quote: quoteView,
     weekly: weekly !== null,
     block: blockOf(sources),

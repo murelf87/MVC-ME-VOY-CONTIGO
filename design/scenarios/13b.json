@@ -1,0 +1,32 @@
+{
+  "screen": "13b",
+  "variant": "b",
+  "profile": "passenger",
+  "route": "PickupPoint",
+  "params": {
+    "tripId": "9f0e1d2c-4b3a-4a59-8877-665544330001",
+    "criteria": {
+      "origin": {
+        "label": "Sevilla Centro",
+        "latitude": 37.3403,
+        "longitude": -5.937
+      },
+      "destination": {
+        "label": "Universidad de Sevilla",
+        "latitude": 37.3825,
+        "longitude": -5.9919
+      },
+      "mode": "one_off",
+      "arriveBy": "08:30",
+      "date": "2026-10-06"
+    }
+  },
+  "seed": "req-board-13",
+  "clock": "2026-10-05T07:58:00+02:00",
+  "steps": [
+    {
+      "wait": 1500
+    }
+  ],
+  "note": "Punto de recogida: A «Aparcamiento público» y B «Av. de la Buhaira» propuestos por el servidor desde las paradas del conductor (lámina 13)."
+}

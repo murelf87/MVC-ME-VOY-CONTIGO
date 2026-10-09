@@ -2,19 +2,25 @@
   "screen": "04",
   "variant": "",
   "profile": "new",
-  "route": "CreateAccount",
+  "route": "VerifyPhone",
   "params": {
-    "roles": ["passenger"],
-    "prefill": { "givenName": "Ana", "familyName": "García López", "phone": "612 345 678", "provinceCode": "41", "accepted": true }
+    "challengeId": "00000000-0000-4000-8000-000000000000",
+    "phoneE164": "+34612345678",
+    "expiresAt": "2026-10-05T05:18:00.000Z"
   },
   "seed": "default",
   "clock": "2026-10-05T07:17:00+02:00",
   "steps": [
-    { "wait": 800 },
-    { "click": "[data-testid='CreateAccount.submit']" },
-    { "wait": 1200 },
-    { "fill": "[data-testid='VerifyPhone.code']", "text": "258104" },
-    { "wait": 27500 }
+    {
+      "wait": 800
+    },
+    {
+      "fill": "[data-testid='VerifyPhone.code']",
+      "text": "258104"
+    },
+    {
+      "wait": 27500
+    }
   ],
-  "note": "Confirma tu móvil, recorrido real: «Tu cuenta» rellena → «Recibir código» → código 258104 (la lámina lo muestra rechazado; el SMS simulado es otro) → tras 28 s la cuenta atrás marca 00:32."
+  "note": "Confirma tu móvil: código 258104 (la lámina lo muestra rechazado) y, a los 28 s, la cuenta atrás marca 00:32."
 }

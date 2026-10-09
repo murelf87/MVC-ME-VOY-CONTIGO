@@ -440,3 +440,26 @@ export function confirmProviderPayment(
     return { status: "confirmed", bookingId: booking.id };
   });
 }
+
+/**
+ * Gancho del módulo `trips` del backend real: la forma ampliada de «solicitar plaza» (punto de recogida, parada de bajada,
+ * mensaje) la sirve el slice `search` (`features/search/preview/requestCreate.ts`). La forma heredada 0.14 (rango de tramos)
+ * sigue resolviéndose aquí, idéntica al backend 0.14.
+ */
+export type ExtendedRideRequestCreator = (
+  db: PreviewDb,
+  principal: Principal,
+  tripId: string,
+  body: Record<string, unknown>,
+  requestId?: string
+) => unknown;
+
+let extendedCreator: ExtendedRideRequestCreator | null = null;
+
+export function setExtendedRideRequestCreator(creator: ExtendedRideRequestCreator | null): void {
+  extendedCreator = creator;
+}
+
+export function getExtendedRideRequestCreator(): ExtendedRideRequestCreator | null {
+  return extendedCreator;
+}

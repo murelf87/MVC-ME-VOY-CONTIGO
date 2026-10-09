@@ -1,0 +1,62 @@
+{
+  "screen": "15b",
+  "variant": "b",
+  "profile": "passenger",
+  "route": "ReviewRequest",
+  "params": {
+    "tripId": "9f0e1d2c-4b3a-4a59-8877-665544330001",
+    "pickupPointId": "pp1_WzEsIjlmMGUxZDJjLTRiM2EtNGE1OS04ODc3LTY2NTU0NDMzMDAwMSIsMzcuMzQyNCwtNS45MzcsMCw0XQ",
+    "pickup": {
+      "code": "A",
+      "name": "Aparcamiento público",
+      "address": "Av. Manuel Siurot",
+      "walkMinutes": 4
+    },
+    "criteria": {
+      "origin": {
+        "label": "Sevilla Centro",
+        "latitude": 37.3403,
+        "longitude": -5.937
+      },
+      "destination": {
+        "label": "Universidad de Sevilla",
+        "latitude": 37.3825,
+        "longitude": -5.9919
+      },
+      "mode": "weekly",
+      "arriveBy": "08:30",
+      "returnAt": "18:00",
+      "weekdays": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri"
+      ]
+    },
+    "weekly": {
+      "weekdays": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri"
+      ],
+      "startDate": "2026-10-05",
+      "weeks": 1,
+      "legs": [
+        "outbound",
+        "return"
+      ],
+      "exceptionDates": []
+    }
+  },
+  "seed": "req-board-13",
+  "clock": "2026-10-05T07:58:00+02:00",
+  "steps": [
+    {
+      "wait": 1800
+    }
+  ],
+  "note": "Revisa tu solicitud (reserva semanal, ida y vuelta): importes con la tarifa de ejemplo, «Gestión MVC» por definir."
+}

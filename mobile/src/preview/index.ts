@@ -100,10 +100,13 @@ export {
   createSeatHold,
   decideRideRequest,
   expireStaleHolds,
+  getExtendedRideRequestCreator,
   insertRideRequest,
   paymentCompensations,
   rejectRequest,
+  setExtendedRideRequestCreator,
   type DecisionOutcome,
+  type ExtendedRideRequestCreator,
   type PaymentConfirmation,
   type RideRequestExtras,
 } from "./domain/requests";
