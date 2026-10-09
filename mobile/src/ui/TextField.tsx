@@ -23,7 +23,7 @@ function scaledInputStyle(labeled: boolean, factor: number): TextStyle | null {
   if (factor === 1) return null;
   const s = (n: number): number => scaleFontSize(n, factor);
   return labeled
-    ? { fontSize: s(20), lineHeight: s(24), height: s(24), letterSpacing: Math.round(-0.4 * factor * 100) / 100 }
+    ? { fontSize: s(22), lineHeight: s(26), height: s(26), letterSpacing: Math.round(-0.4 * factor * 100) / 100 }
     : { fontSize: s(17), lineHeight: s(22), height: s(26) };
 }
 
@@ -168,7 +168,7 @@ export function TextField({
         ) : null}
         <View style={styles.body}>
           {labeled && label !== undefined ? (
-            <Text variant="label" color="muted" numberOfLines={1}>
+            <Text variant="label" color="muted" size={19.2} lineHeight={22} numberOfLines={1}>
               {label}
             </Text>
           ) : null}
@@ -380,7 +380,7 @@ export function SelectField({
             ) : null}
             <View style={styles.body}>
               {labeled && label !== undefined ? (
-                <Text variant="label" color="muted" numberOfLines={1}>
+                <Text variant="label" color="muted" size={19.2} lineHeight={22} numberOfLines={1}>
                   {label}
                 </Text>
               ) : null}
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   body: { flex: 1, justifyContent: "center" },
   trailing: { marginLeft: 8, alignItems: "center", justifyContent: "center", minWidth: 24 },
   input: { padding: 0, margin: 0, color: colors.text.strong, fontFamily: fontFamilies.medium },
-  inputLabeled: { fontSize: 20, lineHeight: 24, height: 24, letterSpacing: -0.4, marginTop: 3, marginBottom: 0 },
+  inputLabeled: { fontSize: 22, lineHeight: 26, height: 26, letterSpacing: -0.4, marginTop: 3, marginBottom: 0 },
   inputCompact: { fontSize: 17, lineHeight: 22, height: 26, fontFamily: fontFamilies.regular },
   selectValue: { marginTop: 3 },
   message: { flexDirection: "row", alignItems: "center", marginTop: 6, paddingHorizontal: 6 },

@@ -1,0 +1,13 @@
+{
+  "screen": "03",
+  "variant": "",
+  "profile": "new",
+  "route": "CreateAccount",
+  "params": {
+    "roles": ["passenger"],
+    "prefill": { "givenName": "Ana", "familyName": "García López", "phone": "612 345 678", "provinceCode": "41", "accepted": true }
+  },
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Tu cuenta con los datos de la lámina (el formulario se rellena por `prefill`). La foto de Ana de la lámina no se puede cargar desde un escenario: el círculo muestra las iniciales."
+}

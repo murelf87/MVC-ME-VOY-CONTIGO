@@ -12,6 +12,8 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { PickupPointScreen } from "./request/screens/PickupPointScreen";
+import { ReviewRequestScreen } from "./request/screens/ReviewRequestScreen";
 import type { IsoDate, LocalTime, SearchMode, TripCategory, TripLeg, Weekday } from "@/api/types";
 import { MapHomeScreen } from "./browse/screens/MapHomeScreen";
 import { PlaceSearchScreen } from "./browse/screens/PlaceSearchScreen";
@@ -102,9 +104,9 @@ export const searchRoutes: RouteDef[] = [
   defineRoute({ name: "DefineRoute", component: PendingScreen, access: "public", screen: "10", title: "Define tu recorrido" }),
   defineRoute({ name: "TripResults", component: PendingScreen, access: "public", screen: "11", title: "Resultados" }),
   defineRoute({ name: "TripDetail", component: PendingScreen, access: "public", screen: "12", title: "Detalle del viaje" }),
-  defineRoute({ name: "PickupPoint", component: PendingScreen, access: "public", screen: "13", title: "Punto de recogida" }),
+  defineRoute({ name: "PickupPoint", component: PickupPointScreen, access: "public", screen: "13", title: "Punto de recogida" }),
   defineRoute({ name: "WeeklySeat", component: PendingScreen, access: "public", screen: "14", title: "Tu plaza semanal" }),
-  defineRoute({ name: "ReviewRequest", component: PendingScreen, access: "auth", screen: "15", title: "Revisa tu solicitud" }),
+  defineRoute({ name: "ReviewRequest", component: ReviewRequestScreen, access: "auth", screen: "15", title: "Revisa tu solicitud" }),
   defineRoute({ name: "RequestStatusPayment", component: PendingScreen, access: "auth", screen: "16", title: "Estado y pago" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({

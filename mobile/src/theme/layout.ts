@@ -48,7 +48,7 @@ export const sizes = {
   buttonSm: 44,
   buttonXs: 34,
   /** Campo con etiqueta interior (03). */
-  field: 68,
+  field: 72,
   /** Campo compacto de una línea (09 «¿A dónde vas?»). */
   fieldCompact: 44,
   textArea: 112,

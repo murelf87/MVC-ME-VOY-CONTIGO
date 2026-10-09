@@ -12,6 +12,8 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { MyProfileScreen } from "./screens/MyProfileScreen";
+import { MyTripsScreen } from "./screens/MyTripsScreen";
 import type { PlaceParam } from "@/features/search/routes";
 
 export type ProfileParams = {
@@ -32,8 +34,8 @@ export type ProfileParams = {
 };
 
 export const profileRoutes: RouteDef[] = [
-  defineRoute({ name: "MyProfile", component: PendingScreen, access: "auth", screen: "29", title: "Mi perfil" }),
-  defineRoute({ name: "MyTrips", component: PendingScreen, access: "auth", screen: "30", title: "Mis viajes" }),
+  defineRoute({ name: "MyProfile", component: MyProfileScreen, access: "auth", screen: "29", title: "Mi perfil" }),
+  defineRoute({ name: "MyTrips", component: MyTripsScreen, access: "auth", screen: "30", title: "Mis viajes" }),
   defineRoute({ name: "FavoritesRoutine", component: PendingScreen, access: "auth", screen: "31", title: "Favoritos y rutina" }),
   defineRoute({ name: "Plans", component: PendingScreen, access: "auth", screen: "32", title: "Planes" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)

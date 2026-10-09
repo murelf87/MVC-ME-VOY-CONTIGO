@@ -144,7 +144,7 @@ export function ScreenHeader({
           {title}
         </Text>
         {subtitle !== undefined ? (
-          <Text variant="subtitle" color="muted" align="center" lineHeight={27} style={styles.largeSubtitle}>
+          <Text variant="subtitle" color="muted" align="center" size={20.5} lineHeight={27} style={styles.largeSubtitle}>
             {subtitle}
           </Text>
         ) : null}
