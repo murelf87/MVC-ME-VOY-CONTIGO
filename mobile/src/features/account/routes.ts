@@ -13,6 +13,9 @@
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { HelpCenterScreen } from "./help/screens/HelpCenterScreen";
+import { SupportNewTicketScreen } from "./help/screens/SupportNewTicketScreen";
+import { SupportTicketDetailScreen } from "./help/screens/SupportTicketDetailScreen";
+import { SupportTicketsScreen } from "./help/screens/SupportTicketsScreen";
 import { SettingsScreen } from "./help/screens/SettingsScreen";
 import { PaymentsEarningsScreen } from "./money/screens/PaymentsEarningsScreen";
 
@@ -59,9 +62,9 @@ export const accountRoutes: RouteDef[] = [
   defineRoute({ name: "Refunds", component: PendingScreen, access: "auth", title: "Mis devoluciones" }),
   defineRoute({ name: "LegalCenter", component: PendingScreen, access: "public", title: "Información legal" }),
   defineRoute({ name: "LegalDocument", component: PendingScreen, access: "public", title: "Documento legal" }),
-  defineRoute({ name: "SupportTickets", component: PendingScreen, access: "auth", title: "Mis consultas" }),
-  defineRoute({ name: "SupportNewTicket", component: PendingScreen, access: "auth", title: "Nueva consulta" }),
-  defineRoute({ name: "SupportTicketDetail", component: PendingScreen, access: "auth", title: "Consulta" }),
+  defineRoute({ name: "SupportTickets", component: SupportTicketsScreen, access: "auth", title: "Mis consultas" }),
+  defineRoute({ name: "SupportNewTicket", component: SupportNewTicketScreen, access: "auth", title: "Nueva consulta" }),
+  defineRoute({ name: "SupportTicketDetail", component: SupportTicketDetailScreen, access: "auth", title: "Consulta", previewParams: { ticketId: { $ref: "help.ticketOpen" } }, previewSeed: "help-tickets" }),
   defineRoute({ name: "DataExports", component: PendingScreen, access: "auth", title: "Descargar mis datos" }),
   defineRoute({ name: "DeleteAccount", component: PendingScreen, access: "auth", title: "Eliminar cuenta" }),
   defineRoute({ name: "About", component: PendingScreen, access: "public", title: "Acerca de MVC" }),
