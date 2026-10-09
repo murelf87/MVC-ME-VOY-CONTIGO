@@ -1,8 +1,16 @@
+/** Roles de autoservicio: se piden al registrarse. */
 export type Role = "passenger" | "driver";
+/** Roles de personal: solo los concede la administración; nunca vienen de un registro público. */
+export type StaffRole = "admin" | "verification_admin" | "finance_admin" | "support_admin";
+/** Todo lo que el backend puede devolver en `roles` (`/me`, `/v1/auth/session`). */
+export type AnyRole = Role | StaffRole;
+
+export type PublicPhotoStatus = "pending" | "approved" | "rejected";
+export type IdentityStatus = "unverified" | "pending" | "verified" | "rejected";
 
 export type AuthUser = {
   id: string;
-  roles: Role[];
+  roles: AnyRole[];
 };
 
 export type SessionPayload = {
@@ -19,16 +27,30 @@ export type SessionInfo = {
   };
 };
 
+/**
+ * Respuesta real de `GET /me` (fila SQL tal cual: snake_case).
+ * `public_photo_key` es null mientras no se haya subido foto pública.
+ */
 export type MeProfile = {
   id: string;
   phone_e164: string | null;
   status: string;
   display_name: string | null;
   public_photo_key: string | null;
-  public_photo_status: "pending" | "approved" | "rejected";
-  identity_status: "unverified" | "pending" | "verified" | "rejected";
+  public_photo_status: PublicPhotoStatus;
+  identity_status: IdentityStatus;
   presence_status: string | null;
-  roles: Role[];
+  roles: AnyRole[];
+};
+
+/** Respuesta de `PATCH /v1/me/profile`. */
+export type UpdatedProfile = {
+  user_id: string;
+  display_name: string | null;
+  public_photo_status: PublicPhotoStatus;
+  identity_status: IdentityStatus;
+  presence_status: string | null;
+  updated_at: string;
 };
 
 export type VerificationStart = {

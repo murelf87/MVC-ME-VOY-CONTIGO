@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyError } from "fastify";
 import rateLimit from "@fastify/rate-limit";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
@@ -53,10 +53,40 @@ export async function buildApp() {
   });
   await app.register(swaggerUi, { routePrefix: "/docs" });
 
-  app.setErrorHandler((error, request, reply) => {
+  app.setErrorHandler((error: FastifyError | Error, request, reply) => {
     if (error instanceof DomainError) {
       return reply.code(error.statusCode).send({
         error: { code: error.code, message: error.message, details: error.details },
+        requestId: request.id
+      });
+    }
+
+    // Errores de Fastify que NO son fallos del servidor: validación de esquema (400), límite de frecuencia (429) y
+    // el resto de 4xx (JSON mal formado, tipo de contenido no admitido, cuerpo demasiado grande…). Mismo formato que
+    // el resto de errores: { error: { code, message, details? }, requestId }.
+    const fastifyError = error as FastifyError;
+    if (fastifyError.validation) {
+      const issues = fastifyError.validation.map(issue => ({
+        path:
+          (issue.instancePath || "").replace(/^\//, "").replace(/\//g, ".") ||
+          (issue.params as { missingProperty?: string } | undefined)?.missingProperty ||
+          "",
+        message: issue.message ?? "valor no válido"
+      }));
+      return reply.code(400).send({
+        error: { code: "VALIDATION_ERROR", message: "Los datos enviados no son válidos.", details: { issues } },
+        requestId: request.id
+      });
+    }
+    if (fastifyError.statusCode === 429) {
+      return reply.code(429).send({
+        error: { code: "RATE_LIMITED", message: "Demasiadas solicitudes. Inténtalo de nuevo en unos instantes." },
+        requestId: request.id
+      });
+    }
+    if (typeof fastifyError.statusCode === "number" && fastifyError.statusCode >= 400 && fastifyError.statusCode < 500) {
+      return reply.code(fastifyError.statusCode).send({
+        error: { code: "BAD_REQUEST", message: "La petición no es válida." },
         requestId: request.id
       });
     }

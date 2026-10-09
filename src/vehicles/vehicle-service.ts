@@ -8,6 +8,8 @@ export type VehicleInput = {
   model: string;
   plate: string;
   passengerSeats: number;
+  /** Color visible para los pasajeros («Seat Arona · Gris»). Opcional; `null` lo borra; ausente lo conserva. */
+  color?: string | null | undefined;
 };
 
 function cleanText(value: string, label: string, max: number): string {
@@ -15,6 +17,15 @@ function cleanText(value: string, label: string, max: number): string {
   if (normalized.length < 1 || normalized.length > max) {
     throw new DomainError("INVALID_VEHICLE_FIELD", `${label} is invalid`);
   }
+  return normalized;
+}
+
+/** Color del vehículo: texto corto o `null`. Una cadena vacía equivale a «sin color». */
+function cleanColor(value: string | null | undefined): string | null | undefined {
+  if (value === undefined || value === null) return value;
+  const normalized = value.trim().replace(/\s+/g, " ");
+  if (normalized.length === 0) return null;
+  if (normalized.length > 40) throw new DomainError("INVALID_VEHICLE_FIELD", "color is invalid");
   return normalized;
 }
 
@@ -36,7 +47,7 @@ function seats(value: number): number {
 
 export async function listOwnVehicles(pool: Pool, principal: AuthPrincipal) {
   return (await pool.query(
-    `select id,make,model,plate,passenger_seats,review_status,documentation_status,
+    `select id,make,model,plate,color,passenger_seats,review_status,documentation_status,
             vehicle_photo_status,vehicle_photo_document_id,
             insurance_status,insurance_expires_on,insurance_document_id,insurance_reviewed_at,
             review_reason,reviewed_at,created_at,updated_at
@@ -57,16 +68,17 @@ export async function createVehicle(
   const model = cleanText(input.model, "model", 80);
   const plate = normalizePlate(input.plate);
   const passengerSeats = seats(input.passengerSeats);
+  const color = cleanColor(input.color) ?? null;
 
   try {
     const result = await pool.query(
       `insert into vehicles(
-         driver_user_id,make,model,plate,passenger_seats,
+         driver_user_id,make,model,plate,color,passenger_seats,
          review_status,documentation_status
-       ) values($1,$2,$3,$4,$5,'pending','pending')
-       returning id,make,model,plate,passenger_seats,review_status,documentation_status,
+       ) values($1,$2,$3,$4,$5,$6,'pending','pending')
+       returning id,make,model,plate,color,passenger_seats,review_status,documentation_status,
                  vehicle_photo_status,insurance_status,insurance_expires_on,created_at,updated_at`,
-      [principal.userId, make, model, plate.display, passengerSeats]
+      [principal.userId, make, model, plate.display, color, passengerSeats]
     );
     const row = result.rows[0];
     await pool.query(
@@ -104,17 +116,19 @@ export async function updateOwnVehicle(
   const model = cleanText(input.model, "model", 80);
   const plate = normalizePlate(input.plate);
   const passengerSeats = seats(input.passengerSeats);
+  const color = cleanColor(input.color);
 
   try {
     const result = await pool.query(
       `update vehicles
           set make=$2,model=$3,plate=$4,passenger_seats=$5,
+              color=case when $6::boolean then $7::text else color end,
               review_status='pending',documentation_status='pending',
               review_reason=null,reviewed_by_user_id=null,reviewed_at=null,updated_at=now()
         where id=$1
-        returning id,make,model,plate,passenger_seats,review_status,documentation_status,
+        returning id,make,model,plate,color,passenger_seats,review_status,documentation_status,
                   vehicle_photo_status,insurance_status,insurance_expires_on,created_at,updated_at`,
-      [vehicleId, make, model, plate.display, passengerSeats]
+      [vehicleId, make, model, plate.display, passengerSeats, color !== undefined, color ?? null]
     );
     await pool.query(
       `insert into audit_events(actor_user_id,action,entity_type,entity_id,metadata)

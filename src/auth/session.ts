@@ -60,7 +60,7 @@ export async function resolveSession(pool: Pool, token: string): Promise<AuthPri
             s.user_id,
             s.expires_at,
             u.status as user_status,
-            coalesce(array_agg(ur.role) filter (where ur.role is not null),'{}') as roles
+            coalesce(array_agg(ur.role::text) filter (where ur.role is not null),'{}'::text[]) as roles
        from auth_sessions s
        join app_users u on u.id=s.user_id
        left join user_roles ur on ur.user_id=u.id

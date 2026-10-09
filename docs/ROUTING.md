@@ -37,6 +37,12 @@ Después:
 
 No se usa distancia en línea recta para precios ni ETA.
 
+### Planificador por parada (módulo `trips`)
+`POST /v1/me/routes/plan` aplica esta guardia punto por punto y devuelve un veredicto por parada («Huelva (sugerida): fuera de provincia») con alternativas geocodificadas DENTRO de la provincia (solo si hay proveedor); mientras haya un punto fuera no se llama al proveedor de rutas. Con todos los puntos dentro calcula la ruta real tramo a tramo y comprueba la geometría completa (`ROUTE_LEAVES_PROVINCE` si ninguna alternativa cabe). Las horas de paso salen de la duración acumulada del proveedor y el desvío de una parada opcional es «ruta con la parada − ruta sin ella». `POST /v1/me/routes` repite TODO el cálculo en el servidor (no confía en un plan anterior) y la vuelta se calcula aparte con los puntos invertidos. La geometría que se enseña en pantalla se simplifica con `ST_SimplifyPreserveTopology`; la guardada para cálculos es la completa.
+
+### Estimaciones que no son rutas
+Los minutos a pie hasta un punto de recogida (línea recta × 1,3 a 4,5 km/h) y el desvío estimado de un punto en ruta (1 min + 2 × distancia a la ruta a 30 km/h) son ESTIMACIONES y la API las marca (`walk.estimated`, `detour.source`); nunca se usan para precios. Los precios y las horas de llegada usan siempre la distancia y la duración por carretera del proveedor.
+
 ## Geocodificación
 El adaptador soporta:
 - dirección -> coordenadas;

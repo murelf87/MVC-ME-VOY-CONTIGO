@@ -13,3 +13,7 @@ design/screens/
 design/screens-raw/
 design/logo-src/
 design/out/
+
+# Salidas de la vista previa (se regeneran con pnpm --prefix mobile preview:artifact)
+dist-preview/
+*.tsbuildinfo

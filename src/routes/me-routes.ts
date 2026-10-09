@@ -14,7 +14,7 @@ export async function registerMeRoutes(app: FastifyInstance, pool: Pool): Promis
       `select
          u.id,u.phone_e164,u.status,
          p.display_name,p.public_photo_key,p.public_photo_status,p.identity_status,p.presence_status,
-         coalesce(array_agg(ur.role) filter (where ur.role is not null),'{}') as roles
+         coalesce(array_agg(ur.role::text) filter (where ur.role is not null),'{}'::text[]) as roles
        from app_users u
        left join profiles p on p.user_id=u.id
        left join user_roles ur on ur.user_id=u.id

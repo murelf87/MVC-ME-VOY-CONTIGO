@@ -81,15 +81,28 @@ after(async () => {
   await pool.end();
 });
 
-test("geocoding requires an authenticated MVC session", async () => {
-  const response = await app.inject({
-    method: "GET",
-    url: "/v1/maps/geocode?query=Sevilla"
-  });
+test("a guest can geocode, but an invalid or malformed token is rejected", async () => {
+  const guest = await app.inject({ method: "GET", url: "/v1/maps/geocode?query=Sevilla" });
+  assert.equal(guest.statusCode, 200);
 
-  assert.equal(response.statusCode, 401);
-  const body = response.json() as { error: { code: string } };
-  assert.equal(body.error.code, "AUTH_REQUIRED");
+  const guestReverse = await app.inject({ method: "GET", url: "/v1/maps/reverse?latitude=37.3&longitude=-6" });
+  assert.equal(guestReverse.statusCode, 200);
+
+  const unknown = await app.inject({
+    method: "GET",
+    url: "/v1/maps/geocode?query=Sevilla",
+    headers: { authorization: "Bearer mvc_sess_no-existe" }
+  });
+  assert.equal(unknown.statusCode, 401);
+
+  const malformed = await app.inject({
+    method: "GET",
+    url: "/v1/maps/geocode?query=Sevilla",
+    headers: { authorization: "Token abc" }
+  });
+  assert.equal(malformed.statusCode, 401);
+  const body = malformed.json() as { error: { code: string } };
+  assert.equal(body.error.code, "AUTH_INVALID");
 });
 
 test("authenticated geocoding delegates to the configured provider", async () => {

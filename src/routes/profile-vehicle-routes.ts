@@ -25,7 +25,8 @@ const vehicleBody = {
     make: { type: "string", minLength: 1, maxLength: 80 },
     model: { type: "string", minLength: 1, maxLength: 80 },
     plate: { type: "string", minLength: 2, maxLength: 20 },
-    passengerSeats: { type: "integer", minimum: 1, maximum: 8 }
+    passengerSeats: { type: "integer", minimum: 1, maximum: 8 },
+    color: { type: ["string", "null"], maxLength: 40 }
   }
 } as const;
 

@@ -2,6 +2,8 @@ export type SmsProviderName = "disabled" | "twilio";
 export type MapsProviderName = "disabled" | "google";
 export type PrivateStorageProviderName = "disabled" | "s3";
 export type InsuranceOcrProviderName = "disabled" | "google_vision";
+/** Solo existe «disabled»: no se ha elegido proveedor de pagos (ver docs/contracts/money.md, decisiones pendientes). */
+export type PaymentsProviderName = "disabled";
 
 export type AppConfig = {
   nodeEnv: string;
@@ -31,6 +33,9 @@ export type AppConfig = {
   privateUploadTtlSeconds: number;
   insuranceOcrProvider: InsuranceOcrProviderName;
   googleVisionApiKey: string | undefined;
+  paymentsProvider: PaymentsProviderName;
+  /** Secreto de firma de webhooks de pagos. Ausente ⇒ todo webhook se rechaza. */
+  paymentsWebhookSecret: string | undefined;
 };
 
 function intEnv(name: string, fallback: number, min = 1, max = Number.MAX_SAFE_INTEGER): number {
@@ -55,6 +60,14 @@ function privateStorageProviderEnv(): PrivateStorageProviderName {
   const value = process.env.PRIVATE_STORAGE_PROVIDER ?? "disabled";
   if (value !== "disabled" && value !== "s3") {
     throw new Error("PRIVATE_STORAGE_PROVIDER must be disabled or s3");
+  }
+  return value;
+}
+
+function paymentsProviderEnv(): PaymentsProviderName {
+  const value = process.env.PAYMENTS_PROVIDER ?? "disabled";
+  if (value !== "disabled") {
+    throw new Error("PAYMENTS_PROVIDER must be disabled: no payments provider has been selected or integrated yet");
   }
   return value;
 }
@@ -106,6 +119,8 @@ export function loadConfig(): AppConfig {
     s3ForcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
     privateUploadTtlSeconds: intEnv("PRIVATE_UPLOAD_TTL_SECONDS", 600, 60, 3600),
     insuranceOcrProvider: insuranceOcrProviderEnv(),
-    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY
+    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY,
+    paymentsProvider: paymentsProviderEnv(),
+    paymentsWebhookSecret: process.env.PAYMENTS_WEBHOOK_SECRET || undefined
   };
 }
