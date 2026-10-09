@@ -244,7 +244,7 @@ export const requestStrings = {
     steps: ["Solicitud", "Aceptada", "Pago", "Confirmada"] as const,
     accepted: "¡Solicitud aceptada!",
     acceptedBy: (name: string): string => `${name} ha aceptado tu solicitud.`,
-    acceptedWeeklyBy: (name: string): string => `${name} ha aceptado tus solicitudes.`,
+    acceptedWeeklyBy: (name: string): string => `${name} ha aceptado tu solicitud.`,
     holdTitle: "Tu plaza queda reservada provisionalmente durante",
     holdInfo: "Completa el pago para confirmar la plaza. Si no pagas a tiempo, la reserva se liberará.",
     holdSeconds: (seconds: number): string => formatCountdown(seconds),
@@ -269,6 +269,14 @@ export const requestStrings = {
     payBlocked: "Pago no disponible",
     rejectedBandTitle: "Si la solicitud es rechazada",
     rejectedBandMessage: "Te avisaremos y no se realizará ningún cobro.",
+    rejectedSheetMessage:
+      "Si el conductor no puede llevarte al final, te lo diremos enseguida y no se hará ningún cobro. Tu plaza solo queda confirmada cuando el servidor recibe el pago a tiempo.",
+    rejectedSheetClose: "Entendido",
+    sheetFailedTitle: "No hemos podido abrir la hoja de pago",
+    sheetFailedMessage: "No se ha cobrado nada. Inténtalo de nuevo o elige otro método.",
+    withdrawing: "Retirando…",
+    addCardHint: "Añade una tarjeta para poder pagar con ella.",
+    refresh: "Actualizar",
     // pendiente de respuesta
     waitingTitle: (name: string): string => `Esperando a ${name}`,
     waitingMessage: "El conductor tiene que aceptar tu solicitud. No se realiza ningún cobro todavía.",

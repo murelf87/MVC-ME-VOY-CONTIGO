@@ -14,6 +14,9 @@ import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { PickupPointScreen } from "./request/screens/PickupPointScreen";
 import { ReviewRequestScreen } from "./request/screens/ReviewRequestScreen";
+import { RequestStatusScreen } from "./request/screens/RequestStatusScreen";
+import { PaymentProcessingScreen } from "./request/screens/PaymentProcessingScreen";
+import { PaymentResultScreen } from "./request/screens/PaymentResultScreen";
 import type { IsoDate, LocalTime, SearchMode, TripCategory, TripLeg, Weekday } from "@/api/types";
 import { MapHomeScreen } from "./browse/screens/MapHomeScreen";
 import { WeeklySeatScreen } from "./request/screens/WeeklySeatScreen";
@@ -111,7 +114,7 @@ export const searchRoutes: RouteDef[] = [
   defineRoute({ name: "PickupPoint", component: PickupPointScreen, access: "public", screen: "13", title: "Punto de recogida" }),
   defineRoute({ name: "WeeklySeat", component: WeeklySeatScreen, access: "public", screen: "14", title: "Tu plaza semanal", previewParams: { tripId: "9f0e1d2c-4b3a-4a59-8877-665544330001", pickupPointId: "pp1_WzEsIjlmMGUxZDJjLTRiM2EtNGE1OS04ODc3LTY2NTU0NDMzMDAwMSIsMzcuMzQwMywtNS45MzcsMCwxNl0" } }),
   defineRoute({ name: "ReviewRequest", component: ReviewRequestScreen, access: "auth", screen: "15", title: "Revisa tu solicitud" }),
-  defineRoute({ name: "RequestStatusPayment", component: PendingScreen, access: "auth", screen: "16", title: "Estado y pago" }),
+  defineRoute({ name: "RequestStatusPayment", component: RequestStatusScreen, access: "auth", screen: "16", title: "Estado y pago" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({
     name: "PlaceSearch",
@@ -120,6 +123,6 @@ export const searchRoutes: RouteDef[] = [
     title: "Buscar lugar",
     previewParams: { field: "destination" },
   }),
-  defineRoute({ name: "PaymentProcessing", component: PendingScreen, access: "auth", title: "Procesando el pago" }),
-  defineRoute({ name: "PaymentResult", component: PendingScreen, access: "auth", title: "Resultado del pago" }),
+  defineRoute({ name: "PaymentProcessing", component: PaymentProcessingScreen, access: "auth", title: "Procesando el pago" }),
+  defineRoute({ name: "PaymentResult", component: PaymentResultScreen, access: "auth", title: "Resultado del pago" }),
 ];

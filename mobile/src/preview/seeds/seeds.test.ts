@@ -757,7 +757,7 @@ describe("referencias simbólicas ($ref) a datos sembrados", () => {
     assert.throws(() => resolveRefsIn(db, { id: { $ref: "request.nadie" } }), (error: unknown) => {
       assert.ok(error instanceof SeedRefError);
       assert.match(error.message, /Referencia desconocida «request\.nadie»/);
-      assert.match(error.message, /request\.miguel/, "propone los nombres que sí existen");
+      assert.match(error.message, /Hay \d+: [a-zA-Z]+\.[a-zA-Z]+/, "propone los nombres que sí existen");
       return true;
     });
     assert.throws(() => resolveRefsIn(db, { requestId: { $ref: "request.miguel" } }), (error: unknown) => {
@@ -872,11 +872,10 @@ describe("contrato con los slices", () => {
 
   it("un slice declara sus variantes de datos con seedVariants: se aceptan, se listan con su dueño y se construyen en seedSlice", () => {
     assert.deepEqual(
-      listSeedVariants().map((v) => v.name),
+      listSeedVariants().filter((v) => v.owner === "core").map((v) => v.name),
       [...VARIANTS],
-      "sin slices que declaren nada, solo las del núcleo"
+      "las del núcleo, además de las que declaren los slices ya cargados"
     );
-    assert.ok(listSeedVariants().every((v) => v.owner === "core"));
     assert.equal(isAcceptedSeed("bandeja-con-no-leidos"), false);
 
     const slices = PREVIEW_SLICES as PreviewSlice[];

@@ -8,7 +8,8 @@
 import { SEED_IDS, seedConfirmedRider, stableUuid, type PreviewDb, type PreviewProfileId, type RideRequestRow } from "@/preview";
 import { addPaymentMethod } from "@/features/account/preview/moneyDomain";
 import { writeConfig } from "@/features/account/preview/moneyRows";
-import { loadTripGeometry } from "./browseGeometry";
+import { encodePickupId, loadTripGeometry } from "./browseGeometry";
+import { createWeekly, weeklyRequests } from "./requestWeekly";
 import { EXAMPLE_TARIFF, metaFor, readPreviewTariff, setPreviewTariff, tripMetaTable } from "./browseMeta";
 import { computeQuote } from "./browseQuote";
 import { quoteLocks } from "./requestDetail";
@@ -17,6 +18,12 @@ import { stopAddresses } from "./requestPickup";
 const TRIP = SEED_IDS.trips.anaMorning;
 const MIGUEL = SEED_IDS.users.miguel;
 /** 14:52 — la cuenta atrás que enseña la lámina 16. */
+/**
+ * Tarifa de las láminas 16: 6 km → «Tu aportación (ejemplo) 6,00 €» y la gestión MVC SIN definir (la comisión no está
+ * aprobada): «Gestión MVC · Por definir» y «Total · Por definir». Con ella no se puede cobrar (importe sin definir).
+ */
+const BOARD16_TARIFF = { version: 1, rateMicrosPerKm: 1_000_000, passengerCommissionBps: null, sharedCostCapCents: null } as const;
+
 const HOLD_LAB_MS = (14 * 60 + 52) * 1000;
 
 export const requestSeedVariants: Readonly<Record<string, string>> = {
@@ -28,6 +35,7 @@ export const requestSeedVariants: Readonly<Record<string, string>> = {
   "req-hold-expired": "Ana aceptó pero Miguel no pagó a tiempo: la plaza se liberó y la solicitud caducó.",
   "req-rejected": "Ana rechazó la solicitud de Miguel.",
   "req-confirmed": "Plaza confirmada: Miguel ya tiene reserva en el viaje de Ana.",
+  "req-weekly-awaiting-payment": "Lámina 16b: reserva semanal de Miguel (lunes, miércoles y viernes, ida) aceptada por Ana; plaza retenida 14:52 y pago por hacer; proveedor de pagos DESACTIVADO.",
 };
 
 function seedViewerRequest(
@@ -95,7 +103,8 @@ export function seedRequestVariant(db: PreviewDb, _profile: PreviewProfileId, se
       seedViewerRequest(db, "pending", null, "active");
       return;
     case "req-awaiting-payment":
-      setPreviewTariff(db, EXAMPLE_TARIFF);
+      applyBoard13(db);
+      setPreviewTariff(db, BOARD16_TARIFF);
       seedViewerRequest(db, "payment_pending", HOLD_LAB_MS, "active");
       return;
     case "req-awaiting-payment-live":
@@ -120,8 +129,41 @@ export function seedRequestVariant(db: PreviewDb, _profile: PreviewProfileId, se
       seedConfirmedRider(db, trip, { user: "miguel", from: 0, to: last });
       return;
     }
+    case "req-weekly-awaiting-payment":
+      seedWeeklyAwaiting(db);
+      return;
     default:
       return;
+  }
+}
+
+/** Reserva semanal ya aceptada por el conductor: cada solicitud queda `payment_pending` con su plaza retenida. */
+function seedWeeklyAwaiting(db: PreviewDb): void {
+  applyBoard13(db);
+  setPreviewTariff(db, BOARD16_TARIFF);
+  const trip = db.trips.get(TRIP);
+  const first = trip ? loadTripGeometry(db, trip, metaFor(db, trip.id)).stops[0] : undefined;
+  if (!trip || !first) return;
+  const miguel = { sessionId: "preview-seed", userId: MIGUEL, roles: ["passenger" as const], expiresAt: "2099-01-01T00:00:00.000Z" };
+  const reservation = createWeekly(db, miguel, trip.id, {
+    pickupPointId: encodePickupId(trip.id, { lat: first.lat, lng: first.lng }, 0, 4),
+    weekdays: ["mon", "wed", "fri"],
+    legs: ["outbound"],
+    startDate: "2026-10-05",
+    weeks: 1,
+  });
+  const now = db.nowMs();
+  for (const request of weeklyRequests(db, reservation.id)) {
+    db.rideRequests.update(request.id, { status: "payment_pending", updated_at: now - 2 * 60_000 });
+    db.seatHolds.insert({
+      id: stableUuid(`hold:weekly:${request.id}`),
+      request_id: request.id,
+      status: "active",
+      expires_at: now + HOLD_LAB_MS,
+      released_at: null,
+      consumed_at: null,
+      created_at: now - 5 * 60_000,
+    });
   }
 }
 

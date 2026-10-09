@@ -17,6 +17,8 @@
  */
 import type { CreatePaymentIntentRequest, WeeklyRequestBody } from "@/api/types";
 import {
+  SEED_IDS,
+  registerSeedRef,
   reply,
   setExtendedRideRequestCreator,
   uuidParam,
@@ -30,7 +32,7 @@ import { getRideRequest, withdrawRideRequest } from "./requestDetail";
 import { createPaymentIntent, getPayment, requestPaymentContext } from "./requestPayments";
 import { proposePickupPoints } from "./requestPickup";
 import { requestSeedVariants as variantTable, seedRequestVariant } from "./requestVariants";
-import { createWeekly, getWeekly, previewWeekly, withdrawWeekly } from "./requestWeekly";
+import { createWeekly, getWeekly, previewWeekly, weeklyRequests, weeklyTable, withdrawWeekly } from "./requestWeekly";
 
 const isoDate: JsonSchema = { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" };
 const weekday: JsonSchema = { type: "string", enum: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] };
@@ -71,6 +73,12 @@ const intentBody: JsonSchema = {
 };
 
 export function registerRequestPreview(r: PreviewRouter, db: PreviewDb): void {
+  // Referencias para los escenarios de diseño (lámina 16b): la reserva semanal de Miguel y su primera solicitud.
+  registerSeedRef("weekly.miguel", (database) => weeklyTable(database).filter((w) => w.passenger_user_id === SEED_IDS.users.miguel).sort((a, b) => b.created_at - a.created_at)[0]?.id);
+  registerSeedRef("weekly.miguelRequest", (database) => {
+    const reservation = weeklyTable(database).filter((w) => w.passenger_user_id === SEED_IDS.users.miguel).sort((a, b) => b.created_at - a.created_at)[0];
+    return reservation === undefined ? undefined : weeklyRequests(database, reservation.id)[0]?.id;
+  });
   setExtendedRideRequestCreator((database, principal, tripId, body, requestId) => createRequestWithPickup(database, principal, tripId, body, requestId));
 
   r.get<{ Params: { tripId: string }; Query: { lat: number; lng: number; dropoffStopSeq?: number; limit?: number } }>(

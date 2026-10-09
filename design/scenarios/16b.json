@@ -1,0 +1,11 @@
+{
+  "screen": "16b",
+  "variant": "b",
+  "profile": "passenger",
+  "route": "RequestStatusPayment",
+  "params": { "requestId": { "$ref": "weekly.miguelRequest" }, "reservationId": { "$ref": "weekly.miguel" } },
+  "seed": "req-weekly-awaiting-payment",
+  "clock": "2026-10-05T07:58:00+02:00",
+  "steps": [{ "wait": 1500 }],
+  "note": "Estado y pago de la reserva semanal: «Aportación semanal (ejemplo)» y «Gestión MVC · Por definir»."
+}

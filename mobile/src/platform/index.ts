@@ -9,6 +9,8 @@ export { DEVICE_ID_KEY, getDeviceId } from "./deviceId";
 export { captureSelfie, getCameraPermission, guessImageMime, pickPhotoFromLibrary, requestCameraPermission, takePhoto } from "./camera";
 export type { ImagePickFailure, ImagePickResult, PickedImage, TakePhotoOptions } from "./camera";
 export { pickDocument } from "./documents";
+export { presentWalletSheet } from "./paymentSheet";
+export type { WalletSheetRequest, WalletSheetResult } from "./paymentSheet";
 export type { DocumentPickResult, PickDocumentOptions, PickedDocument } from "./documents";
 export {
   hapticError,

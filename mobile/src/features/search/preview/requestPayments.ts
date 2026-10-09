@@ -190,7 +190,8 @@ export function requestPaymentContext(db: PreviewDb, userId: string, requestId: 
 export function createPaymentIntent(db: PreviewDb, userId: string, requestId: string, body: CreatePaymentIntentRequest): CreatePaymentIntentResponse {
   const context = requestPaymentContext(db, userId, requestId);
   if (context.cannotPayReason) {
-    return fail(context.cannotPayReason.code, context.cannotPayReason.message, 409);
+    const details = context.cannotPayReason.code === "PAYMENT_ALREADY_OPEN" && context.payment ? { paymentId: context.payment.id } : undefined;
+    return fail(context.cannotPayReason.code, context.cannotPayReason.message, 409, details);
   }
   const kind = body.method.kind;
   const option = context.methods.find((m) => m.kind === kind);

@@ -267,8 +267,10 @@ describe("comisión y próximo abono", () => {
       "MVC todavía no ha definido la comisión de la plataforma. Cuando se apruebe, la verás aquí y en el desglose de cada pago antes de confirmarlo.",
     ]);
     const info = { status: "defined" as const, passengerRateBps: 1000, driverRateBps: 750 };
-    assert.deepEqual(commissionParagraphs(info, "passenger").slice(0, 1), ["Comisión al pasajero: 10 %"]);
-    assert.deepEqual(commissionParagraphs(info, "driver").slice(0, 1), ["Comisión al conductor: 7,5 %"]);
+    // Según el ICU de la plataforma el espacio antes de «%» es normal o no separable: se compara sin esa diferencia.
+    const plain = (lines: string[]): string[] => lines.map((line) => line.replace(/\u00a0/g, " "));
+    assert.deepEqual(plain(commissionParagraphs(info, "passenger").slice(0, 1)), ["Comisión al pasajero: 10 %"]);
+    assert.deepEqual(plain(commissionParagraphs(info, "driver").slice(0, 1)), ["Comisión al conductor: 7,5 %"]);
     assert.equal(commissionParagraphs(info, "both").length, 3);
     // Definida pero sin la tasa del rol pedido: vuelve al texto de «por definir».
     assert.equal(commissionParagraphs({ status: "defined", passengerRateBps: null, driverRateBps: 750 }, "passenger").length, 1);
