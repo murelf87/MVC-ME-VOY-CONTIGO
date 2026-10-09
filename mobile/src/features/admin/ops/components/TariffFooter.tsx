@@ -57,7 +57,7 @@ export function TariffFooter({ auditNote, saving, dirty, canWrite, onSave, testI
           </Text>
         </View>
       )}
-      <View style={styles.lock} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={styles.lock} aria-hidden>
         <Icon name="lock" size={19} color={colors.text.strong} />
       </View>
       <Text variant="rowText" size={14} lineHeight={19} color={colors.text.muted} style={styles.note} testID={`${testID}.note`}>

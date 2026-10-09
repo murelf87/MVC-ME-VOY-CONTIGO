@@ -18,6 +18,7 @@ export interface AppSessionView {
 export interface AppRouteInfo {
   name: string;
   slice: string;
+  access: "public" | "auth" | "staff";
   screen?: string;
   title?: string;
   params?: Record<string, unknown> | null;

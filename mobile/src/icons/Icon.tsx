@@ -50,8 +50,7 @@ export function Icon({
       accessible={accessible}
       accessibilityRole={accessible ? "image" : undefined}
       accessibilityLabel={accessibilityLabel}
-      accessibilityElementsHidden={!accessible}
-      importantForAccessibility={accessible ? "yes" : "no-hide-descendants"}
+      aria-hidden={!accessible}
     >
       {glyph}
     </View>

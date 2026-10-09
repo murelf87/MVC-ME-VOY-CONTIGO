@@ -32,7 +32,7 @@ export function OccupancyStrip({ occupancy, testID }: OccupancyStripProps): Reac
       </View>
 
       {occupancy.dots.length > 0 ? (
-        <View style={styles.strip} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <View style={styles.strip} aria-hidden>
           {occupancy.dots.map((active, index) => (
             <React.Fragment key={`dot-${index}`}>
               {index > 0 ? <View style={[styles.link, { backgroundColor: occupancy.links[index - 1] === true ? IN_RANGE_LINK : OUT_LINK }]} /> : null}

@@ -33,7 +33,7 @@ export function CommissionRow({ label, value, variant = "a", onPress, accessibil
       onPress={onPress}
       style={({ pressed }) => [styles.commission, { backgroundColor: pressed ? surfaces.blue.pressed : surfaces.blue.background, borderColor: surfaces.blue.border }]}
     >
-      <View style={{ marginLeft: iconLeft }} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={{ marginLeft: iconLeft }} aria-hidden>
         <Icon name="help" size={31} color={colors.primary} />
       </View>
       <Text variant="subtitle" color="heading" size={19.5} lineHeight={24} letterSpacing={-0.2} numberOfLines={1} style={[styles.commissionLabel, { marginLeft: variant === "a" ? 13 : 13 }]}>
@@ -42,7 +42,7 @@ export function CommissionRow({ label, value, variant = "a", onPress, accessibil
       <Text variant="subtitle" color="heading" size={19.5} lineHeight={24} letterSpacing={-0.2} numberOfLines={1} style={styles.commissionValue}>
         {value}
       </Text>
-      <View style={styles.commissionChevron} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={styles.commissionChevron} aria-hidden>
         <Icon name="chevronRight" size={26} color={colors.primary} />
       </View>
     </Pressable>
@@ -70,13 +70,13 @@ export function LinkRow({ label, icon, onPress, accessibilityHint, testID }: Lin
       onPress={onPress}
       style={({ pressed }) => [styles.link, { backgroundColor: pressed ? colors.bg.tintSoft : colors.bg.white }]}
     >
-      <View style={styles.linkIcon} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={styles.linkIcon} aria-hidden>
         <Icon name={icon} size={36} color={colors.primary} />
       </View>
       <Text variant="subtitle" color="heading" size={19.5} lineHeight={24} letterSpacing={-0.2} numberOfLines={1} style={styles.linkLabel}>
         {label}
       </Text>
-      <View style={styles.linkChevron} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={styles.linkChevron} aria-hidden>
         <Icon name="chevronRight" size={26} color={colors.primary} />
       </View>
     </Pressable>
@@ -105,13 +105,13 @@ export function LinkGroup({ links, testID }: { links: readonly GroupLink[]; test
           onPress={link.onPress}
           style={({ pressed }) => [styles.groupRow, { backgroundColor: pressed ? colors.bg.tintSoft : "transparent" }]}
         >
-          <View style={styles.groupIcon} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          <View style={styles.groupIcon} aria-hidden>
             <Icon name={link.icon} size={link.icon === "help" ? 31 : 34} color={colors.primary} />
           </View>
           <Text variant="subtitle" color="heading" weight="medium" size={19.5} lineHeight={24} letterSpacing={-0.2} numberOfLines={1} style={styles.groupLabel}>
             {link.label}
           </Text>
-          <View style={styles.groupChevron} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          <View style={styles.groupChevron} aria-hidden>
             <Icon name="chevronRight" size={26} color={colors.primary} />
           </View>
           {index < links.length - 1 ? <View style={styles.groupDivider} /> : null}

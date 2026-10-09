@@ -46,8 +46,7 @@ export function Skeleton({ width = "100%", height = 16, radius = radii.sm, circl
   }, [reduced, opacity]);
   return (
     <Animated.View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      aria-hidden
       style={[{ width, height, borderRadius: circle ? height / 2 : radius, backgroundColor: colors.bg.skeleton, opacity }, style]}
     />
   );

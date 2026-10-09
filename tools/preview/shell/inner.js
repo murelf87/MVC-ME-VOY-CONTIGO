@@ -408,7 +408,14 @@
   shell.statusBar = function () { return { style: sb.style, hidden: sb.hidden }; };
 
   /* ───────────── Nube apagada: nada sale del navegador ───────────── */
-  function isRemote(u) { return !/^(data|blob|about|javascript):/i.test(String(u)); }
+  /* Servidor de desarrollo (compare.mjs --dev, smoke.mjs --dev): su origen se permite (bundle, recursos, HMR por WebSocket). */
+  var DEV_ORIGIN = (function () { try { return typeof W.__MVC_DEV_ORIGIN__ === 'string' ? W.__MVC_DEV_ORIGIN__.replace(/\/$/, '') : null; } catch (e) { return null; } })();
+  function isDev(u) {
+    if (!DEV_ORIGIN) return false;
+    var s = String(u).replace(/^ws(s?):/i, 'http$1:');
+    return s === DEV_ORIGIN || s.indexOf(DEV_ORIGIN + '/') === 0 || s.indexOf(DEV_ORIGIN + '?') === 0;
+  }
+  function isRemote(u) { return !/^(data|blob|about|javascript):/i.test(String(u)) && !isDev(u); }
   function noteBlocked(kind, u) {
     if (blocked.length < 50) blocked.push({ kind: kind, url: String(u).slice(0, 300) });
     emit('blocked', { kind: kind, url: String(u).slice(0, 300) });
@@ -442,7 +449,17 @@
       }
     } catch (e) { /* sin XHR */ }
     try {
-      if (W.WebSocket) W.WebSocket = function (u) { noteBlocked('WebSocket', u); throw new DOMException('WebSocket bloqueado en la vista previa', 'SecurityError'); };
+      if (W.WebSocket) {
+        var RealWS = W.WebSocket;
+        var GuardedWS = function (u, protocols) {
+          if (isDev(u)) return protocols === undefined ? new RealWS(u) : new RealWS(u, protocols);
+          noteBlocked('WebSocket', u);
+          throw new DOMException('WebSocket bloqueado en la vista previa', 'SecurityError');
+        };
+        GuardedWS.prototype = RealWS.prototype;
+        GuardedWS.CONNECTING = RealWS.CONNECTING; GuardedWS.OPEN = RealWS.OPEN; GuardedWS.CLOSING = RealWS.CLOSING; GuardedWS.CLOSED = RealWS.CLOSED;
+        W.WebSocket = GuardedWS;
+      }
       if (W.EventSource) W.EventSource = function (u) { noteBlocked('EventSource', u); throw new DOMException('EventSource bloqueado en la vista previa', 'SecurityError'); };
       if (navigator.sendBeacon) navigator.sendBeacon = function (u) { noteBlocked('beacon', u); return false; };
     } catch (e) { /* sin esas APIs */ }

@@ -58,7 +58,7 @@ export function CountBadge({
       testID={testID}
       accessible={accessible}
       accessibilityLabel={accessibilityLabel}
-      importantForAccessibility={accessible ? "yes" : "no-hide-descendants"}
+      aria-hidden={!accessible}
       style={[styles.base, base, style]}
     >
       {dot ? null : (

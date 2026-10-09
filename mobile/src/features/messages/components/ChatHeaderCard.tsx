@@ -80,7 +80,7 @@ export function ChatHeaderCard({ detail, now, onOpenBooking, onOpenPickup, onOpe
     return (
       <View testID={testID} style={styles.card}>
         <View style={styles.top}>
-          <View style={styles.groupTile} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <View style={styles.groupTile} aria-hidden>
             <Icon name="people" size={42} color={colors.primary} />
           </View>
           <View style={styles.info}>

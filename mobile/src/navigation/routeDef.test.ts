@@ -76,9 +76,9 @@ describe("toRouteCatalog", () => {
         },
       ]),
     );
-    assert.deepEqual(catalog[0], { name: "MapHome", slice: "search", screen: "09", title: "Mapa", params: null });
-    assert.deepEqual(catalog[1], { name: "TripResults", slice: "search", params: { criteria: { x: 1 } } });
-    assert.deepEqual(catalog[2], { name: "DefineRoute", slice: "search" });
+    assert.deepEqual(catalog[0], { name: "MapHome", slice: "search", access: "public", screen: "09", title: "Mapa", params: null });
+    assert.deepEqual(catalog[1], { name: "TripResults", slice: "search", access: "auth", params: { criteria: { x: 1 } } });
+    assert.deepEqual(catalog[2], { name: "DefineRoute", slice: "search", access: "auth" });
   });
 });
 

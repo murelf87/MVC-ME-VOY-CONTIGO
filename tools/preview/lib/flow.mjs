@@ -83,12 +83,17 @@ export class Session {
     const u = new URL(this.url);
     if (this.dev !== null) u.searchParams.set('chrome', '0');
     for (const [k, v] of new URLSearchParams(query)) u.searchParams.set(k, v);
-    await this.page.goto(u.href);
-    if (this.dev !== null) {
+    if (this.dev !== null && !this._innerInjected) {
       // Servidor de desarrollo: no hay visor, así que se inyecta el puente del visor dentro de la app (igual que compare.mjs --dev).
+      // Como guion de INICIO (antes del bundle), igual que en el artefacto exportado (inner.js va en <head>): así el guardián de
+      // red de inner.js queda DEBAJO del fetch del backend simulado. Inyectado después de cargar, el guardián tapaba el API
+      // simulado y toda petición de la app fallaba («Failed to fetch»): las pantallas se comparaban sin datos.
       const shellJs = path.join(TOOLS_PREVIEW, 'shell', 'inner.js');
-      if (fs.existsSync(shellJs)) await this.page.addScriptTag({ path: shellJs });
+      await this.page.addInitScript(`window.__MVC_DEV_ORIGIN__ = ${JSON.stringify(String(this.dev).replace(/\/$/, ''))};`);
+      if (fs.existsSync(shellJs)) await this.page.addInitScript({ path: shellJs });
+      this._innerInjected = true;
     }
+    await this.page.goto(u.href);
     this._frame = await findAppFrame(this.page, { timeout, requireBridge });
     await this.waitReady(timeout);
     return this._frame;

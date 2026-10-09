@@ -29,8 +29,7 @@ export function MapThumbnail({ width = VIEW_W, height = VIEW_H, style }: MapThum
   return (
     <View
       style={[styles.tile, { width, height }, style]}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      aria-hidden
     >
       <Svg width={width} height={height} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid slice">
         <Rect x={0} y={0} width={VIEW_W} height={VIEW_H} fill={BLOCK} />

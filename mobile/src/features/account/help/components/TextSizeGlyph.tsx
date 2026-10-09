@@ -17,7 +17,7 @@ export interface TextSizeGlyphProps {
 export function TextSizeGlyph({ color = colors.text.link }: TextSizeGlyphProps): React.JSX.Element {
   const family = fontFamilyFor("bold");
   return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.box}>
+    <View aria-hidden style={styles.box}>
       <View style={[styles.bar, { backgroundColor: color }]} />
       <RNText allowFontScaling={false} style={[styles.small, { color, fontFamily: family }]}>
         A

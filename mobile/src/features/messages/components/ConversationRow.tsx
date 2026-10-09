@@ -37,7 +37,7 @@ export const ConversationRow = React.memo(function ConversationRow({ conversatio
     >
       <View style={styles.leading}>
         {isGroup ? (
-          <View style={styles.groupTile} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <View style={styles.groupTile} aria-hidden>
             <Icon name="people" size={40} color={colors.primary} />
           </View>
         ) : (
@@ -67,8 +67,7 @@ export const ConversationRow = React.memo(function ConversationRow({ conversatio
           <View
             testID={`Inbox.badge.${conversation.id}`}
             style={styles.badge}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
+            aria-hidden
           >
             <Text variant="rowTextStrong" color="inverse" weight="bold" size={19} lineHeight={22} letterSpacing={0}>
               {badgeText(conversation.unreadCount)}

@@ -91,6 +91,8 @@ export function assembleRoutes(groups: readonly RouteGroup[]): RegisteredRoute[]
 export interface RouteCatalogEntry {
   name: string;
   slice: string;
+  /** Nivel de acceso declarado (`public` | `auth` | `staff`): el visor elige con él el perfil con el que abrir la ruta. */
+  access: RouteAccess;
   screen?: string;
   title?: string;
   params?: Record<string, unknown> | null;
@@ -101,6 +103,7 @@ export function toRouteCatalog(routes: readonly RegisteredRoute[]): RouteCatalog
   return routes.map((route) => ({
     name: route.name,
     slice: route.slice,
+    access: route.access,
     ...(route.screen !== undefined ? { screen: route.screen } : {}),
     ...(route.title !== undefined ? { title: route.title } : {}),
     ...(route.previewParams !== undefined ? { params: route.previewParams } : {}),

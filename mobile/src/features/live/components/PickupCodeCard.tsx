@@ -39,7 +39,7 @@ function CodeBoxes({ digits, testID }: { digits: readonly string[]; testID?: str
   return (
     <View onLayout={onLayout} style={[styles.boxes, { gap: metrics.gap }]} testID={testID}>
       {digits.map((digit, index) => (
-        <View key={index} style={[styles.box, { width: metrics.size, height: metrics.height }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <View key={index} style={[styles.box, { width: metrics.size, height: metrics.height }]} aria-hidden>
           <Text variant="code" color="heading" size={metrics.font} lineHeight={Math.round(metrics.font * 1.1)}>
             {digit}
           </Text>

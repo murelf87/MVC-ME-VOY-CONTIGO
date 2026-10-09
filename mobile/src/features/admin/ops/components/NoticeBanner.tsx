@@ -25,7 +25,7 @@ export function breakApplyNote(text: string): string {
 export function NoticeBanner({ text, testID }: NoticeBannerProps): React.JSX.Element {
   return (
     <View style={styles.banner} testID={testID} accessible accessibilityRole="text" accessibilityLabel={text}>
-      <View style={styles.disc} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={styles.disc} aria-hidden>
         <Icon name="lock" size={19} color={colors.text.link} />
       </View>
       <Text variant="rowText" size={14.6} lineHeight={18} color={colors.text.link} style={styles.text}>

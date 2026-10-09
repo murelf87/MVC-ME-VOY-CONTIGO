@@ -28,7 +28,7 @@ export const FAKE_ROUTES = ["Welcome", "Home", "SearchResults", "TripDetail", "D
 
 export function createFakeApp(runtime: PreviewRuntime, routeNames: readonly string[] = FAKE_ROUTES): FakeApp {
   const api = createApi(runtime);
-  const catalog: AppRouteInfo[] = routeNames.map((name) => ({ name, slice: "test" }));
+  const catalog: AppRouteInfo[] = routeNames.map((name) => ({ name, slice: "test", access: name.startsWith("Admin") ? "staff" : "public" }));
   const app: FakeApp = {
     state: { status: "booting", token: null, activeRole: null, navReady: true, history: [] },
     calls: [],

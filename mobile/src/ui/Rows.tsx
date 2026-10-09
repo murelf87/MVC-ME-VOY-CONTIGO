@@ -18,7 +18,7 @@ export interface DividerProps {
 export function Divider({ label, inset = 0, style }: DividerProps): React.JSX.Element {
   if (label !== undefined) {
     return (
-      <View style={[styles.labelled, { marginHorizontal: inset }, style]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={[styles.labelled, { marginHorizontal: inset }, style]} aria-hidden>
         <View style={styles.line} />
         <Text variant="body" color="muted" size={17} style={styles.labelText}>
           {label}
@@ -27,7 +27,7 @@ export function Divider({ label, inset = 0, style }: DividerProps): React.JSX.El
       </View>
     );
   }
-  return <View style={[styles.divider, { marginHorizontal: inset }, style]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />;
+  return <View style={[styles.divider, { marginHorizontal: inset }, style]} aria-hidden />;
 }
 
 // ── SectionHeader ──────────────────────────────────────────────────────────────────────────────────────────────────

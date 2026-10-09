@@ -17,8 +17,7 @@ export function WelcomeSheetEdge({ width }: { width: number }): React.JSX.Elemen
       height={SHEET_EDGE_HEIGHT}
       viewBox="0 0 393 20"
       preserveAspectRatio="none"
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      aria-hidden
     >
       <Path
         d="M0 20 V12 C0 9.4 1.9 7.8 4.4 8.1 C45 9.2 70 13.35 115 13.35 H270 C320 13.35 345 9.2 388.6 8.1 C391.1 7.8 393 9.4 393 12 V20 Z"

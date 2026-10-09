@@ -71,7 +71,7 @@ export function MethodCard({ method, emptyTitle, emptyMessage, density = "regula
         { minHeight: spec.height, backgroundColor: pressed ? surfaces.blue.pressed : surfaces.blue.background, borderColor: surfaces.blue.border },
       ]}
     >
-      <View style={[styles.icon, { left: spec.iconLeft, top: (spec.height - 44) / 2 }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={[styles.icon, { left: spec.iconLeft, top: (spec.height - 44) / 2 }]} aria-hidden>
         <Icon name={iconFor(method)} size={44} color={method !== null ? ink.cardIcon : colors.text.muted} />
       </View>
       <View style={{ paddingLeft: spec.textLeft, paddingTop: titleTop - 1, paddingRight: chip !== null ? 140 : 44, paddingBottom: 10 }}>
@@ -94,7 +94,7 @@ export function MethodCard({ method, emptyTitle, emptyMessage, density = "regula
           <StatusPill label={chip.label} tone={chip.tone} size="sm" />
         </View>
       ) : null}
-      <View style={[styles.chevron, { right: spec.chevronRight, top: (spec.height - 26) / 2 }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={[styles.chevron, { right: spec.chevronRight, top: (spec.height - 26) / 2 }]} aria-hidden>
         <Icon name="chevronRight" size={26} color={colors.primary} />
       </View>
     </Pressable>

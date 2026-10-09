@@ -34,7 +34,7 @@ export function NextPayoutCard({ title, value, amountText, onPress, accessibilit
       onPress={onPress}
       style={({ pressed }) => [styles.card, { backgroundColor: pressed ? surfaces.blue.pressed : surfaces.blue.background, borderColor: surfaces.blue.border }]}
     >
-      <View style={styles.icon} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={styles.icon} aria-hidden>
         <Icon name="calendarGrid" size={50} color={colors.heading} />
       </View>
       <View style={{ paddingLeft: 107.5, paddingTop: titleTop - 1, paddingRight: 52, paddingBottom: 12 }}>
@@ -54,7 +54,7 @@ export function NextPayoutCard({ title, value, amountText, onPress, accessibilit
           {amountText !== undefined && amountText !== null ? `${value} · ${amountText}` : value}
         </Text>
       </View>
-      <View style={styles.info} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={styles.info} aria-hidden>
         <Icon name="infoOutline" size={30} color={colors.text.deep} />
       </View>
     </Pressable>

@@ -1018,11 +1018,14 @@ async function main() {
         onViolation: (m) => pageLog.externalRequests.push(m),
       });
       const u = viewerUrl(url, { chrome: '0', profile: target.profile, device: target.device, perm: target.perm, seed: target.seed, clock: target.clock });
-      await page.goto(u, { waitUntil: 'load', timeout });
       if (args['inject-shell']) {
+        // Guion de INICIO (antes del bundle), como en el artefacto exportado: el guardián de red de inner.js debe quedar
+        // debajo del fetch del backend simulado; inyectado tras la carga tapaba el API y la app se comparaba sin datos.
         const shellJs = path.join(ROOT, 'tools/preview/shell/inner.js');
-        if (fs.existsSync(shellJs)) await page.addScriptTag({ path: shellJs });
+        if (devOrigin !== null) await page.addInitScript(`window.__MVC_DEV_ORIGIN__ = ${JSON.stringify(String(devOrigin).replace(/\/$/, ''))};`);
+        if (fs.existsSync(shellJs)) await page.addInitScript({ path: shellJs });
       }
+      await page.goto(u, { waitUntil: 'load', timeout });
       frame = await findAppFrame(page, { timeout });
       await waitAppReady(frame, { timeout });
     };

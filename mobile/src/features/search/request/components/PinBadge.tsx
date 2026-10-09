@@ -31,7 +31,7 @@ export function PinBadge({ letter, tone, width = 40, testID }: PinBadgeProps): R
   const height = Math.round(width * 1.2);
   const headHeight = height * (28 / 37);
   return (
-    <View testID={testID} style={{ width, height }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View testID={testID} style={{ width, height }} aria-hidden>
       <Svg width={width} height={height} viewBox="4 3 28 37" preserveAspectRatio="none">
         <Path d={DROP_PATH} fill={pinFill(tone)} />
       </Svg>

@@ -79,7 +79,7 @@ export function SummaryCard({ tone, leading, density = "regular", title, amount,
         { minHeight: spec.height, borderRadius: spec.radius, backgroundColor: pressed ? palette.pressed : palette.background, borderColor: palette.border },
       ]}
     >
-      <View style={[styles.icon, { left: spec.icon.left - 1, top: spec.icon.top - 1, width: spec.icon.size, height: spec.icon.size }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={[styles.icon, { left: spec.icon.left - 1, top: spec.icon.top - 1, width: spec.icon.size, height: spec.icon.size }]} aria-hidden>
         {leading === "clock" ? (
           <Icon name="clock" size={spec.icon.size} color={palette.icon} />
         ) : (
@@ -115,7 +115,7 @@ export function SummaryCard({ tone, leading, density = "regular", title, amount,
         </Text>
       </View>
 
-      <View style={[styles.chevron, { right: spec.chevron.right - 1, top: spec.chevron.centerY - spec.chevron.size / 2 - 1, width: spec.chevron.size, height: spec.chevron.size }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <View style={[styles.chevron, { right: spec.chevron.right - 1, top: spec.chevron.centerY - spec.chevron.size / 2 - 1, width: spec.chevron.size, height: spec.chevron.size }]} aria-hidden>
         <Icon name="chevronRight" size={spec.chevron.size} color={colors.primary} />
       </View>
     </Pressable>

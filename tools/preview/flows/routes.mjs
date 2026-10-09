@@ -33,7 +33,9 @@ export default async function routes(s) {
 
   await s.step(`abrir ${todo.length} rutas`, async () => {
     for (const r of todo) {
-      const profile = PROFILE_BY_SLICE[r.slice] || 'passenger';
+      // El perfil lo decide el acceso declarado de la ruta: una ruta con cuenta del slice auth (foto, comprobación privada,
+      // aceptación legal…) se abre como pasajero; una pública del slice auth, como persona nueva; las de personal, como administración.
+      const profile = r.access === 'staff' ? 'admin' : r.access === 'auth' && r.slice === 'auth' ? 'passenger' : PROFILE_BY_SLICE[r.slice] || 'passenger';
       const rec = { route: r.name, slice: r.slice, screen: r.screen || null, profile, status: 'ok', ms: 0 };
       const violationsBefore = s.violations.length;
       const t0 = Date.now();

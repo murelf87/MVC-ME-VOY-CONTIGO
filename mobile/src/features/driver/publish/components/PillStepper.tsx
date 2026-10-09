@@ -76,8 +76,7 @@ function Key({ icon, label, enabled, onPress, testID }: KeyProps): React.JSX.Ele
     <Pressable
       testID={testID}
       accessible={false}
-      importantForAccessibility="no"
-      accessibilityElementsHidden
+      aria-hidden
       accessibilityLabel={label}
       disabled={!enabled}
       onPress={onPress}

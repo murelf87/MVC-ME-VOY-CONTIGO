@@ -102,7 +102,7 @@ export function RoleCard({ role, selected, onPress, invalid = false, testID, sty
           width: artWidth,
           height: artHeight,
         }}
-        accessibilityElementsHidden
+        aria-hidden
         accessibilityIgnoresInvertColors
         testID={testID !== undefined ? `${testID}.art` : undefined}
       />

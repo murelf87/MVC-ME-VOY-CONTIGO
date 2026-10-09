@@ -42,7 +42,7 @@ export function TicketRow({ ticket, onPress, testID }: TicketRowProps): React.JS
             {`${ticket.reference} · ${activity}`}
           </Text>
           {ticket.attachmentCount > 0 ? (
-            <View style={styles.attach} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <View style={styles.attach} aria-hidden>
               <Icon name="image" size={16} color={colors.text.subtle} />
               <Text variant="rowText" color="subtle" style={styles.attachText}>
                 {ticket.attachmentCount}
