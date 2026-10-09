@@ -19,7 +19,18 @@
  * Datos sembrados propios del slice: `seedSlice(db, profile, seed)` (se llama tras sembrar el mundo base).
  */
 import type { PreviewDb, PreviewProfileId, PreviewRouter } from "@/preview";
+import { registerPlansPreview } from "./plans";
+import { registerRoutinePreview } from "./routine";
+import { PROFILE_SEED_VARIANTS, seedProfileSlice } from "./seed";
 
-export function registerPreview(_r: PreviewRouter, _db: PreviewDb): void {}
+export function registerPreview(r: PreviewRouter, db: PreviewDb): void {
+  registerRoutinePreview(r, db);
+  registerPlansPreview(r, db);
+}
 
-export function seedSlice(_db: PreviewDb, _profile: PreviewProfileId, _seed: string): void {}
+export function seedSlice(db: PreviewDb, profile: PreviewProfileId, seed: string): void {
+  seedProfileSlice(db, profile, seed);
+}
+
+/** Variantes de datos del slice (el `seed` de `design/scenarios/31.json`). */
+export const seedVariants: Readonly<Record<string, string>> = PROFILE_SEED_VARIANTS;

@@ -12,6 +12,10 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { PlansScreen } from "./screens/PlansScreen";
+import { RoutineEntryFormScreen } from "./screens/RoutineEntryFormScreen";
+import { FavoriteFormScreen } from "./screens/FavoriteFormScreen";
+import { FavoritesRoutineScreen } from "./screens/FavoritesRoutineScreen";
 import { MyProfileScreen } from "./screens/MyProfileScreen";
 import { MyTripsScreen } from "./screens/MyTripsScreen";
 import type { PlaceParam } from "@/features/search/routes";
@@ -36,13 +40,13 @@ export type ProfileParams = {
 export const profileRoutes: RouteDef[] = [
   defineRoute({ name: "MyProfile", component: MyProfileScreen, access: "auth", screen: "29", title: "Mi perfil" }),
   defineRoute({ name: "MyTrips", component: MyTripsScreen, access: "auth", screen: "30", title: "Mis viajes" }),
-  defineRoute({ name: "FavoritesRoutine", component: PendingScreen, access: "auth", screen: "31", title: "Favoritos y rutina" }),
-  defineRoute({ name: "Plans", component: PendingScreen, access: "auth", screen: "32", title: "Planes" }),
+  defineRoute({ name: "FavoritesRoutine", component: FavoritesRoutineScreen, access: "auth", screen: "31", title: "Favoritos y rutina" }),
+  defineRoute({ name: "Plans", component: PlansScreen, access: "auth", screen: "32", title: "Planes" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "EditProfile", component: PendingScreen, access: "auth", title: "Editar perfil" }),
   defineRoute({ name: "VerificationStatus", component: PendingScreen, access: "auth", title: "Verificación y seguridad" }),
   defineRoute({ name: "WeeklyReservation", component: PendingScreen, access: "auth", title: "Reserva semanal" }),
   defineRoute({ name: "BookingDetail", component: PendingScreen, access: "auth", title: "Detalle de la reserva" }),
-  defineRoute({ name: "FavoriteForm", component: PendingScreen, access: "auth", title: "Destino favorito" }),
-  defineRoute({ name: "RoutineEntryForm", component: PendingScreen, access: "auth", title: "Fila de rutina" }),
+  defineRoute({ name: "FavoriteForm", component: FavoriteFormScreen, access: "auth", title: "Destino favorito" }),
+  defineRoute({ name: "RoutineEntryForm", component: RoutineEntryFormScreen, access: "auth", title: "Fila de rutina" }),
 ];

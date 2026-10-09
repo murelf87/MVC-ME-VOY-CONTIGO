@@ -35,7 +35,8 @@ export function useViewer(): Viewer | null {
   return useMemo(() => {
     if (me === null) return null;
     const name = me.display_name?.trim() ?? "";
-    const photoUrl = approved ? resolvePhotoUrl(publicUrl ?? `/v1/public/users/${me.id}/photo`) : null;
+    // Solo se usa la URL que entrega el servidor: nunca se inventa una ruta (en la vista previa saldría a Internet).
+    const photoUrl = approved && publicUrl !== null ? resolvePhotoUrl(publicUrl) : null;
     return { id: me.id, name, photoUrl };
   }, [me, approved, publicUrl]);
 }

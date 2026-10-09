@@ -14,7 +14,10 @@ import { ARTIFACT_URL, DIST, TOOLS_PREVIEW, findAppFrame, settleApp, sleep, watc
  */
 export const FORBIDDEN_TEXT = /PendingScreen|Pantalla sin implementar|Pr[oó]ximamente|\blorem\b|coming soon|\bFIXME\b/i;
 export const FORBIDDEN_TODO = /\bTODO\s*[:(\[]/;
-export function findForbidden(text) {
+/** Única excepción aprobada: la lámina 32 (Planes) muestra literalmente «Membresía (Propuesta) Próximamente». */
+const BOARD_APPROVED = /Membres[ií]a\s*\(Propuesta\)\s*Pr[oó]ximamente/gi;
+export function findForbidden(raw) {
+  const text = raw.replace(BOARD_APPROVED, (x) => ' '.repeat(x.length));
   const m = FORBIDDEN_TEXT.exec(text) || FORBIDDEN_TODO.exec(text);
   return m ? { word: m[0], index: m.index } : null;
 }
