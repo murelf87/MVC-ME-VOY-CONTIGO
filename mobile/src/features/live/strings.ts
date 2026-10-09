@@ -321,6 +321,7 @@ export const liveStrings = {
     photosAdd: "Añadir foto",
     photosRemove: (n: number) => `Quitar la foto ${n}`,
     photosLimit: "Ya has añadido 5 fotos, el máximo.",
+    openSettings: "Abrir ajustes",
     photoSheetTitle: "¿Cómo quieres añadirla?",
     photoTake: "Hacer una foto",
     photoLibrary: "Elegir de la galería",
@@ -370,6 +371,13 @@ export const liveStrings = {
     closedNote: "Esta incidencia está cerrada y no admite más fotos.",
     notFoundTitle: "Incidencia no encontrada",
     backToList: "Volver a mis incidencias",
+    backToMyTrips: "Volver",
+    loading: "Cargando…",
+    updatedLabel: "Última actualización",
+    sentLabel: "Enviada",
+    roleLabel: "Reportada",
+    noPhotos: "No has adjuntado fotos.",
+    photoN: (n: number) => `Foto ${n}`,
   },
 
   codeEntry: {

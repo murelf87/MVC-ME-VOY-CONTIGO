@@ -12,6 +12,8 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { IncidentDetailScreen } from "./screens/IncidentDetailScreen";
+import { IncidentReportsScreen } from "./screens/IncidentReportsScreen";
 import { InCarScreen } from "./screens/InCarScreen";
 import { LiveRouteMapScreen } from "./screens/LiveRouteMapScreen";
 import { TripFinishedScreen } from "./screens/TripFinishedScreen";
@@ -44,8 +46,8 @@ export const liveRoutes: RouteDef[] = [
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "RateTrip", component: PendingScreen, access: "auth", title: "Valora el viaje" }),
   defineRoute({ name: "ReportIncident", component: ReportIncidentScreen, access: "auth", title: "Reportar incidencia" }),
-  defineRoute({ name: "IncidentReports", component: PendingScreen, access: "auth", title: "Mis incidencias" }),
-  defineRoute({ name: "IncidentDetail", component: PendingScreen, access: "auth", title: "Detalle de la incidencia" }),
+  defineRoute({ name: "IncidentReports", component: IncidentReportsScreen, access: "auth", title: "Mis incidencias" }),
+  defineRoute({ name: "IncidentDetail", component: IncidentDetailScreen, access: "auth", title: "Detalle de la incidencia" }),
   defineRoute({ name: "ShareTrip", component: PendingScreen, access: "auth", title: "Compartir viaje" }),
   defineRoute({ name: "SharedTripView", component: PendingScreen, access: "public", title: "Viaje compartido" }),
   defineRoute({ name: "LivePrivacy", component: PendingScreen, access: "auth", title: "Privacidad del viaje en vivo" }),

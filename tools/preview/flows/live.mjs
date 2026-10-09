@@ -82,4 +82,28 @@ export default async function live(s) {
     await s.shot('report-enviada');
     await s.checkForbiddenText('reportar incidencia');
   });
+
+  await s.step('Mis incidencias · lista con estados reales y detalle con fotos', async () => {
+    await openScreen(s, 'IncidentReports', undefined, 'live-incidents');
+    await s.waitText('Mis incidencias');
+    await s.waitText('Ruta u horario');
+    const text = await s.appText();
+    s.expect(text.includes('En revisión') && text.includes('Abierta') && text.includes('Resuelta'), 'muestra los tres estados');
+    await s.shot('incidencias-lista');
+    await s.app.locator('[data-testid^="IncidentReports.item."]').first().click({ timeout: 10000 });
+    await s.until(() => window.__mvc.route() === 'IncidentDetail', null, 'se abre el detalle', 8000);
+    await s.waitText('Lo que nos contaste');
+    await s.shot('incidencias-detalle');
+    await s.checkForbiddenText('incidencia');
+  });
+
+  await s.step('Mis incidencias · sin incidencias lo dice y ofrece salida', async () => {
+    await openScreen(s, 'IncidentReports', undefined, 'live-finished');
+    await s.waitText('No has reportado ninguna incidencia');
+  });
+
+  await s.step('Detalle de incidencia · una que no existe dice que no existe', async () => {
+    await openScreen(s, 'IncidentDetail', { reportId: '00000000-0000-4000-8000-000000000000' }, 'live-incidents');
+    await s.until(() => !!document.querySelector('[data-testid="IncidentDetail.notFound"], [data-testid="IncidentDetail.error"]'), null, 'error de carga', 8000);
+  });
 }
