@@ -165,7 +165,7 @@ function existingOccurrenceTrip(db: PreviewDb, anchor: Readonly<TripRow>, meta: 
 }
 
 /** Copia del viaje ancla para otra fecha (la vuelta recorre la ruta al revés). Idempotente por (ancla, fecha, sentido). */
-function materializeTrip(db: PreviewDb, anchor: Readonly<TripRow>, meta: TripMetaRow, date: string, leg: TripLeg, departLocal: string): Readonly<TripRow> {
+export function materializeTrip(db: PreviewDb, anchor: Readonly<TripRow>, meta: TripMetaRow, date: string, leg: TripLeg, departLocal: string): Readonly<TripRow> {
   const existing = existingOccurrenceTrip(db, anchor, meta, date, leg);
   if (existing) return existing;
   const id = stableUuid(`trip:occurrence:${anchor.id}:${date}:${leg}`);

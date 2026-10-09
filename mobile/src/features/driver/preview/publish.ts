@@ -5,11 +5,13 @@
  */
 import type { PreviewDb, PreviewProfileId, PreviewRouter } from "@/preview";
 import { registerInbox } from "./publishInbox";
+import { registerRoutePublish } from "./publishRoute";
 import { registerReadiness } from "./publishReadiness";
 
 export function registerPublishPreview(r: PreviewRouter, db: PreviewDb): void {
   registerReadiness(r, db);
   registerInbox(r, db);
+  registerRoutePublish(r, db);
 }
 
 export function seedPublish(_db: PreviewDb, _profile: PreviewProfileId, _seed: string): void {}
