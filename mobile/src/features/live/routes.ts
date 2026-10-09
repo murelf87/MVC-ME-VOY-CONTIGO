@@ -14,6 +14,8 @@ import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { InCarScreen } from "./screens/InCarScreen";
 import { LiveRouteMapScreen } from "./screens/LiveRouteMapScreen";
+import { TripFinishedScreen } from "./screens/TripFinishedScreen";
+import { ReportIncidentScreen } from "./screens/ReportIncidentScreen";
 import { RouteChangeScreen } from "./screens/RouteChangeScreen";
 import { WaitingForCarScreen } from "./screens/WaitingForCarScreen";
 
@@ -38,10 +40,10 @@ export const liveRoutes: RouteDef[] = [
   defineRoute({ name: "WaitingForCar", component: WaitingForCarScreen, access: "auth", screen: "21", title: "Esperando el coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
   defineRoute({ name: "RouteChange", component: RouteChangeScreen, access: "auth", screen: "22", title: "Cambio de ruta" }),
   defineRoute({ name: "InCar", component: InCarScreen, access: "auth", screen: "23", title: "En el coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
-  defineRoute({ name: "TripFinished", component: PendingScreen, access: "auth", screen: "24", title: "Viaje terminado" }),
+  defineRoute({ name: "TripFinished", component: TripFinishedScreen, access: "auth", screen: "24", title: "Viaje terminado" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "RateTrip", component: PendingScreen, access: "auth", title: "Valora el viaje" }),
-  defineRoute({ name: "ReportIncident", component: PendingScreen, access: "auth", title: "Reportar incidencia" }),
+  defineRoute({ name: "ReportIncident", component: ReportIncidentScreen, access: "auth", title: "Reportar incidencia" }),
   defineRoute({ name: "IncidentReports", component: PendingScreen, access: "auth", title: "Mis incidencias" }),
   defineRoute({ name: "IncidentDetail", component: PendingScreen, access: "auth", title: "Detalle de la incidencia" }),
   defineRoute({ name: "ShareTrip", component: PendingScreen, access: "auth", title: "Compartir viaje" }),

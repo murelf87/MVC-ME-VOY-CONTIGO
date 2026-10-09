@@ -50,4 +50,36 @@ export default async function live(s) {
     await openScreen(s, 'RouteChange', { proposalId: '00000000-0000-4000-8000-000000000000' }, 'live-route-change');
     await s.waitText('Propuesta no encontrada');
   });
+
+  await s.step('24 · Sin estrellas no se envía; con estrellas el servidor guarda la valoración', async () => {
+    await openScreen(s, 'TripFinished', { bookingId: { $ref: 'live.finishedBooking' } }, 'live-finished');
+    await s.waitText('Has llegado');
+    const text = await s.appText();
+    s.expect(text.includes('Pago pendiente'), 'el pago aparece como pendiente (por definir)');
+    s.expect(!text.includes('Pago confirmado'), 'no dice que el pago esté confirmado');
+    await s.tap('TripFinished.stars.4');
+    await s.tap('TripFinished.rateSubmit');
+    await s.waitText('Gracias por valorar');
+    await s.shot('24-valorado');
+    await s.checkForbiddenText('viaje terminado');
+  });
+
+  await s.step('24 · Pasado el plazo de 14 días no se puede valorar y lo explica', async () => {
+    await openScreen(s, 'TripFinished', { bookingId: { $ref: 'live.finishedBooking' } }, 'live-rating-closed');
+    await s.waitText('El plazo de 14 días para valorar este viaje ya terminó.');
+  });
+
+  await s.step('Reportar incidencia · valida categoría y texto y el servidor la registra', async () => {
+    await openScreen(s, 'ReportIncident', { tripId: { $ref: 'live.finishedTrip' }, bookingId: { $ref: 'live.finishedBooking' } }, 'live-finished');
+    await s.waitText('¿Qué ha pasado?');
+    await s.tap('ReportIncident.submit');
+    await s.waitText('Elige una categoría.');
+    await s.waitText('Cuéntanos qué pasó con al menos 10 caracteres.');
+    await s.tap('ReportIncident.category.vehicle');
+    await s.type('ReportIncident.description', 'El coche llegó veinte minutos tarde a la recogida.');
+    await s.tap('ReportIncident.submit');
+    await s.waitText('Incidencia enviada');
+    await s.shot('report-enviada');
+    await s.checkForbiddenText('reportar incidencia');
+  });
 }

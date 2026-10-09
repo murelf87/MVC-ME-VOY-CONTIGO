@@ -1,0 +1,10 @@
+{
+  "screen": "24",
+  "variant": "",
+  "profile": "passenger",
+  "route": "TripFinished",
+  "params": { "bookingId": { "$ref": "live.finishedBooking" } },
+  "seed": "live-finished",
+  "clock": "2026-10-05T08:22:00+02:00",
+  "note": "Lámina 24. El viaje terminó hace 2 min (55 min · 12,6 km, pago pendiente de definir) y Miguel aún no ha valorado a Ana."
+}
