@@ -66,4 +66,16 @@ export default async function profile(s) {
     await s.shot('30-mis-viajes');
     await s.checkForbiddenText('Mis viajes');
   });
+
+  await s.step('Reserva semanal: días, trayectos, importe y acciones', async () => {
+    await openScreen(s, 'WeeklyReservation', { reservationId: { $ref: 'weekly.miguel' } }, { seed: 'req-weekly-awaiting-payment', clock: '2026-10-05T07:58:00+02:00' });
+    await s.waitText('Viajes de la reserva');
+    const text = await s.appText();
+    for (const expected of ['Conductor', 'Días', 'Trayectos', 'Importe semanal']) {
+      s.expect(text.includes(expected), `la reserva semanal muestra «${expected}»`);
+    }
+    s.expect(!/No hemos podido cargar/.test(text), 'carga sin error');
+    await s.shot('weekly-reservation');
+    await s.checkForbiddenText('Reserva semanal');
+  });
 }

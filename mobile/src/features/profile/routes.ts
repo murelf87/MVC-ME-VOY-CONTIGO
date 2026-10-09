@@ -13,6 +13,7 @@
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { BookingDetailScreen } from "./screens/BookingDetailScreen";
+import { WeeklyReservationScreen } from "./screens/WeeklyReservationScreen";
 import { PlansScreen } from "./screens/PlansScreen";
 import { RoutineEntryFormScreen } from "./screens/RoutineEntryFormScreen";
 import { FavoriteFormScreen } from "./screens/FavoriteFormScreen";
@@ -46,7 +47,7 @@ export const profileRoutes: RouteDef[] = [
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "EditProfile", component: PendingScreen, access: "auth", title: "Editar perfil" }),
   defineRoute({ name: "VerificationStatus", component: PendingScreen, access: "auth", title: "Verificación y seguridad" }),
-  defineRoute({ name: "WeeklyReservation", component: PendingScreen, access: "auth", title: "Reserva semanal" }),
+  defineRoute({ name: "WeeklyReservation", component: WeeklyReservationScreen, access: "auth", title: "Reserva semanal", previewParams: { reservationId: { $ref: "weekly.miguel" } } }),
   defineRoute({ name: "BookingDetail", component: BookingDetailScreen, access: "auth", title: "Detalle de la reserva", previewParams: { bookingId: { $ref: "booking.mine" } } }),
   defineRoute({ name: "FavoriteForm", component: FavoriteFormScreen, access: "auth", title: "Destino favorito" }),
   defineRoute({ name: "RoutineEntryForm", component: RoutineEntryFormScreen, access: "auth", title: "Fila de rutina" }),
