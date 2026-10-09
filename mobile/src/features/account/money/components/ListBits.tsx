@@ -19,7 +19,7 @@ export function FilterPills<T extends string>({ options, value, onChange, a11yLa
       {options.map((option) => (
         <Pressable
           key={option.value ?? "all"}
-          testID={`${testID}.${option.value ?? "all"}`}
+          testID={`${testID}.opt-${option.value ?? "all"}`}
           accessibilityRole="tab"
           accessibilityState={{ selected: option.value === value }}
           onPress={() => onChange(option.value)}

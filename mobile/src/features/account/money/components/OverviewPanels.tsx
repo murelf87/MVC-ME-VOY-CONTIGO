@@ -104,7 +104,7 @@ export function PassengerPanel({ summary, month, now, actions }: PassengerPanelP
           caption={t.overview.upcomingTrips(summary.upcomingTripsCount)}
           onPress={() => actions.openHistory("passenger")}
           accessibilityHint={t.overview.history}
-          testID="PaymentsEarnings.pending"
+          testID="PaymentsEarnings.amountPending"
         />
       </View>
 
@@ -212,7 +212,7 @@ export function OverviewPanel({ passenger, driver, month, now, actions }: Overvi
           caption={t.overview.upcomingTrips(passenger.upcomingTripsCount)}
           onPress={() => actions.openHistory("passenger")}
           accessibilityHint={t.overview.history}
-          testID="PaymentsEarnings.pending"
+          testID="PaymentsEarnings.amountPending"
         />
       </View>
 

@@ -10,6 +10,11 @@
  *  - Pantalla = componente que recibe `AppScreenProps<"Nombre">`; navega con `useAppNavigation()` y lee los
  *    parámetros con `useAppRoute("Nombre")`.
  */
+import { ReceiptsListScreen } from "./money/screens/ReceiptsListScreen";
+import { ReceiptDetailScreen } from "./money/screens/ReceiptDetailScreen";
+import { PayoutDetailScreen } from "./money/screens/PayoutDetailScreen";
+import { EarningDetailScreen } from "./money/screens/EarningDetailScreen";
+import { RefundsScreen } from "./money/screens/RefundsScreen";
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { HelpCenterScreen } from "./help/screens/HelpCenterScreen";
@@ -58,11 +63,11 @@ export const accountRoutes: RouteDef[] = [
   defineRoute({ name: "PaymentHistory", component: PaymentHistoryScreen, access: "auth", title: "Historial de pagos" }),
   defineRoute({ name: "PaymentMethods", component: PaymentMethodsScreen, access: "auth", title: "Métodos de pago" }),
   defineRoute({ name: "AddPaymentMethod", component: AddPaymentMethodScreen, access: "auth", title: "Añadir método de pago" }),
-  defineRoute({ name: "ReceiptsList", component: PendingScreen, access: "auth", title: "Recibos y justificantes" }),
-  defineRoute({ name: "ReceiptDetail", component: PendingScreen, access: "auth", title: "Recibo" }),
-  defineRoute({ name: "PayoutDetail", component: PendingScreen, access: "auth", title: "Liquidación" }),
-  defineRoute({ name: "EarningDetail", component: PendingScreen, access: "auth", title: "Detalle del cobro" }),
-  defineRoute({ name: "Refunds", component: PendingScreen, access: "auth", title: "Mis devoluciones" }),
+  defineRoute({ name: "ReceiptsList", component: ReceiptsListScreen, access: "auth", title: "Recibos y justificantes" }),
+  defineRoute({ name: "ReceiptDetail", component: ReceiptDetailScreen, access: "auth", title: "Recibo", previewParams: { receiptId: { $ref: "money.receiptPayment" } }, previewSeed: "money-historial-largo" }),
+  defineRoute({ name: "PayoutDetail", component: PayoutDetailScreen, access: "auth", title: "Liquidación", previewParams: { payoutId: { $ref: "money.payoutPaid" } }, previewSeed: "money-historial-largo" }),
+  defineRoute({ name: "EarningDetail", component: EarningDetailScreen, access: "auth", title: "Detalle del cobro", previewParams: { bookingId: { $ref: "money.earningPaidOut" } }, previewSeed: "money-historial-largo" }),
+  defineRoute({ name: "Refunds", component: RefundsScreen, access: "auth", title: "Mis devoluciones" }),
   defineRoute({ name: "LegalCenter", component: PendingScreen, access: "public", title: "Información legal" }),
   defineRoute({ name: "LegalDocument", component: PendingScreen, access: "public", title: "Documento legal" }),
   defineRoute({ name: "SupportTickets", component: SupportTicketsScreen, access: "auth", title: "Mis consultas" }),
