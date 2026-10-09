@@ -5,15 +5,29 @@
   "route": "TripResults",
   "params": {
     "criteria": {
-      "origin": { "label": "Montequinto", "latitude": 37.3222, "longitude": -5.9425 },
-      "destination": { "label": "Universidad de Sevilla", "latitude": 37.3825, "longitude": -5.9919 },
+      "origin": {
+        "label": "Sevilla",
+        "latitude": 37.3403,
+        "longitude": -5.937
+      },
+      "destination": {
+        "label": "Universidad de Sevilla",
+        "latitude": 37.3825,
+        "longitude": -5.9919
+      },
       "mode": "weekly",
       "arriveBy": "08:30",
-      "weekdays": ["mon", "tue", "wed", "thu", "fri"],
-      "category": "university"
+      "returnAt": "18:00",
+      "weekdays": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri"
+      ]
     }
   },
-  "seed": "default",
+  "seed": "browse-board-11",
   "clock": "2026-10-05T07:58:00+02:00",
-  "note": "Lámina 11. El origen está a 1,2 km de la parada de Montequinto (la lámina dice «1,2 km») y «Te recoge en 7 min» se calcula contra la salida de las 08:05, por eso el reloj marca las 07:58."
+  "note": "Coches disponibles: Sevilla → Universidad de Sevilla, semanal lunes a viernes, llegada 08:30."
 }
