@@ -12,6 +12,9 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { InCarScreen } from "./screens/InCarScreen";
+import { LiveRouteMapScreen } from "./screens/LiveRouteMapScreen";
+import { WaitingForCarScreen } from "./screens/WaitingForCarScreen";
 
 export type LiveParams = {
   WaitingForCar: { bookingId: string };
@@ -31,9 +34,9 @@ export type LiveParams = {
 };
 
 export const liveRoutes: RouteDef[] = [
-  defineRoute({ name: "WaitingForCar", component: PendingScreen, access: "auth", screen: "21", title: "Esperando el coche" }),
+  defineRoute({ name: "WaitingForCar", component: WaitingForCarScreen, access: "auth", screen: "21", title: "Esperando el coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
   defineRoute({ name: "RouteChange", component: PendingScreen, access: "auth", screen: "22", title: "Cambio de ruta" }),
-  defineRoute({ name: "InCar", component: PendingScreen, access: "auth", screen: "23", title: "En el coche" }),
+  defineRoute({ name: "InCar", component: InCarScreen, access: "auth", screen: "23", title: "En el coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
   defineRoute({ name: "TripFinished", component: PendingScreen, access: "auth", screen: "24", title: "Viaje terminado" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "RateTrip", component: PendingScreen, access: "auth", title: "Valora el viaje" }),
@@ -43,5 +46,5 @@ export const liveRoutes: RouteDef[] = [
   defineRoute({ name: "ShareTrip", component: PendingScreen, access: "auth", title: "Compartir viaje" }),
   defineRoute({ name: "SharedTripView", component: PendingScreen, access: "public", title: "Viaje compartido" }),
   defineRoute({ name: "LivePrivacy", component: PendingScreen, access: "auth", title: "Privacidad del viaje en vivo" }),
-  defineRoute({ name: "LiveRouteMap", component: PendingScreen, access: "auth", title: "Ruta del coche" }),
+  defineRoute({ name: "LiveRouteMap", component: LiveRouteMapScreen, access: "auth", title: "Ruta del coche", previewParams: { bookingId: { $ref: "live.booking" } } }),
 ];

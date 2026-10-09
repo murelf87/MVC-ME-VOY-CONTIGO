@@ -1,0 +1,10 @@
+{
+  "screen": "23",
+  "variant": "",
+  "profile": "passenger",
+  "route": "InCar",
+  "params": { "bookingId": { "$ref": "live.booking" } },
+  "seed": "live-in-car",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 23. Miguel y Laura van en el coche (código verificado); llegada estimada al destino 08:20."
+}

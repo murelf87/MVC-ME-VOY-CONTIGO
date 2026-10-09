@@ -1,0 +1,10 @@
+{
+  "screen": "21",
+  "variant": "",
+  "profile": "passenger",
+  "route": "WaitingForCar",
+  "params": { "bookingId": { "$ref": "live.booking" } },
+  "seed": "live-waiting",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 21. Ana llega a la recogida (C. Luis Montoto) en 8 min · 2,4 km, posición de hace 5 s."
+}

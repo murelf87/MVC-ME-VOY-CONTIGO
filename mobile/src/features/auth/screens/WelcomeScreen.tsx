@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: authPalette.welcomeSky },
   hero: { position: "absolute", left: 0, right: 0, overflow: "hidden" },
   /** Ancho completo y alto natural, pegada al borde inferior: equivale a «cover» anclado abajo (se recorta el cielo de arriba). */
-  heroImage: { position: "absolute", left: 0, right: 0, bottom: 0 },
+  heroImage: { position: "absolute", left: 0, right: 0, bottom: 0, width: "100%" },
   overlay: StyleSheet.absoluteFill,
   abs: { position: "absolute" },
   sheet: { position: "absolute", left: 0, right: 0, bottom: 0 },
