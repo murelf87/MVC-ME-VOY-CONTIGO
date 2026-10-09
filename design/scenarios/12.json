@@ -1,9 +1,10 @@
 {
-  "screen": "11",
+  "screen": "12",
   "variant": "",
   "profile": "passenger",
-  "route": "TripResults",
+  "route": "TripDetail",
   "params": {
+    "tripId": "9f0e1d2c-4b3a-4a59-8877-665544330001",
     "criteria": {
       "origin": {
         "label": "Sevilla",
@@ -17,7 +18,6 @@
       },
       "mode": "weekly",
       "arriveBy": "08:30",
-      "returnAt": "18:00",
       "weekdays": [
         "mon",
         "tue",
@@ -27,9 +27,9 @@
       ]
     }
   },
-  "seed": "browse-board-11",
+  "seed": "default",
   "clock": "2026-10-05T07:58:00+02:00",
-  "note": "Coches disponibles: Sevilla → Universidad de Sevilla, semanal lunes a viernes, llegada 08:30.",
+  "note": "Detalle del viaje de Ana: Montequinto → Universidad, paradas, totales y precio por definir.",
   "steps": [
     {
       "wait": 1200

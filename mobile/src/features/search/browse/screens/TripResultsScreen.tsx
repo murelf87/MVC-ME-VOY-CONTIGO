@@ -116,7 +116,7 @@ export function TripResultsScreen(_props: AppScreenProps<"TripResults">): React.
               initialRegion={{ lat: criteria.origin.latitude, lng: criteria.origin.longitude, latDelta: 0.08, lngDelta: 0.08 }}
               fit={fitPoints}
               fitKey={`${criteria.origin.latitude}-${criteria.destination.latitude}-${routes.length}`}
-              edgePadding={{ top: 24, bottom: 24, left: 24, right: 24 }}
+              edgePadding={{ top: 0, bottom: 0, left: 0, right: 0 }}
               markers={markers}
               routes={routes}
             />

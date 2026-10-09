@@ -16,6 +16,7 @@ import { PickupPointScreen } from "./request/screens/PickupPointScreen";
 import { ReviewRequestScreen } from "./request/screens/ReviewRequestScreen";
 import type { IsoDate, LocalTime, SearchMode, TripCategory, TripLeg, Weekday } from "@/api/types";
 import { MapHomeScreen } from "./browse/screens/MapHomeScreen";
+import { TripDetailScreen } from "./browse/screens/TripDetailScreen";
 import { TripResultsScreen } from "./browse/screens/TripResultsScreen";
 import { DefineRouteScreen } from "./browse/screens/DefineRouteScreen";
 import { PlaceSearchScreen } from "./browse/screens/PlaceSearchScreen";
@@ -104,8 +105,8 @@ export type SearchParams = {
 export const searchRoutes: RouteDef[] = [
   defineRoute({ name: "MapHome", component: MapHomeScreen, access: "public", screen: "09", title: "Mapa" }),
   defineRoute({ name: "DefineRoute", component: DefineRouteScreen, access: "public", screen: "10", title: "Define tu recorrido" }),
-  defineRoute({ name: "TripResults", component: TripResultsScreen, access: "public", screen: "11", title: "Resultados" }),
-  defineRoute({ name: "TripDetail", component: PendingScreen, access: "public", screen: "12", title: "Detalle del viaje" }),
+  defineRoute({ name: "TripResults", component: TripResultsScreen, access: "public", screen: "11", title: "Resultados", previewParams: { criteria: { origin: { label: "Sevilla", latitude: 37.3403, longitude: -5.937 }, destination: { label: "Universidad de Sevilla", latitude: 37.3825, longitude: -5.9919 }, mode: "weekly", arriveBy: "08:30", weekdays: ["mon", "tue", "wed", "thu", "fri"] } } }),
+  defineRoute({ name: "TripDetail", component: TripDetailScreen, access: "public", screen: "12", title: "Detalle del viaje", previewParams: { tripId: "9f0e1d2c-4b3a-4a59-8877-665544330001" } }),
   defineRoute({ name: "PickupPoint", component: PickupPointScreen, access: "public", screen: "13", title: "Punto de recogida" }),
   defineRoute({ name: "WeeklySeat", component: PendingScreen, access: "public", screen: "14", title: "Tu plaza semanal" }),
   defineRoute({ name: "ReviewRequest", component: ReviewRequestScreen, access: "auth", screen: "15", title: "Revisa tu solicitud" }),
