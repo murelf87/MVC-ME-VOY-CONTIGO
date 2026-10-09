@@ -177,3 +177,138 @@ Ficheros compartidos que **solo el orquestador** edita: `package.json`/`pnpm-loc
 2. Evidencia: salida resumida de typecheck/tests/compare (números reales).
 3. **Honestidad**: lo que no pudiste hacer / lo que queda *Bloqueado* o *No implementado* / desviaciones respecto al diseño (con pantalla y elemento).
 4. Defectos encontrados en archivos que no son tuyos (archivo:línea, descripción) y dependencias nuevas añadidas.
+
+---
+
+## 10. FASE 2 — Pantallas pixel a pixel (paquetes de trabajo)
+
+La fase 1 (cimientos) está cerrada. Esta fase construye **las pantallas reales**. El dueño exige «pixel a pixel, 100 % funcional»:
+una pantalla no está terminada hasta que, superpuesta a su lámina, no se distingue (salvo fotos/mapa/ilustraciones) y TODOS sus botones hacen algo real.
+
+### 10.1 Punto de partida (honesto)
+
+| Pieza | Estado |
+|---|---|
+| Sistema de diseño (`@/theme`, `@/ui` 35 componentes, `@/icons`, `@/brand` logo literal, `@/i18n`) | Hecho y medido contra las láminas (galería viva: ruta `UiGallery`; ver `mobile/src/dev/sections/*`). `docs/DESIGN_SYSTEM.md` aún no está escrito: lee `mobile/src/ui/index.ts` y la galería. |
+| Mapa (`@/maps`: `MvcMap`, marcadores, chips, mapa base vectorial de Sevilla) | Hecho (`docs/MAPS.md`). |
+| Esqueleto: navegación, API tipada, sesión, hooks, plataforma | Hecho (`mobile/README.md`, `mobile/src/navigation/**`, `mobile/src/api/**`, `mobile/src/hooks/**`). |
+| Backend en navegador (`mobile/src/preview/**`) | El núcleo sirve el backend 0.14 (auth, perfil, vehículos, documentos, borradores, solicitudes, chat, GPS). **Los endpoints de los módulos nuevos (`/v1/search/trips`, pagos, comunicaciones, confianza, directo…) los escribe cada paquete** en su `preview/*.ts` según `docs/contracts/<módulo>.md`. `docs/PREVIEW_BACKEND.md` aún no está escrito: lee `mobile/src/preview/index.ts`, `core/router.ts` y los ejemplos de `mobile/src/preview/handlers/*.ts`. |
+| Backend real (5 módulos, 26+ migraciones, contratos) | Hecho (`docs/contracts/*.md`, `mobile/src/api/types/*.ts`). |
+| **Pantallas** | **NO hechas.** Todas las rutas apuntan a `PendingScreen`. Es tu trabajo. |
+
+### 10.2 Tu bucle de trabajo (≈10 s por vuelta; NO exportes)
+
+1. **Servidor de desarrollo único** (Metro, recarga en caliente, modo vista previa): `tools/preview/dev-server.sh status`.
+   Si está PARADO → `tools/preview/dev-server.sh start` (1–2 min la primera vez). Si dice que el bundle NO compila por un fichero **que no es tuyo**,
+   es otro equipo a mitad de edición: espera 30–60 s y repite (no lo toques). **Nunca arranques otro Metro, ni ejecutes `expo export` /
+   `preview:artifact` / `pnpm install`**: de eso se encarga el orquestador (la máquina tiene 2 núcleos y todos compartís este servidor).
+   Si Metro se cuelga: `tools/preview/dev-server.sh restart`.
+2. **Escribe** tu pantalla (ficheros completos con Write o Edit; en ficheros compartidos con otro equipo —p. ej. `routes.ts`— usa SOLO Edit, nunca Write).
+   Metro recompila lo que cambia; no hay nada que reiniciar.
+3. **Compara con la lámina**: `node tools/design/compare.mjs --dev --screen 11` (`--screen 13a` · `--variant b`). Genera `design/out/compare/<id>.png`
+   (4 paneles: diseño ‖ app ‖ superposición 50 % ‖ diferencia) y `<id>.json` (SSIM, bandas cabecera/cuerpo/base, puntos calientes, desplazamiento
+   global). **Abre el PNG con Read y míralo.** El SSIM es una pista, no el objetivo: manda lo que ves en la superposición.
+   Necesita un escenario `design/scenarios/<id>.json` (ver `design/scenarios/README.md`): crea el tuyo.
+4. **Mide**: `node tools/design/compare.mjs --export-design --screen 11` escribe `design/out/screens-pt/11.png` (la lámina a 393 pt @2x, sin bisel).
+   Con Python/PIL amplía y recorta zonas para medir posiciones (1 pt = 2 px). Usa también `design/reference/<id>.jpg`, `design/screens-raw/<id>.png`
+   (color real), `design/tokens.json`.
+5. **Tipos**: `tools/preview/typecheck.sh src/features/<tu-slice>` (serializado entre todos los equipos —tsc gasta ~1 GB— e incremental: 3–10 s;
+   enseña SOLO los errores de tus rutas y cuenta los del resto; debe quedar a 0 en tu parte. Pasa varios filtros si tocas varias carpetas:
+   `… src/features/driver src/api/types/trips.ts`). No lances `tsc` por tu cuenta.
+   **Pruebas de lógica pura**: `cd mobile && node --import tsx --test "src/features/<tu-slice>/**/*.test.ts"` (node:test; sin importar React Native).
+6. **Flujo interactivo con clics reales** (Playwright): escribe `tools/preview/flows/<tu-paquete>.mjs` (ver `tools/preview/README.md` «Escribir un flujo»)
+   y ejecútalo con `node tools/preview/smoke.mjs --dev --flow <tu-paquete> --out dist-preview/smoke-<tu-paquete>`. Mide el avance con
+   `node tools/preview/smoke.mjs --dev --flow routes --slice <slice> --out dist-preview/smoke-<tu-paquete>`: las rutas de tu paquete
+   deben pasar de «pendiente» a «ok».
+7. Si algo del sistema de diseño (`@/ui`, `@/icons`, `@/theme`, `@/maps`) no basta: primero un envoltorio local en tu `components/`;
+   si el defecto es del componente compartido, corrígelo con una **modificación compatible hacia atrás** (propiedad opcional nueva, arreglo
+   medido contra ≥ 2 pantallas) y anótalo en tu informe. Nunca cambies el aspecto por defecto de un componente compartido «a ojo» para una sola pantalla.
+   Los glifos nuevos se **añaden** a `mobile/src/icons/glyphs.ts` (solo añadir) copiando el trazo del diseño; no redibujes el logo (`@/brand`).
+
+**No hagas `git add/commit/push`**: el orquestador confirma por bloques. No toques ficheros de otro paquete; si necesitas algo suyo, díselo al
+orquestador con `SendMessage` a `main` (nombre de ruta/tipo/parámetro que necesitas) y sigue con lo tuyo.
+
+### 10.3 Catálogo de rutas (contrato entre equipos)
+
+Las **102 rutas** ya existen en `features/<slice>/routes.ts` (apuntando a `PendingScreen`) con su tipo de parámetros. Es un **contrato entre equipos**:
+puedes AÑADIR parámetros opcionales y rutas nuevas (nombres únicos en toda la app), nunca renombrar ni quitar; cambia el `component` por tu pantalla real
+y rellena `previewParams` (para que «Ir a pantalla» del visor abra la ruta). Los nombres sin lámina son las **páginas de producción adicionales**: se diseñan
+**en el mismo lenguaje visual** (mismos componentes, espaciados, tipografía, tonos, iconos y textos con la voz de las láminas), no se improvisan.
+
+| Paquete | Rutas con lámina | Páginas adicionales (sin lámina) |
+|---|---|---|
+| `auth` | Welcome 01 · ChooseRole 02 · CreateAccount 03 · VerifyPhone 04 · ProfilePhoto 05 · PrivateCheckCapture 06 · PrivateCheckPrivacy 07 · PrivateCheckStatus 08 | SignIn · PrivateCheckOtherWay · LegalAcceptance · PermissionPrompt |
+| `search-browse` (buscar y ver) | MapHome 09 · DefineRoute 10 · TripResults 11 · TripDetail 12 | PlaceSearch |
+| `search-request` (solicitar y pagar) | PickupPoint 13 · WeeklySeat 14 · ReviewRequest 15 · RequestStatusPayment 16 | PaymentProcessing · PaymentResult |
+| `driver` (publicar) | MyVehicle 17 · PublishRoute 18 · StopsRoute 19 · DriverRequests 20 | VehicleForm · VehicleDocuments · RoutePublished · DriverRequestDetail |
+| `driver-ops` (operar el viaje) | — | DriverTripManage · DriverCancelTrip · DriverConsole · PickupVerify · ProposeRouteChange · DriverTripFinished |
+| `live` (pasajero en directo) | WaitingForCar 21 · RouteChange 22 · InCar 23 · TripFinished 24 | RateTrip · ReportIncident · IncidentReports · IncidentDetail · ShareTrip · SharedTripView · LivePrivacy |
+| `messages` | Inbox 25 · BookingChat 26 · Notifications 27 · CancelBooking 28 | NotificationSettings · BlockedUsers · ReportUser · CancelBookingResult · ConversationInfo |
+| `profile` | MyProfile 29 · MyTrips 30 · FavoritesRoutine 31 · Plans 32 | EditProfile · VerificationStatus · WeeklyReservation · BookingDetail · FavoriteForm · RoutineEntryForm |
+| `account-money` | PaymentsEarnings 33 | PaymentHistory · PaymentMethods · AddPaymentMethod · ReceiptsList · ReceiptDetail · PayoutDetail · EarningDetail · Refunds |
+| `account-help` | Settings 34 · HelpCenter 35 · ServiceStatus 36 | LegalCenter · LegalDocument · SupportTickets · SupportNewTicket · SupportTicketDetail · DataExports · DeleteAccount · About |
+| `admin-review` | AdminSummary 37 · AdminUsersReview 38 · AdminBookingsRefunds 39 | AdminHome · AdminUserFile · AdminRefundDetail |
+| `admin-ops` | AdminTariffsOps 40 | AdminPayoutRuns · AdminTariffVersions · AdminAlerts · AdminAuditLog · AdminLegalDocs · AdminLegalEditor · AdminSupportQueue · AdminSupportTicket |
+
+Carpetas y ficheros propios: `features/<slice>/` (los paquetes que comparten slice usan subcarpetas: `search/browse|request`, `driver/publish|ops`, `account/money|help`, `admin/review|ops`;
+y ficheros de vista previa separados: `features/<slice>/preview/<paquete>.ts`, ya creados vacíos). `routes.ts` del slice se comparte: solo Edit.
+
+### 10.4 Definición de «pantalla terminada» (todo lo siguiente)
+
+1. **Pixel a pixel** frente a su lámina (y frente a la variante a/b si la hay): mismos elementos, misma posición y tamaño (±2 pt), mismos textos **literales**
+   (incluidos «ejemplo», «Por definir», «Propuesta»), mismos colores (muestréalos de `design/screens-raw`), pesos y tamaños de letra (±0,5 pt), radios (±1 pt),
+   iconos con la misma forma, sombras, separadores y estados (activo/inactivo/seleccionado/deshabilitado). Se compara a 393 × `designHeightPt` @2x. Lo que NO puedas
+   igualar (foto, mapa con teselas reales, ilustración) se declara en el informe con pantalla y elemento.
+2. **Variantes a/b = estados de datos** (§4.3): la app implementa ambas según lo que devuelva la API; el escenario de cada variante las reproduce.
+3. **Funcional de verdad**: cada botón/enlace/chip/pestaña/campo hace algo real contra un endpoint (de la vista previa, con el MISMO contrato que el backend real) o navega
+   a una ruta que existe. Sin botones decorativos, sin `TODO`, sin «próximamente», sin datos inventados en el código de la pantalla (los datos de ejemplo viven solo en
+   `preview/`; las respuestas del preview se anotan con los tipos de `@/api/types/<módulo>` para que `tsc` avise si se separan del contrato).
+4. **Todos los estados** con los componentes del sistema: cargando (`Skeleton`), vacío (`EmptyState`), error con «Reintentar» (`ErrorStateCard`), sin conexión (`OfflineBanner`),
+   sin permiso/ubicación apagada, sesión caducada (la gestiona la navegación), cuenta de invitado (`requireAccount`), formularios con validación en español y botón
+   deshabilitado mientras envía, doble toque protegido, `Idempotency-Key` donde toque (§4.2).
+5. **Reglas duras del producto** (§2): economía no activada («Por definir»), una sola provincia, privacidad del mapa, identidad sin biometría facial, nada «pagado» sin confirmación del servidor, etc.
+6. **Accesibilidad**: `accessibilityRole/Label`, objetivos táctiles ≥ 44 pt, `testID="<Pantalla>.<elemento>"` en todo lo interactivo, `fontScale` razonable, orden de lectura lógico.
+7. **Escenario(s)** en `design/scenarios/<id>.json` (uno por lámina/variante) y `previewParams` en las rutas; **flujo de humo** en `tools/preview/flows/<paquete>.mjs`
+   que recorre el camino principal con clics reales y falla ante errores de consola, red externa o texto de obra.
+8. **Textos** en un fichero propio de tu paquete (`strings.ts`, español de España); no edites el `es.ts` compartido salvo para AÑADIR claves genéricas.
+9. `tsc` a 0 errores y pruebas de tu lógica pura en verde.
+
+Orden de trabajo recomendado: (a) las pantallas de lámina, una a una con su comparación, (b) sus estados y variantes, (c) las páginas adicionales (diseñándolas
+con los mismos componentes; pega al lado la lámina más parecida como referencia), (d) flujo de humo, (e) informe. **Entrega pronto lo más visible**: el
+orquestador publica la vista previa por bloques para que el dueño vea el avance.
+
+### 10.5 Informe final de paquete (obligatorio, breve)
+
+Por ruta: `Implementado y probado` (comparada con la lámina a ojo + flujo/tests en verde) · `Implementado pendiente de verificar` · `Bloqueado` (decisión o credencial externa:
+pagos, SMS real, Google Maps…) · `No implementado`. Con: la última métrica del comparador (SSIM y desplazamiento) de cada lámina, **qué no consigues igualar y por qué**,
+endpoints usados (y los que faltan en el backend real), defectos encontrados en ficheros ajenos (archivo:línea) y dependencias nuevas (no instales: pídelas).
+
+### 10.6 Quién implementa cada endpoint en la vista previa (evita rutas duplicadas)
+
+El router de la vista previa **lanza al arrancar** si dos equipos registran la misma ruta, y eso deja muerta la app de TODOS. Reglas:
+
+1. Registra SOLO los endpoints de tu fila. Los que aparecen como «consume» los implementa otro equipo: no los dupliques; si todavía no existen, trabaja con lo que haya y
+   avisa al orquestador (`SendMessage` a `main`) con el endpoint exacto que necesitas. Antes de registrar nada: `grep -rn "<ruta>" mobile/src/features/*/preview mobile/src/preview/handlers`.
+2. Para sustituir un endpoint del núcleo 0.14 (p. ej. `POST /v1/trips/:tripId/requests`, que el contrato amplía) usa `r.override(...)` (ver `core/router.ts`).
+3. Datos compartidos del mundo base (`mobile/src/preview/{seeds,domain,core}`): solo AÑADE (Edit), nunca cambies firmas ni borres; anótalo en tu informe.
+   Las colecciones nuevas, con el prefijo de su módulo (`money_`, `comms_`, `trust_`, `live_`, `trips_`); las variantes de datos (`seedVariants`), con el prefijo de tu paquete (`auth-…`, `request-…`).
+4. Importes siempre `Money` (céntimos enteros + `status`); respuestas tipadas con `@/api/types/<módulo>` para que `tsc` avise si se separan del contrato real.
+
+| Paquete | Registra (contrato en `docs/contracts/<módulo>.md`) | Consume (de otro paquete / del núcleo) |
+|---|---|---|
+| `auth` | trust usuario: `GET /v1/me/verification` · `PUT /v1/me/roles` · `GET /v1/me/photo` · `POST /v1/me/photo/upload-intents` y `…/{intentId}/complete` · `GET /v1/me/identity-check` · `POST /v1/me/identity-check/upload-intents` y `…/complete` · `POST /v1/me/identity/documents/upload-intents` y `…/complete` · `GET /v1/public/users/{userId}/photo` · legal: `GET /v1/legal/documents` · `GET /v1/legal/documents/{kind}` · `…/versions/{version}` · `GET /v1/me/legal/status` · `GET /v1/me/legal/acceptances` · `POST /v1/me/legal/acceptances` | núcleo: `/v1/auth/*` (SMS/OTP, sesión) |
+| `search-browse` | trips: `GET /v1/trip-categories` · `GET /v1/trips/map` · `GET /v1/search/trips` · `GET /v1/trips/:tripId` · `POST /v1/trips/:tripId/quote` | núcleo: `/v1/provinces*`, `/v1/maps/geocode|reverse` |
+| `search-request` | trips: `GET /v1/trips/:tripId/pickup-points` · `POST /v1/trips/:tripId/requests` (override) · `GET /v1/ride-requests/:id` · `POST …/withdraw` · `POST /v1/trips/:tripId/weekly-requests/preview` · `POST …/weekly-requests` · `GET /v1/weekly-reservations/:id` · `POST …/withdraw`; money: `GET /v1/ride-requests/{id}/payment` · `POST …/payment-intents` · `GET /v1/payments/{id}` | `quote` (browse) |
+| `driver` | trips: `GET /v1/me/driver/requests` · `GET /v1/me/driver/readiness` · `POST /v1/me/routes/plan` · `POST /v1/me/routes` · `POST /v1/ride-requests/:id/decision` (override) · `POST /v1/weekly-reservations/:id/decision`; vehículos: ampliación `color` (override si hace falta) | núcleo: vehículos, documentos, subidas |
+| `driver-ops` | live: `POST /v1/trips/{tripId}/route-changes` · `POST /v1/route-changes/{id}/cancel` · `GET /v1/me/trips/{tripId}/console`; money: `POST /v1/bookings/{id}/driver-cancel`; lo que falte para cancelar un viaje entero (mira primero `handlers/trips.ts` del núcleo) | núcleo: `pickup-verify`, `start`, `complete`, `location`; `GET /v1/route-changes/{id}` (live) |
+| `live` | live: `GET /v1/bookings/{id}/live` · `…/in-car` · `…/summary` · `GET /v1/route-changes/{id}` · `POST …/respond` · `POST /v1/trips/{tripId}/ratings` · `POST /v1/incident-reports` · `GET /v1/me/incident-reports` y `…/{reportId}` · adjuntos (`…/attachments` y `…/complete`) · `POST|GET|DELETE /v1/bookings/{id}/share` · `GET /v1/shared-trips/{token}` · `GET|PUT /v1/me/live-privacy` | núcleo: `pickup-code`, `location` |
+| `messages` | comms: notificaciones (`GET /v1/notifications` · `unread-count` · `POST …/{id}/read` · `read-all`) · `GET|PATCH /v1/me/notification-preferences` · `GET|POST /v1/me/push-tokens` y `DELETE …/{id}` · conversaciones (`GET /v1/conversations` · `unread-count` · `POST …/direct` · `GET …/{id}` · `GET|POST …/{id}/messages` · `POST …/{id}/read` · `GET …/{id}/call-contact` · `POST …/messages/{mid}/report`) · `GET /v1/me/blocks` · `POST|GET /v1/me/reports`; money: `GET /v1/bookings/{id}/cancellation-preview` · `POST /v1/bookings/{id}/cancel` | núcleo: `PUT|DELETE /v1/me/blocks/:userId` |
+| `profile` | trips: `GET /v1/me/trips/overview` · favoritos (`GET|POST /v1/me/favorites`, `PATCH|DELETE …/{id}`) · rutina (`GET /v1/me/routine`, `POST …/entries`, `PATCH|DELETE …/entries/{id}`, `POST …/suspensions`, `DELETE …/suspensions/{weekStart}`, `PUT …/weekly-offer`); money: `GET /v1/plans` · `GET /v1/me/plan` | núcleo: perfil; trust: `GET /v1/me/verification` (auth); trips: `GET /v1/weekly-reservations/:id`, `GET /v1/ride-requests/:id` (search-request) |
+| `account-money` | money: `GET /v1/me/payments` · `…/passenger-summary` · `…/driver-summary` · `GET /v1/me/earnings` y `…/{bookingId}` · `GET|POST /v1/me/payment-methods` y `DELETE …/{id}` · `GET /v1/me/receipts` · `…/{id}` · `…/{id}/printable` · `GET /v1/me/payouts` y `…/{id}` · `GET /v1/me/refunds` | `GET /v1/payments/{id}` (search-request) |
+| `account-help` | comms: `GET|PATCH /v1/me/settings` · soporte (`GET /v1/me/support/trips` · subidas `…/uploads/intents` y `…/complete` · `GET …/attachments/{id}/download` · `POST|GET /v1/me/support/tickets` · `GET …/{id}` · `POST …/{id}/replies` · `POST …/{id}/close`) · exportaciones (`POST|GET /v1/me/data-exports`, `GET …/{id}`, `GET …/{id}/download`) · eliminación (`GET|POST /v1/me/account-deletion`, `POST …/cancel`); lo que use «Estado del servicio» (36: busca en los contratos y en `handlers/health.ts`) | legal (auth): `GET /v1/legal/documents*`; núcleo: `/v1/auth/logout` |
+| `admin-review` | trust: `GET /v1/admin/me` · `GET /v1/admin/summary` · `…/summary/vehicle-activity` · `GET /v1/admin/review/users` y `…/{userId}` · `POST …/{userId}/decision` · `POST /v1/admin/evidence/{kind}/{evidenceId}/access` · `GET /v1/admin/bookings`; money admin: `GET /v1/admin/refund-proposals` y `…/{id}` · `POST …/{id}/approve|reject|execute` | — |
+| `admin-ops` | trust: tarifas (`GET /v1/admin/tariffs` · `PUT …/draft` · `POST …/example` · `GET …/versions` · `POST …/versions/{id}/publish`) · `GET|PUT /v1/admin/operations` · alertas (`GET /v1/admin/alerts` · `POST …/evaluate` · `POST …/{id}/status`) · `GET /v1/admin/audit-events` · legal admin (`GET|POST /v1/admin/legal/documents`, `POST …/{id}/publish`) · atención (`GET /v1/admin/support/tickets` · `GET|POST …/{id}[/reply|/assign|/close]` · `POST /v1/admin/support/attachments/{id}/access`); money admin: `GET|POST /v1/admin/payout-runs` · `POST …/{id}/execute` | `GET /v1/admin/me` (admin-review) |
+
+Los tickets de soporte los **crea** `account-help` (lado usuario) y los **atiende** `admin-ops` (lado administración): comparten la colección `comms_support_tickets` (la crea `account-help`; `admin-ops` la lee y la actualiza,
+y mientras no exista, siembra la suya con los mismos campos que el contrato `comms.md §9`). Lo mismo con las devoluciones (`money_refunds`: las crea `messages` al cancelar; las revisa `admin-review`)
+y con las incidencias (`live_incident_reports`: las crea `live`; las consulta la administración). Si necesitas una colección de otro paquete y aún no está, créala con el esquema del contrato (`docs/contracts`) y nómbrala igual.
