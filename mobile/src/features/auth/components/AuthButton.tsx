@@ -1,6 +1,6 @@
 import React from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
-import { Icon } from "@/icons";
+import { Icon, type IconName } from "@/icons";
 import { colors, radii } from "@/theme";
 import { Text } from "@/ui";
 
@@ -14,6 +14,10 @@ export interface AuthButtonProps {
   disabled?: boolean;
   /** Chevron `›` a la derecha (por defecto sí, como en las láminas 01–04). */
   chevron?: boolean;
+  /** Icono a la izquierda de la etiqueta (06 cámara / documento). */
+  leadingIcon?: IconName;
+  /** `compact`: botón de 56 pt con etiqueta de 22,5 pt (06 y 08); `default`: el de las láminas 01–04. */
+  size?: "default" | "compact";
   accessibilityHint?: string;
   testID?: string;
   style?: StyleProp<ViewStyle>;
@@ -34,12 +38,15 @@ export function AuthButton({
   loading = false,
   disabled = false,
   chevron = true,
+  leadingIcon,
+  size = "default",
   accessibilityHint,
   testID,
   style,
 }: AuthButtonProps): React.JSX.Element {
   const primary = variant === "primary";
   const blocked = disabled || loading;
+  const compact = size === "compact";
   const foreground = disabled ? colors.text.disabled : primary ? colors.onPrimary : colors.primary;
   return (
     <Pressable
@@ -57,14 +64,20 @@ export function AuthButton({
           : primary
             ? { backgroundColor: pressed ? colors.primaryPressed : colors.primary }
             : { backgroundColor: pressed ? colors.bg.tint : colors.bg.white, borderWidth: 1.5, borderColor: colors.primary },
+        compact ? styles.compact : null,
         style,
       ]}
     >
+      {leadingIcon !== undefined ? (
+        <View style={[styles.leading, loading ? styles.hidden : null]} pointerEvents="none">
+          <Icon name={leadingIcon} size={compact ? 30 : 34} color={foreground} />
+        </View>
+      ) : null}
       <Text
         variant="button"
         color={foreground}
-        size={25}
-        lineHeight={30}
+        size={compact ? 22.5 : 25}
+        lineHeight={compact ? 27 : 30}
         letterSpacing={0.55}
         numberOfLines={1}
         style={loading ? styles.hidden : null}
@@ -90,10 +103,13 @@ const styles = StyleSheet.create({
     height: AUTH_BUTTON_HEIGHT,
     borderRadius: radii.xl,
     paddingHorizontal: 30,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "stretch",
   },
+  compact: { height: 56 },
+  leading: { marginRight: 14 },
   chevron: { position: "absolute", top: 0, bottom: 0, right: 15, justifyContent: "center" },
   spinner: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" },
   hidden: { opacity: 0 },

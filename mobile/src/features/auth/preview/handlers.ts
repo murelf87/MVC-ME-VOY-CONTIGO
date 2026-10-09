@@ -10,6 +10,7 @@ import { ApiFailure, addRole, iso, reply, sha256Hex, signedUrl, writeAudit, uuid
 import type { PreviewDb, PreviewProfileId, PreviewRouter } from "@/preview";
 import { reviewTables, type EvidenceRow, type ReviewItemRow } from "../../admin/preview/reviewWorld/store";
 import { currentDocument, seedAccountAcceptances, seedLegalDocuments, trustTables, type TrustUploadPurpose, type TrustUploadRow } from "./trustStore";
+import { authSeedVariants, seedAuthVariant } from "./variants";
 import { MAX_CHECK_ATTEMPTS, identityState, photoState, privateCheckState, selfRoles, storageProvider, uploadAvailable, verificationOverview } from "./trustViews";
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
@@ -405,7 +406,10 @@ export function registerPreview(r: PreviewRouter, db: PreviewDb): void {
   );
 }
 
-export function seedSlice(db: PreviewDb, _profile: PreviewProfileId, _seed: string): void {
+export const seedVariants = authSeedVariants;
+
+export function seedSlice(db: PreviewDb, _profile: PreviewProfileId, seed: string): void {
   seedLegalDocuments(db);
   seedAccountAcceptances(db);
+  seedAuthVariant(db, seed);
 }

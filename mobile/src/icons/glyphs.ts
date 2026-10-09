@@ -237,6 +237,8 @@ export const glyphs = {
   opsSave: mci("content-save-outline"),
   /** Cola vacía. */
   opsInbox: mci("inbox"),
+  /** Conservación de datos (07). */
+  database: mci("database"),
 } as const satisfies Record<string, GlyphRef>;
 
 export type IconName = keyof typeof glyphs;

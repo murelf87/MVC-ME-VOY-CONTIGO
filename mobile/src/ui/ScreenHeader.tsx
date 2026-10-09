@@ -156,7 +156,7 @@ export function ScreenHeader({
     <View testID={testID} style={styles.row}>
       <View style={[styles.side, styles.sideLeft]}>{back}</View>
       <View style={styles.center}>
-        <Text variant="title" color="heading" align="center" numberOfLines={1} accessibilityRole="header">
+        <Text variant="title" color="heading" align="center" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} size={title.length > 24 ? 21 : undefined} accessibilityRole="header">
           {title}
         </Text>
         {subtitle !== undefined ? (
@@ -165,7 +165,7 @@ export function ScreenHeader({
           </Text>
         ) : null}
       </View>
-      <View style={[styles.side, styles.sideRight]}>{rightNode}</View>
+      <View style={[styles.side, styles.sideRight, (rightNode === undefined || rightNode === null) && title.length > 24 ? styles.sideEmpty : null]}>{rightNode}</View>
     </View>
   );
 }
@@ -175,6 +175,8 @@ const styles = StyleSheet.create({
   side: { width: SIDE, minHeight: layout.headerRow, justifyContent: "center" },
   sideLeft: { alignItems: "flex-start" },
   sideRight: { alignItems: "flex-end" },
+  /** Título largo y nada a la derecha: la cabecera cede ese hueco al título. */
+  sideEmpty: { width: 8 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   back: { width: 44, height: 44, justifyContent: "center", paddingLeft: 6 },
   rightText: { minHeight: 44, justifyContent: "center", paddingLeft: 4 },

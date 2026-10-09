@@ -1,0 +1,15 @@
+{
+  "screen": "07",
+  "variant": "",
+  "profile": "driver",
+  "route": "PrivateCheckCapture",
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "perm": "granted",
+  "steps": [
+    { "wait": 800 },
+    { "click": "[data-testid='PrivateCheckCapture.start']" },
+    { "wait": 1500 }
+  ],
+  "note": "Privacidad de la comprobación: se llega de verdad desde «Iniciar» con la captura de muestra del visor."
+}

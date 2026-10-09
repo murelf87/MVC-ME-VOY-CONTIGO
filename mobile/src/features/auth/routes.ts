@@ -10,13 +10,19 @@
  *  - Pantalla = componente que recibe `AppScreenProps<"Nombre">`; navega con `useAppNavigation()` y lee los
  *    parámetros con `useAppRoute("Nombre")`.
  */
-import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import type { Role } from "@/api/types";
 import { CreateAccountScreen } from "./screens/CreateAccountScreen";
 import { VerifyPhoneScreen } from "./screens/VerifyPhoneScreen";
 import { ProfilePhotoScreen } from "./screens/ProfilePhotoScreen";
 import { ChooseRoleScreen } from "./screens/ChooseRoleScreen";
+import { PrivateCheckCaptureScreen } from "./screens/PrivateCheckCaptureScreen";
+import { PrivateCheckPrivacyScreen } from "./screens/PrivateCheckPrivacyScreen";
+import { PrivateCheckStatusScreen } from "./screens/PrivateCheckStatusScreen";
+import { SignInScreen } from "./screens/SignInScreen";
+import { PrivateCheckOtherWayScreen } from "./screens/PrivateCheckOtherWayScreen";
+import { LegalAcceptanceScreen } from "./screens/LegalAcceptanceScreen";
+import { PermissionPromptScreen } from "./screens/PermissionPromptScreen";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 
 export type AuthParams = {
@@ -49,14 +55,14 @@ export const authRoutes: RouteDef[] = [
   defineRoute({ name: "Welcome", component: WelcomeScreen, access: "public", screen: "01", title: "Bienvenida" }),
   defineRoute({ name: "ChooseRole", component: ChooseRoleScreen, access: "public", screen: "02", title: "Elige cómo usar MVC" }),
   defineRoute({ name: "CreateAccount", component: CreateAccountScreen, access: "public", screen: "03", title: "Crear cuenta" }),
-  defineRoute({ name: "VerifyPhone", component: VerifyPhoneScreen, access: "public", screen: "04", title: "Verifica tu móvil" }),
-  defineRoute({ name: "SignIn", component: PendingScreen, access: "public", title: "Iniciar sesión" }),
+  defineRoute({ name: "VerifyPhone", component: VerifyPhoneScreen, access: "public", screen: "04", title: "Verifica tu móvil", previewParams: { challengeId: "00000000-0000-4000-8000-000000000000", phoneE164: "+34612345678", expiresAt: "2099-01-01T00:00:00.000Z" } }),
+  defineRoute({ name: "SignIn", component: SignInScreen, access: "public", title: "Iniciar sesión" }),
   defineRoute({ name: "ProfilePhoto", component: ProfilePhotoScreen, access: "auth", screen: "05", title: "Foto de perfil" }),
-  defineRoute({ name: "PrivateCheckCapture", component: PendingScreen, access: "auth", screen: "06", title: "Comprobación privada" }),
-  defineRoute({ name: "PrivateCheckPrivacy", component: PendingScreen, access: "auth", screen: "07", title: "Privacidad de la comprobación" }),
-  defineRoute({ name: "PrivateCheckStatus", component: PendingScreen, access: "auth", screen: "08", title: "Estado de la comprobación" }),
+  defineRoute({ name: "PrivateCheckCapture", component: PrivateCheckCaptureScreen, access: "auth", screen: "06", title: "Comprobación privada" }),
+  defineRoute({ name: "PrivateCheckPrivacy", component: PrivateCheckPrivacyScreen, access: "auth", screen: "07", title: "Privacidad de la comprobación" }),
+  defineRoute({ name: "PrivateCheckStatus", component: PrivateCheckStatusScreen, access: "auth", screen: "08", title: "Estado de la comprobación" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
-  defineRoute({ name: "PrivateCheckOtherWay", component: PendingScreen, access: "auth", title: "Otra forma de verificar" }),
-  defineRoute({ name: "LegalAcceptance", component: PendingScreen, access: "auth", title: "Acepta las condiciones" }),
-  defineRoute({ name: "PermissionPrompt", component: PendingScreen, access: "public", title: "Permiso del sistema" }),
+  defineRoute({ name: "PrivateCheckOtherWay", component: PrivateCheckOtherWayScreen, access: "auth", title: "Otra forma de verificar" }),
+  defineRoute({ name: "LegalAcceptance", component: LegalAcceptanceScreen, access: "auth", title: "Acepta las condiciones" }),
+  defineRoute({ name: "PermissionPrompt", component: PermissionPromptScreen, access: "public", title: "Permiso del sistema", previewParams: { kind: "location" } }),
 ];

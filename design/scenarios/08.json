@@ -1,0 +1,9 @@
+{
+  "screen": "08",
+  "variant": "",
+  "profile": "driver",
+  "route": "PrivateCheckStatus",
+  "seed": "auth-check-retry",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Estado de la comprobación: Ana con 2 de 3 intentos; la última captura debe repetirse (el rostro está fuera del marco)."
+}
