@@ -150,7 +150,7 @@ describe("conformidad con las respuestas reales del backend 0.14", () => {
     });
     // El visor falso fija el código SMS (el proveedor falso del arnés real aceptaba 123456).
     (globalThis as { __MVC_PREVIEW_SHELL__?: unknown }).__MVC_PREVIEW_SHELL__ = { otp: FLOW_OTP };
-    runtime = createPreviewRuntime({ latency: 0, skipSeed: true, profile: "new", rngSeed: "conformance" });
+    runtime = createPreviewRuntime({ latency: 0, skipSeed: true, profile: "new", rngSeed: "conformance", slices: false });
     preview = await runRealBackendFlow(runtime);
   });
 

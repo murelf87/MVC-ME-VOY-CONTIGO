@@ -26,7 +26,7 @@ let ana: string;
 const tripId = SEED_TRIP_IDS.anaMorning;
 
 beforeEach(() => {
-  rt = testRuntime({ profile: "passenger" });
+  rt = testRuntime({ profile: "passenger", slices: false });
   api = createApi(rt);
   miguel = rt.sessionToken() ?? "";
   ana = tokenFor(rt, "ana");

@@ -117,7 +117,7 @@ describe("PreviewJobs", () => {
 
 describe("eventos que emite el núcleo", () => {
   it("el ciclo completo (solicitar → aceptar → pagar → chatear → iniciar → ubicar → recoger → terminar) emite cada evento con su payload", async () => {
-    const rt = testRuntime({ profile: "passenger" });
+    const rt = testRuntime({ profile: "passenger", slices: false });
     const api = createApi(rt);
     const miguel = rt.sessionToken() ?? "";
     const ana = tokenFor(rt, "ana");
@@ -197,7 +197,7 @@ describe("eventos que emite el núcleo", () => {
   });
 
   it("un hold que caduca emite ride_request.expired una sola vez, con la solicitud ya en «expired»", async () => {
-    const rt = testRuntime({ profile: "passenger", seed: "request-accepted" });
+    const rt = testRuntime({ profile: "passenger", seed: "request-accepted", slices: false });
     const api = createApi(rt);
     const expired: Array<Record<string, unknown>> = [];
     rt.db.events.on("ride_request.expired", (payload) => expired.push(asRecord(payload)));
@@ -209,7 +209,7 @@ describe("eventos que emite el núcleo", () => {
   });
 
   it("publicar un borrador emite trip.published con el viaje ya publicado", () => {
-    const rt = testRuntime({ profile: "driver" });
+    const rt = testRuntime({ profile: "driver", slices: false });
     const draft = rt.db.trips.find((trip) => trip.status === "draft");
     assert.ok(draft, "el mundo base siembra un borrador");
     const seen: Array<Record<string, unknown>> = [];

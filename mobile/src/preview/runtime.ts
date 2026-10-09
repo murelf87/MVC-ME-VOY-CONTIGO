@@ -29,6 +29,11 @@ export interface PreviewRuntimeOptions {
   rngSeed?: string;
   /** No siembra nada (la base se restaurará desde una instantánea). */
   skipSeed?: boolean;
+  /**
+   * `false` = solo los endpoints del NÚCLEO (la forma heredada del backend 0.14). Lo usan las pruebas de conformidad con
+   * las grabaciones del backend real, que no conocen las formas ampliadas de los slices (decisión de solicitudes…).
+   */
+  slices?: boolean;
 }
 
 export interface PreviewRuntime {
@@ -50,7 +55,7 @@ export function createPreviewRuntime(options: PreviewRuntimeOptions = {}): Previ
     clockMode: options.clockMode ?? "frozen",
   });
   const router = createRouter();
-  registerPreviewHandlers(router, db);
+  registerPreviewHandlers(router, db, { slices: options.slices ?? true });
   const server = new PreviewServer({
     db,
     router,

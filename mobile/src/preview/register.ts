@@ -86,9 +86,10 @@ export function isAcceptedSeed(name: string): boolean {
  * ruta repetida lanza un error al arrancar (para sustituir una del núcleo, el slice usa `r.override(...)`); también
  * una variante de datos declarada dos veces.
  */
-export function registerPreviewHandlers(router: PreviewRouter, db: PreviewDb): void {
+export function registerPreviewHandlers(router: PreviewRouter, db: PreviewDb, options: { slices?: boolean } = {}): void {
   listSeedVariants();
   registerCoreHandlers(router.scoped("core"), db);
+  if (options.slices === false) return;
   for (const slice of PREVIEW_SLICES) slice.module.registerPreview(router.scoped(slice.name), db);
 }
 

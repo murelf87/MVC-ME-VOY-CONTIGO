@@ -137,6 +137,13 @@ export const PLACES: readonly Place[] = [
   p("c-los-arcos-aljarafe", "Av. de las Ciencias", "calle", "Mairena del Aljarafe", 37.3498, -6.0624),
   p("c-ronda-sur-dh", "Calle Real Utrera", "calle", "Dos Hermanas", 37.2847, -5.9205),
   p("c-san-juan-ramon-jimenez", "Av. Juan Ramón Jiménez", "calle", "Bormujos", 37.3702, -6.0731),
+  // ---- fuera de la provincia (existen para que se vea qué pasa al elegirlos: «Fuera de provincia») ----
+  p("aznalcollar", "Aznalcóllar", "municipio", "Aznalcóllar", 37.5336, -6.2744),
+  p("huelva", "Huelva", "ciudad", "Huelva", 37.2614, -6.9447, { aliases: ["huelva capital"] }),
+  p("cadiz", "Cádiz", "ciudad", "Cádiz", 36.5297, -6.2926, { aliases: ["cadiz capital"] }),
+  p("jerez", "Jerez de la Frontera", "ciudad", "Jerez de la Frontera", 36.685, -6.1261, { aliases: ["jerez"] }),
+  p("cordoba", "Córdoba", "ciudad", "Córdoba", 37.8882, -4.7794, { aliases: ["cordoba capital"] }),
+  p("malaga", "Málaga", "ciudad", "Málaga", 36.7213, -4.4214, { aliases: ["malaga capital"] }),
 ];
 
 const BY_ID = new Map(PLACES.map((place) => [place.id, place]));
