@@ -21,3 +21,11 @@ export function formatShortDate(iso: string | null | undefined, timeZone = "Euro
     return null;
   }
 }
+
+/** «+34612345678» → «+34 612 *** 678» (la lámina 04 oculta las tres cifras centrales). Si no es un móvil español, oculta el centro. */
+export function maskPhone(e164: string): string {
+  const match = /^\+34(\d{3})(\d{3})(\d{3})$/.exec(e164);
+  if (match !== null) return `+34 ${match[1]} *** ${match[3]}`;
+  if (e164.length <= 6) return e164;
+  return `${e164.slice(0, 4)} ${"*".repeat(Math.max(3, e164.length - 7))} ${e164.slice(-3)}`;
+}

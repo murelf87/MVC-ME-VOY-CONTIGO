@@ -148,15 +148,23 @@ export function CreateAccountScreen(_props: AppScreenProps<"CreateAccount">): Re
       {!online ? <OfflineBanner testID="CreateAccount.offline" /> : null}
 
       <View style={styles.photoRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={draft.photo !== null ? copy.photoChange : copy.photoAdd}
-          onPress={() => setPhotoOpen(true)}
-          style={styles.photoButton}
-          testID="CreateAccount.photo"
-        >
-          <Avatar source={draft.photo?.uri ?? null} name={displayName} size={112} badge="camera" />
-        </Pressable>
+        <View style={styles.photoButton}>
+          <Avatar
+            source={draft.photo?.uri ?? null}
+            name={displayName}
+            size={112}
+            badge="camera"
+            onBadgePress={() => setPhotoOpen(true)}
+            badgeAccessibilityLabel={draft.photo !== null ? copy.photoChange : copy.photoAdd}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={draft.photo !== null ? copy.photoChange : copy.photoAdd}
+            onPress={() => setPhotoOpen(true)}
+            style={styles.photoOverlay}
+            testID="CreateAccount.photo"
+          />
+        </View>
       </View>
       {photoNotice !== null ? (
         <View style={styles.notice}>
@@ -329,7 +337,8 @@ export function CreateAccountScreen(_props: AppScreenProps<"CreateAccount">): Re
 
 const styles = StyleSheet.create({
   photoRow: { paddingHorizontal: 22, paddingTop: 8 },
-  photoButton: { alignSelf: "flex-start" },
+  photoButton: { alignSelf: "flex-start", width: 124, height: 124 },
+  photoOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   notice: { paddingHorizontal: 18, marginTop: 8 },
   fields: { paddingHorizontal: 20, paddingTop: 20, gap: 14 },
   consent: { paddingHorizontal: 24, marginTop: 34 },

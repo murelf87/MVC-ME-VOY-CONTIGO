@@ -21,7 +21,7 @@ const SCENARIOS_DIR = path.join(REPO, "design", "scenarios");
 const FEATURES_DIR = path.join(REPO, "mobile", "src", "features");
 
 /** Claves que entiende `tools/design/compare.mjs` (más `variant`, que es documentación). Las que empiezan por «_» son comentarios libres. */
-const KNOWN_KEYS = new Set(["screen", "variant", "profile", "route", "params", "seed", "clock", "perm", "device", "height", "waitFor", "note"]);
+const KNOWN_KEYS = new Set(["screen", "variant", "profile", "route", "params", "seed", "clock", "perm", "device", "height", "waitFor", "steps", "note"]);
 const PERMS = ["granted", "ask", "denied", "blocked"];
 const HAS_OFFSET = /(Z|[+-]\d\d:\d\d)$/;
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
@@ -134,6 +134,7 @@ function checkScenario(file: string, data: Record<string, unknown>): string[] {
   if (data.device !== undefined && typeof data.device !== "string") problems.push("«device» debe ser un texto");
   if (data.height !== undefined && !(typeof data.height === "number" && data.height > 300 && data.height < 2000)) problems.push("«height» son puntos (300–2000)");
   if (data.waitFor !== undefined && typeof data.waitFor !== "string") problems.push("«waitFor» debe ser un texto");
+  if (data.steps !== undefined && !Array.isArray(data.steps)) problems.push("«steps» debe ser una lista de pasos ({fill,text} | {click} | {wait})");
   if (data.note !== undefined && typeof data.note !== "string") problems.push("«note» debe ser un texto");
 
   // parámetros y referencias

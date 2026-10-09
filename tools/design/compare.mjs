@@ -752,6 +752,7 @@ function targetFor(shot, args, scenarioDir) {
     device: args.device ?? sc?.device ?? 'iphone15',
     height: args.height ? Number(args.height) : sc?.height,
     waitFor: args['wait-for'] ?? sc?.waitFor,
+    steps: sc?.steps,
     note: sc?.note,
   };
   return t;
@@ -1112,6 +1113,20 @@ async function main() {
               { timeout: Math.min(timeout, 20000) },
             )
             .catch(() => res.warnings.push(`no apareció «${target.waitFor}» antes de capturar`));
+        }
+        // pasos de interacción del escenario (escribir un código, pulsar un botón…) antes de capturar
+        if (Array.isArray(target.steps)) {
+          for (const step of target.steps) {
+            try {
+              if (typeof step.fill === 'string') await frame.locator(step.fill).first().fill(String(step.text ?? ''), { timeout: 8000 });
+              else if (typeof step.click === 'string') await frame.locator(step.click).first().click({ timeout: 8000 });
+              else if (typeof step.wait === 'number') await sleep(step.wait);
+              await sleep(250);
+            } catch (e) {
+              res.warnings.push(`paso del escenario fallido: ${JSON.stringify(step)} (${String(e.message).split('\n')[0]})`);
+            }
+          }
+          await settleApp(frame, { quietMs: 350, minMs: 300, timeoutMs: 6000 });
         }
         const openMs = Date.now() - tOpen;
 

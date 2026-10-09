@@ -14,6 +14,7 @@ import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import type { Role } from "@/api/types";
 import { CreateAccountScreen } from "./screens/CreateAccountScreen";
+import { VerifyPhoneScreen } from "./screens/VerifyPhoneScreen";
 import { ChooseRoleScreen } from "./screens/ChooseRoleScreen";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 
@@ -47,7 +48,7 @@ export const authRoutes: RouteDef[] = [
   defineRoute({ name: "Welcome", component: WelcomeScreen, access: "public", screen: "01", title: "Bienvenida" }),
   defineRoute({ name: "ChooseRole", component: ChooseRoleScreen, access: "public", screen: "02", title: "Elige cómo usar MVC" }),
   defineRoute({ name: "CreateAccount", component: CreateAccountScreen, access: "public", screen: "03", title: "Crear cuenta" }),
-  defineRoute({ name: "VerifyPhone", component: PendingScreen, access: "public", screen: "04", title: "Verifica tu móvil" }),
+  defineRoute({ name: "VerifyPhone", component: VerifyPhoneScreen, access: "public", screen: "04", title: "Verifica tu móvil" }),
   defineRoute({ name: "SignIn", component: PendingScreen, access: "public", title: "Iniciar sesión" }),
   defineRoute({ name: "ProfilePhoto", component: PendingScreen, access: "auth", screen: "05", title: "Foto de perfil" }),
   defineRoute({ name: "PrivateCheckCapture", component: PendingScreen, access: "auth", screen: "06", title: "Comprobación privada" }),
