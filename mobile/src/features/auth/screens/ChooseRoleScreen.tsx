@@ -171,7 +171,7 @@ export function ChooseRoleScreen(_props: AppScreenProps<"ChooseRole">): React.JS
 }
 
 const styles = StyleSheet.create({
-  cards: { paddingHorizontal: 11.5, paddingTop: 20 },
+  cards: { paddingHorizontal: 11.5, paddingTop: 22 },
   secondCard: { marginTop: 7 },
   infoRow: { flexDirection: "row", alignItems: "center", paddingLeft: 31, paddingRight: 24, marginTop: 17 },
   infoDisc: {

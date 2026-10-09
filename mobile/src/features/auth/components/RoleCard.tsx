@@ -34,7 +34,7 @@ export const ROLE_CARD = {
   textLeft: 182.25,
   titleTop: 98,
   titleSize: 27,
-  textWidth: 158,
+  textWidth: 172,
   descSize: 19.5,
   descLineHeight: 23,
 } as const;

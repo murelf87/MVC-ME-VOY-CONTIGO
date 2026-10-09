@@ -144,7 +144,7 @@ export function ScreenHeader({
           {title}
         </Text>
         {subtitle !== undefined ? (
-          <Text variant="subtitle" color="muted" align="center" style={styles.largeSubtitle}>
+          <Text variant="subtitle" color="muted" align="center" lineHeight={27} style={styles.largeSubtitle}>
             {subtitle}
           </Text>
         ) : null}
@@ -188,8 +188,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  large: { paddingHorizontal: layout.screenX, paddingTop: 20, paddingBottom: 6 },
-  largeBack: { position: "absolute", top: -4, left: 18 },
+  large: { paddingHorizontal: layout.screenX, paddingTop: 19, paddingBottom: 6 },
+  largeBack: { position: "absolute", top: -13, left: 18 },
   largeRight: { position: "absolute", top: -4, right: 18 },
-  largeSubtitle: { marginTop: 14 },
+  largeSubtitle: { marginTop: 15 },
 });
