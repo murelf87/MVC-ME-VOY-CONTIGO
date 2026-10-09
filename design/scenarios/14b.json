@@ -1,0 +1,22 @@
+{
+  "screen": "14",
+  "variant": "b",
+  "profile": "passenger",
+  "route": "WeeklySeat",
+  "params": {
+    "tripId": "9f0e1d2c-4b3a-4a59-8877-665544330001",
+    "pickupPointId": "pp1_WzEsIjlmMGUxZDJjLTRiM2EtNGE1OS04ODc3LTY2NTU0NDMzMDAwMSIsMzcuMzQwMywtNS45MzcsMCwxNl0",
+    "pickup": { "code": "A", "name": "Montequinto", "walkMinutes": 16 },
+    "criteria": {
+      "origin": { "label": "Sevilla Centro", "latitude": 37.3403, "longitude": -5.937 },
+      "destination": { "label": "Universidad de Sevilla", "latitude": 37.3825, "longitude": -5.9919 },
+      "mode": "weekly",
+      "arriveBy": "08:30",
+      "returnAt": "18:00",
+      "weekdays": ["mon", "tue", "wed", "thu", "fri"]
+    }
+  },
+  "seed": "default",
+  "clock": "2026-10-05T07:58:00+02:00",
+  "note": "Tu plaza semanal con inicio el lunes 5 de octubre de 2026 (lámina 14b)."
+}

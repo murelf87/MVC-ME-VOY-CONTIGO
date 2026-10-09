@@ -16,6 +16,7 @@ import { PickupPointScreen } from "./request/screens/PickupPointScreen";
 import { ReviewRequestScreen } from "./request/screens/ReviewRequestScreen";
 import type { IsoDate, LocalTime, SearchMode, TripCategory, TripLeg, Weekday } from "@/api/types";
 import { MapHomeScreen } from "./browse/screens/MapHomeScreen";
+import { WeeklySeatScreen } from "./request/screens/WeeklySeatScreen";
 import { TripDetailScreen } from "./browse/screens/TripDetailScreen";
 import { TripResultsScreen } from "./browse/screens/TripResultsScreen";
 import { DefineRouteScreen } from "./browse/screens/DefineRouteScreen";
@@ -108,7 +109,7 @@ export const searchRoutes: RouteDef[] = [
   defineRoute({ name: "TripResults", component: TripResultsScreen, access: "public", screen: "11", title: "Resultados", previewParams: { criteria: { origin: { label: "Sevilla", latitude: 37.3403, longitude: -5.937 }, destination: { label: "Universidad de Sevilla", latitude: 37.3825, longitude: -5.9919 }, mode: "weekly", arriveBy: "08:30", weekdays: ["mon", "tue", "wed", "thu", "fri"] } } }),
   defineRoute({ name: "TripDetail", component: TripDetailScreen, access: "public", screen: "12", title: "Detalle del viaje", previewParams: { tripId: "9f0e1d2c-4b3a-4a59-8877-665544330001" } }),
   defineRoute({ name: "PickupPoint", component: PickupPointScreen, access: "public", screen: "13", title: "Punto de recogida" }),
-  defineRoute({ name: "WeeklySeat", component: PendingScreen, access: "public", screen: "14", title: "Tu plaza semanal" }),
+  defineRoute({ name: "WeeklySeat", component: WeeklySeatScreen, access: "public", screen: "14", title: "Tu plaza semanal", previewParams: { tripId: "9f0e1d2c-4b3a-4a59-8877-665544330001", pickupPointId: "pp1_WzEsIjlmMGUxZDJjLTRiM2EtNGE1OS04ODc3LTY2NTU0NDMzMDAwMSIsMzcuMzQwMywtNS45MzcsMCwxNl0" } }),
   defineRoute({ name: "ReviewRequest", component: ReviewRequestScreen, access: "auth", screen: "15", title: "Revisa tu solicitud" }),
   defineRoute({ name: "RequestStatusPayment", component: PendingScreen, access: "auth", screen: "16", title: "Estado y pago" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
