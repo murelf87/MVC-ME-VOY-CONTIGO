@@ -6,8 +6,8 @@ export const meta = { description: 'publicar ruta: formulario, paradas y recorri
 
 const CLOCK = '2026-10-05T07:17:00+02:00';
 
-async function openScreen(s, route, params) {
-  await s.inApp(([name, p, o]) => window.__mvc.open(name, p, o), [route, params, { profile: 'driver', seed: 'default', clock: CLOCK }]);
+async function openScreen(s, route, params, seed = 'default') {
+  await s.inApp(([name, p, o]) => window.__mvc.open(name, p, o), [route, params, { profile: 'driver', seed, clock: CLOCK }]);
   await s.inApp(() => (window.__mvc.idle ? window.__mvc.idle(4000) : undefined));
   await s.settle();
 }
@@ -60,5 +60,35 @@ export default async function publish(s) {
     s.expect(text.includes('Palomares del Río'), 'resume el origen');
     await s.shot('ruta-publicada');
     await s.checkForbiddenText('ruta publicada');
+  });
+
+  await s.step('Datos del vehículo · un alta vacía no se guarda y dice qué falta', async () => {
+    await openScreen(s, 'VehicleForm', undefined, 'fresh-driver');
+    await s.waitText('Añadir vehículo');
+    await s.tap('VehicleForm.save');
+    await s.waitText('Elige la marca');
+    s.expect(await s.inApp(() => window.__mvc.route()) === 'VehicleForm', 'sigue en el formulario');
+    await s.checkForbiddenText('alta de vehículo vacía');
+  });
+
+  await s.step('Documentación del vehículo · foto, seguro, permiso y datos con su estado', async () => {
+    await openScreen(s, 'VehicleDocuments', { vehicleId: { $ref: 'vehicle.anaArona' } });
+    await s.waitText('Foto del vehículo');
+    const text = await s.appText();
+    for (const t of ['Seguro (uso particular)', 'Permiso de conducir', 'Datos del vehículo']) s.expect(text.includes(t), `sección «${t}»`);
+    await s.shot('documentacion-vehiculo');
+    await s.checkForbiddenText('documentación del vehículo');
+  });
+
+  await s.step('Detalle de la solicitud · aceptar crea la retención y NO confirma la reserva', async () => {
+    await openScreen(s, 'DriverRequestDetail', { requestId: { $ref: 'request.miguel' } }, 'request-pending');
+    await s.waitText('Miguel');
+    s.expect((await s.appText()).includes('Pendiente'), 'estado pendiente');
+    await s.shot('detalle-solicitud');
+    await s.tap('DriverRequestDetail.accept');
+    await s.waitText('Esperando el pago');
+    const after = await s.appText();
+    s.expect(!/Confirmada/.test(after), 'aceptar no es confirmar');
+    await s.checkForbiddenText('detalle de solicitud aceptada');
   });
 }

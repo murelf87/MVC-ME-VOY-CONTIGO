@@ -63,7 +63,7 @@ export function useDecideRequest(): UseApiMutationResult<DecideRequestResponse, 
         if (variables.decision === "accept" && result.hold !== null) holdStore.remember(variables.id, result.hold.expiresAt);
         if (variables.decision === "reject") holdStore.forget(variables.id);
       },
-      invalidates: [[PUBLISH_ROOT, "requests"]],
+      invalidates: [[PUBLISH_ROOT, "requests"], [PUBLISH_ROOT, "request-detail"], [PUBLISH_ROOT, "weekly-detail"]],
     },
   );
 }

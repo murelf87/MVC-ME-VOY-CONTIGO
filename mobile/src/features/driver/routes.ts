@@ -19,6 +19,9 @@ import { StopsRouteScreen } from "./publish/screens/StopsRouteScreen";
 import { RoutePublishedScreen } from "./publish/screens/RoutePublishedScreen";
 import type { PlaceParam } from "@/features/search/routes";
 import type { PublishFrequency } from "@/api/types";
+import { VehicleFormScreen } from "./publish/screens/VehicleFormScreen";
+import { VehicleDocumentsScreen } from "./publish/screens/VehicleDocumentsScreen";
+import { DriverRequestDetailScreen } from "./publish/screens/DriverRequestDetailScreen";
 import { MyVehicleScreen } from "./publish/screens/MyVehicleScreen";
 import { DriverRequestsScreen } from "./publish/screens/DriverRequestsScreen";
 
@@ -60,10 +63,10 @@ export const driverRoutes: RouteDef[] = [
   defineRoute({ name: "StopsRoute", component: StopsRouteScreen, access: "auth", screen: "19", title: "Paradas y recorrido" }),
   defineRoute({ name: "DriverRequests", component: DriverRequestsScreen, access: "auth", screen: "20", title: "Solicitudes" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
-  defineRoute({ name: "VehicleForm", component: PendingScreen, access: "auth", title: "Datos del vehículo" }),
-  defineRoute({ name: "VehicleDocuments", component: PendingScreen, access: "auth", title: "Documentación del vehículo" }),
+  defineRoute({ name: "VehicleForm", component: VehicleFormScreen, access: "auth", title: "Datos del vehículo" }),
+  defineRoute({ name: "VehicleDocuments", component: VehicleDocumentsScreen, access: "auth", title: "Documentación del vehículo" }),
   defineRoute({ name: "RoutePublished", component: RoutePublishedScreen, access: "auth", title: "Ruta publicada" }),
-  defineRoute({ name: "DriverRequestDetail", component: PendingScreen, access: "auth", title: "Detalle de la solicitud" }),
+  defineRoute({ name: "DriverRequestDetail", component: DriverRequestDetailScreen, access: "auth", title: "Detalle de la solicitud" }),
   defineRoute({ name: "DriverTripManage", component: PendingScreen, access: "auth", title: "Tu viaje publicado" }),
   defineRoute({ name: "DriverCancelTrip", component: PendingScreen, access: "auth", title: "Cancelar el viaje" }),
   defineRoute({ name: "DriverConsole", component: DriverConsoleScreen, access: "auth", title: "Consola del conductor" }),
