@@ -17,6 +17,9 @@ import { SupportNewTicketScreen } from "./help/screens/SupportNewTicketScreen";
 import { SupportTicketDetailScreen } from "./help/screens/SupportTicketDetailScreen";
 import { SupportTicketsScreen } from "./help/screens/SupportTicketsScreen";
 import { SettingsScreen } from "./help/screens/SettingsScreen";
+import { PaymentHistoryScreen } from "./money/screens/PaymentHistoryScreen";
+import { PaymentMethodsScreen } from "./money/screens/PaymentMethodsScreen";
+import { AddPaymentMethodScreen } from "./money/screens/AddPaymentMethodScreen";
 import { PaymentsEarningsScreen } from "./money/screens/PaymentsEarningsScreen";
 
 export type AccountParams = {
@@ -52,9 +55,9 @@ export const accountRoutes: RouteDef[] = [
   defineRoute({ name: "HelpCenter", component: HelpCenterScreen, access: "public", screen: "35", title: "Centro de ayuda" }),
   defineRoute({ name: "ServiceStatus", component: PendingScreen, access: "public", screen: "36", title: "Estados de error" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
-  defineRoute({ name: "PaymentHistory", component: PendingScreen, access: "auth", title: "Historial de pagos" }),
-  defineRoute({ name: "PaymentMethods", component: PendingScreen, access: "auth", title: "Métodos de pago" }),
-  defineRoute({ name: "AddPaymentMethod", component: PendingScreen, access: "auth", title: "Añadir método de pago" }),
+  defineRoute({ name: "PaymentHistory", component: PaymentHistoryScreen, access: "auth", title: "Historial de pagos" }),
+  defineRoute({ name: "PaymentMethods", component: PaymentMethodsScreen, access: "auth", title: "Métodos de pago" }),
+  defineRoute({ name: "AddPaymentMethod", component: AddPaymentMethodScreen, access: "auth", title: "Añadir método de pago" }),
   defineRoute({ name: "ReceiptsList", component: PendingScreen, access: "auth", title: "Recibos y justificantes" }),
   defineRoute({ name: "ReceiptDetail", component: PendingScreen, access: "auth", title: "Recibo" }),
   defineRoute({ name: "PayoutDetail", component: PendingScreen, access: "auth", title: "Liquidación" }),
