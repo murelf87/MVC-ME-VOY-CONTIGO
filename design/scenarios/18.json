@@ -1,0 +1,10 @@
+{
+  "screen": "18",
+  "variant": "",
+  "profile": "driver",
+  "route": "PublishRoute",
+  "params": { "draftId": "preview-18" },
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 18. Palomares del Río → Sevilla (Trabajo), ida 07:00 y vuelta 15:00, diaria (laborables), 3 plazas, desvío 5 min, «Recoger en ruta» activo."
+}

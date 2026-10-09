@@ -1,0 +1,10 @@
+{
+  "screen": "19",
+  "variant": "",
+  "profile": "driver",
+  "route": "StopsRoute",
+  "params": { "draftId": "preview-19" },
+  "seed": "default",
+  "clock": "2026-10-05T07:17:00+02:00",
+  "note": "Lámina 19. Palomares del Río → Mairena del Aljarafe → Sevilla, toda la ruta dentro de la provincia. El plan lo calcula el servidor simulado."
+}

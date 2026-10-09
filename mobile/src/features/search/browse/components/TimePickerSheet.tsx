@@ -15,13 +15,18 @@ export interface TimePickerSheetProps {
   value: LocalTime | null;
   onApply: (time: LocalTime | null) => void;
   onClose: () => void;
+  /** Textos propios (p. ej. el conductor: «Hora de salida»). Por defecto, los de «Define tu recorrido». */
+  title?: string;
+  subtitle?: string;
+  /** Texto del botón que quita la hora (solo `kind="return"`). */
+  noneLabel?: string;
 }
 
 /**
  * Selector de hora de «Define tu recorrido»: cuadrícula de horas (00–23) y de minutos (de cinco en cinco). No usa el
  * reloj del sistema para que se vea y se lea igual en iOS, Android y la vista previa. El regreso es opcional.
  */
-export function TimePickerSheet({ visible, kind, value, onApply, onClose }: TimePickerSheetProps): React.JSX.Element {
+export function TimePickerSheet({ visible, kind, value, onApply, onClose, title: titleOverride, subtitle: subtitleOverride, noneLabel }: TimePickerSheetProps): React.JSX.Element {
   const parsed = value !== null ? parseClock(value) : null;
   const [hour, setHour] = useState<number>(parsed?.hour ?? (kind === "arrival" ? 8 : 18));
   const [minute, setMinute] = useState<number>(parsed?.minute ?? 0);
@@ -34,8 +39,8 @@ export function TimePickerSheet({ visible, kind, value, onApply, onClose }: Time
   }, [visible, value, kind]);
 
   const selected = clockString({ hour, minute });
-  const title = kind === "arrival" ? copy.timeSheetTitleArrival : copy.timeSheetTitleReturn;
-  const subtitle = kind === "arrival" ? copy.timeSheetSubtitleArrival : copy.timeSheetSubtitleReturn;
+  const title = titleOverride ?? (kind === "arrival" ? copy.timeSheetTitleArrival : copy.timeSheetTitleReturn);
+  const subtitle = subtitleOverride ?? (kind === "arrival" ? copy.timeSheetSubtitleArrival : copy.timeSheetSubtitleReturn);
 
   return (
     <BottomSheet
@@ -47,7 +52,7 @@ export function TimePickerSheet({ visible, kind, value, onApply, onClose }: Time
       footer={
         <View style={styles.footer}>
           <Button label={`${copy.timeApply} · ${selected}`} onPress={() => onApply(selected)} testID="TimePickerSheet.apply" />
-          {kind === "return" ? <Button label={copy.returnNone} variant="ghost" onPress={() => onApply(null)} testID="TimePickerSheet.none" /> : null}
+          {kind === "return" ? <Button label={noneLabel ?? copy.returnNone} variant="ghost" onPress={() => onApply(null)} testID="TimePickerSheet.none" /> : null}
         </View>
       }
     >

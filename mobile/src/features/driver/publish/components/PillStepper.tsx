@@ -14,6 +14,8 @@ export interface PillStepperProps {
   /** Frase accesible del valor actual («3 plazas disponibles»). */
   valueLabel: string;
   disabled?: boolean;
+  /** `compact`: 140 × 46 pt (lámina 18, dentro de una tarjeta estrecha). */
+  size?: "default" | "compact";
   testID: string;
 }
 
@@ -30,6 +32,7 @@ export function PillStepper({
   incrementLabel,
   valueLabel,
   disabled = false,
+  size = "default",
   testID,
 }: PillStepperProps): React.JSX.Element {
   const canDecrement = !disabled && value > min;
@@ -46,19 +49,20 @@ export function PillStepper({
         if (event.nativeEvent.actionName === "increment" && canIncrement) onChange(value + 1);
         if (event.nativeEvent.actionName === "decrement" && canDecrement) onChange(value - 1);
       }}
-      style={styles.pill}
+      style={[styles.pill, size === "compact" ? styles.pillCompact : null]}
     >
       <Key
         icon="remove"
         label={decrementLabel}
         enabled={canDecrement}
+        compact={size === "compact"}
         onPress={() => onChange(value - 1)}
         testID={`${testID}.decrement`}
       />
       <Text variant="kpi" color="strong" size={29} lineHeight={34} letterSpacing={-0.4} align="center" style={styles.value}>
         {String(value)}
       </Text>
-      <Key icon="add" label={incrementLabel} enabled={canIncrement} onPress={() => onChange(value + 1)} testID={`${testID}.increment`} />
+      <Key icon="add" label={incrementLabel} enabled={canIncrement} compact={size === "compact"} onPress={() => onChange(value + 1)} testID={`${testID}.increment`} />
     </View>
   );
 }
@@ -67,11 +71,12 @@ interface KeyProps {
   icon: "add" | "remove";
   label: string;
   enabled: boolean;
+  compact?: boolean;
   onPress: () => void;
   testID: string;
 }
 
-function Key({ icon, label, enabled, onPress, testID }: KeyProps): React.JSX.Element {
+function Key({ icon, label, enabled, compact = false, onPress, testID }: KeyProps): React.JSX.Element {
   return (
     <Pressable
       testID={testID}
@@ -81,7 +86,7 @@ function Key({ icon, label, enabled, onPress, testID }: KeyProps): React.JSX.Ele
       disabled={!enabled}
       onPress={onPress}
       hitSlop={{ top: 4, bottom: 4, left: 2, right: 2 }}
-      style={({ pressed }) => [styles.key, pressed ? styles.keyPressed : null, !enabled ? styles.keyOff : null]}
+      style={({ pressed }) => [styles.key, compact ? styles.keyCompact : null, pressed ? styles.keyPressed : null, !enabled ? styles.keyOff : null]}
     >
       <Icon name={icon} size={30} color={enabled ? colors.primary : colors.text.disabled} />
     </Pressable>
@@ -100,6 +105,8 @@ const styles = StyleSheet.create({
     paddingLeft: 11.5,
     paddingRight: 7.5,
   },
+  pillCompact: { width: 140, height: 46, paddingLeft: 6, paddingRight: 6 },
+  keyCompact: { width: 36, height: 36 },
   key: {
     width: 41.5,
     height: 42.5,

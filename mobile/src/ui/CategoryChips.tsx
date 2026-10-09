@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
    */
   rowLabelBox: { marginTop: 3, alignSelf: "stretch", marginHorizontal: -6 },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  tile: { width: "23.5%", flexGrow: 1, minHeight: 66, borderRadius: radii.md, alignItems: "center", justifyContent: "center" },
-  tileWide: { flexBasis: "48%", flexGrow: 1, minHeight: 56, borderRadius: radii.md, alignItems: "center", justifyContent: "center" },
+  tile: { width: "22.4%", flexGrow: 1, minHeight: 72, borderRadius: radii.md, alignItems: "center", justifyContent: "center" },
+  tileWide: { flexBasis: "46%", flexGrow: 1, minHeight: 50, borderRadius: radii.md, alignItems: "center", justifyContent: "center" },
   tileContent: { alignItems: "center" },
   tileLabel: { marginTop: 4 },
   wideContent: { flexDirection: "row", alignItems: "center" },
