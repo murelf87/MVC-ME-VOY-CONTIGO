@@ -44,7 +44,15 @@ export function DriverCancelTripScreen({ navigation, route }: AppScreenProps<"Dr
   const status = consoleQuery.data?.status;
   const blocked = status !== undefined && status !== "published" && !single;
   const confirmed = consoleQuery.data?.counts.total ?? 0;
-  const error = useMemo(() => (active.error ? describeOps(active.error) : null), [active.error]);
+  const error = useMemo(() => {
+    if (!active.error) return null;
+    const base = describeOps(active.error);
+    // El servidor real aún no implementa «cancelar el viaje entero»: una ruta inexistente (404/405 sin código de dominio)
+    // no es «viaje no encontrado». Se dice tal cual y se manda a cancelar reserva a reserva.
+    const api = active.error as { kind?: unknown; status?: unknown; code?: unknown };
+    const routeMissing = !single && api.kind === "api" && (api.status === 404 || api.status === 405) && api.code !== "TRIP_NOT_FOUND";
+    return routeMissing ? { ...base, kind: "unknown" as const, title: T.unavailableTitle, message: T.unavailableMessage, retryable: false, action: "none" as const, actionLabel: null } : base;
+  }, [active.error, single]);
 
   const toTrips = (): void => navigation.navigate("MyTrips");
   const title = single ? T.titleBooking : T.title;

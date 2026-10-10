@@ -27,6 +27,8 @@ export const tripStrings = {
     recurring: (days: string): string => `Se repite ${days}`,
   },
   cancel: {
+    unavailableTitle: "Todavía no se puede cancelar el viaje entero",
+    unavailableMessage: "El servidor aún no admite esta acción. Cancela las reservas una a una desde la lista de pasajeros; cada pasajero recibirá el aviso.",
     title: "Cancelar el viaje",
     titleBooking: "Cancelar la reserva",
     intro: "Cuéntanos por qué cancelas. Avisaremos a tus pasajeros de inmediato.",
