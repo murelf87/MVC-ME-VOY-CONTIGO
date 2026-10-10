@@ -296,10 +296,10 @@ function seedConImportes(ctx: Ctx): void {
 
   bankAccount(ctx, "payout", ctx.now - 60 * DAY);
   const mayRiders: Array<[SeedUserKey, number, string, string]> = [
-    ["miguel", -1, "07:05", "Tomares"],
-    ["laura", -3, "07:10", "Bormujos"],
-    ["carlos", -6, "07:15", "Camas"],
-    ["marta", -9, "07:20", "San Juan"],
+    ["miguel", 0, "07:05", "Tomares"],
+    ["laura", -2, "07:10", "Bormujos"],
+    ["carlos", -5, "07:15", "Camas"],
+    ["marta", -8, "07:20", "San Juan"],
   ];
   const aprilRiders: Array<[SeedUserKey, number, string, string]> = [
     ["miguel", -22, "07:05", "Tomares"],
