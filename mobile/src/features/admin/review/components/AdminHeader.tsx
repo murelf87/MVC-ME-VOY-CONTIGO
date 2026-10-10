@@ -41,7 +41,7 @@ export function AdminHeader({ subtitle, initial, staffName, onAvatarPress, onBac
       </Text>
     </Pressable>
   );
-  return <ScreenHeader testID={testID} title={reviewStrings.common.panelTitle} subtitle={subtitle} onBack={onBack} hideBack={hideBack} right={avatar} />;
+  return <ScreenHeader testID={testID} title={reviewStrings.common.panelTitle} subtitle={subtitle} onBack={onBack} hideBack={hideBack} right={avatar} metrics={{ titleSize: 27, subtitleSize: 23, subtitleLineHeight: 27, offsetY: 5, sideWidth: 46 }} />;
 }
 
 const styles = StyleSheet.create({

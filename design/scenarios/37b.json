@@ -1,0 +1,10 @@
+{
+  "screen": "37b",
+  "variant": "b",
+  "profile": "admin",
+  "route": "AdminSummary",
+  "params": {},
+  "clock": "2026-10-05T09:41:00+02:00",
+  "note": "Lámina 37b = misma pantalla (segunda versión).",
+  "waitFor": "[data-testid='AdminSummary.map'] [data-pv-marker]"
+}

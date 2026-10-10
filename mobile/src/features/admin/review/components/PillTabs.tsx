@@ -40,7 +40,7 @@ export function PillTabs<T extends string>({ tabs, value, onChange, accessibilit
         return (
           <Pressable
             key={tab.value}
-            testID={`${testID}.${tab.value}`}
+            testID={`${testID}.opt-${tab.value}`}
             accessibilityRole="tab"
             accessibilityLabel={tabText(tab)}
             accessibilityState={{ selected: active }}

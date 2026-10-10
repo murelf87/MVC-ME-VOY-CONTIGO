@@ -195,7 +195,7 @@ export function AdminBookingsRefundsScreen({ navigation }: AppScreenProps<"Admin
 }
 
 const styles = StyleSheet.create({
-  controls: { paddingHorizontal: 11, paddingTop: 14 },
+  controls: { paddingHorizontal: 11, paddingTop: 8 },
   filters: { flexDirection: "row" },
   filterProvince: { flex: 159.5 },
   filterPeriod: { flex: 197 },

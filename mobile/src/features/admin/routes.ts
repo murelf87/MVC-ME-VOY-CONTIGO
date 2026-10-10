@@ -12,6 +12,7 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { AdminSummaryScreen } from "./review/screens/AdminSummaryScreen";
 import { AdminUsersReviewScreen } from "./review/screens/AdminUsersReviewScreen";
 import { AdminBookingsRefundsScreen } from "./review/screens/AdminBookingsRefundsScreen";
 import { AdminAlertsScreen, AdminAuditLogScreen, AdminTariffsOpsScreen } from "./ops/screens/OpsPanelScreen";
@@ -36,7 +37,7 @@ export type AdminParams = {
 };
 
 export const adminRoutes: RouteDef[] = [
-  defineRoute({ name: "AdminSummary", component: PendingScreen, access: "staff", screen: "37", title: "Panel · Resumen" }),
+  defineRoute({ name: "AdminSummary", component: AdminSummaryScreen, access: "staff", screen: "37", title: "Panel · Resumen" }),
   defineRoute({ name: "AdminUsersReview", component: AdminUsersReviewScreen, access: "staff", screen: "38", title: "Panel · Usuarios" }),
   defineRoute({ name: "AdminBookingsRefunds", component: AdminBookingsRefundsScreen, access: "staff", screen: "39", title: "Panel · Reservas y reembolsos" }),
   defineRoute({ name: "AdminTariffsOps", component: AdminTariffsOpsScreen, access: "staff", screen: "40", title: "Panel · Tarifas y operación" }),

@@ -23,7 +23,7 @@ function RouteLine({ text, testID }: { text: string; testID: string }): React.JS
       <View style={styles.routeIcon}>
         <Icon name="pin" size={20} color={colors.primary} />
       </View>
-      <Text variant="body" color="body" size={18} lineHeight={22} letterSpacing={-0.2} numberOfLines={1} style={styles.routeText}>
+      <Text variant="body" color="body" size={16.2} lineHeight={22} letterSpacing={-0.2} numberOfLines={1} style={styles.routeText}>
         {text}
       </Text>
     </View>
@@ -34,7 +34,7 @@ function MoneyLine({ row, divider, testID }: { row: MoneyRowView; divider: boole
   const valueColor = row.pending ? colors.error.text : row.emphasis ? colors.text.strong : colors.text.muted;
   return (
     <View testID={testID} accessible accessibilityLabel={`${row.label}: ${row.text}${row.illustrative ? ` (${MONEY_ILLUSTRATIVE_TAG})` : ""}`} style={[styles.moneyRow, divider ? styles.moneyDivider : null]}>
-      <Text variant="body" color={row.emphasis ? colors.text.body : colors.text.muted} weight={row.emphasis ? "semibold" : "regular"} size={18} lineHeight={22} letterSpacing={-0.2} numberOfLines={1} style={styles.moneyLabel}>
+      <Text variant="body" color={row.emphasis ? colors.text.body : colors.text.muted} weight={row.emphasis ? "semibold" : "regular"} size={15.6} lineHeight={22} letterSpacing={-0.2} numberOfLines={1} style={styles.moneyLabel}>
         {row.label}
       </Text>
       {row.illustrative ? (
@@ -42,7 +42,7 @@ function MoneyLine({ row, divider, testID }: { row: MoneyRowView; divider: boole
           {MONEY_ILLUSTRATIVE_TAG}
         </Text>
       ) : null}
-      <Text variant="body" color={valueColor} weight={row.emphasis ? "semibold" : "regular"} size={18} lineHeight={22} letterSpacing={-0.2} numberOfLines={1}>
+      <Text variant="body" color={valueColor} weight={row.emphasis ? "semibold" : "regular"} size={16.5} lineHeight={22} letterSpacing={-0.2} numberOfLines={1}>
         {row.text}
       </Text>
     </View>
@@ -83,10 +83,10 @@ export function BillingCard({ card, onReview, testID }: BillingCardProps): React
       <View testID={`${testID}.head`} accessible accessibilityLabel={card.a11y} style={styles.head}>
         <Avatar source={card.photoUrl} name={card.name} size={56} />
         <View style={styles.headText}>
-          <Text variant="titleSm" color="body" size={20} lineHeight={24} letterSpacing={-0.2} numberOfLines={1} style={styles.name}>
+          <Text variant="titleSm" color="body" size={17.8} lineHeight={24} letterSpacing={-0.2} numberOfLines={1} style={styles.name}>
             {card.name}
           </Text>
-          <Text variant="body" color="muted" size={18} lineHeight={22} letterSpacing={-0.2} numberOfLines={1}>
+          <Text variant="body" color="muted" size={17.3} lineHeight={22} letterSpacing={-0.2} numberOfLines={1}>
             {card.whenText}
           </Text>
         </View>
@@ -109,7 +109,7 @@ export function BillingCard({ card, onReview, testID }: BillingCardProps): React
       {card.cancellation !== null ? (
         <View testID={`${testID}.cancellation`} style={styles.cancelLine} accessible accessibilityLabel={card.cancellation}>
           <Icon name="clock" size={22} color={colors.text.body} />
-          <Text variant="body" color="subtle" size={16.5} lineHeight={20} letterSpacing={-0.2} numberOfLines={2} style={styles.cancelText}>
+          <Text variant="body" color="subtle" size={16.2} lineHeight={20} letterSpacing={-0.2} numberOfLines={2} style={styles.cancelText}>
             {card.cancellation}
           </Text>
         </View>
@@ -126,7 +126,7 @@ export function BillingCard({ card, onReview, testID }: BillingCardProps): React
           style={({ pressed }) => [styles.review, pressed ? styles.reviewPressed : null]}
         >
           <Icon name="addCircle" size={26} color={colors.primary} />
-          <Text variant="buttonSm" color="heading" size={19} lineHeight={23} letterSpacing={-0.3} numberOfLines={1} style={styles.reviewLabel}>
+          <Text variant="buttonSm" color="heading" size={15.6} lineHeight={23} letterSpacing={-0.2} numberOfLines={1} style={styles.reviewLabel}>
             {b.review}
           </Text>
           <View style={styles.reviewChevron}>

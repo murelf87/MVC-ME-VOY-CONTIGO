@@ -247,13 +247,13 @@ export function AdminUsersReviewScreen({ navigation, route }: AppScreenProps<"Ad
 }
 
 const styles = StyleSheet.create({
-  controls: { paddingHorizontal: 11, paddingTop: 14 },
+  controls: { paddingHorizontal: 11, paddingTop: 7 },
   filters: { flexDirection: "row", marginTop: 12.5 },
   filterItem: { flex: 108 },
   filterRole: { flex: 97.5 },
   filterSort: { flex: 149.5 },
   filterGap: { marginLeft: 8 },
-  list: { paddingTop: 10.5, paddingBottom: 8 },
+  list: { paddingTop: 12.5, paddingBottom: 8 },
   cardGap: { marginTop: 8.5 },
   noteBar: { paddingHorizontal: 11, paddingTop: 8 },
 });

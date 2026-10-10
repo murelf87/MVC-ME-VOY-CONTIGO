@@ -43,6 +43,8 @@ export interface ScreenHeaderProps {
   onMenu?: () => void;
   /** Contenido libre a la derecha (sustituye a los anteriores). */
   right?: React.ReactNode;
+  /** Medidas propias de una familia de láminas (el panel 37–39 usa título y subtítulo mayores y la fila más baja). */
+  metrics?: { titleSize?: number; subtitleSize?: number; subtitleLineHeight?: number; offsetY?: number; sideWidth?: number };
   testID?: string;
 }
 
@@ -62,6 +64,7 @@ export function ScreenHeader({
   rightAvatar,
   onMenu,
   right,
+  metrics,
   testID,
 }: ScreenHeaderProps): React.JSX.Element {
   const navigation = React.useContext(NavigationContext);
@@ -153,19 +156,19 @@ export function ScreenHeader({
   }
 
   return (
-    <View testID={testID} style={styles.row}>
-      <View style={[styles.side, styles.sideLeft]}>{back}</View>
+    <View testID={testID} style={[styles.row, metrics?.offsetY !== undefined ? { transform: [{ translateY: metrics.offsetY }] } : null]}>
+      <View style={[styles.side, styles.sideLeft, metrics?.sideWidth !== undefined ? { width: metrics.sideWidth } : null]}>{back}</View>
       <View style={styles.center}>
-        <Text variant="title" color="heading" align="center" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} size={title.length > 24 ? 21 : undefined} accessibilityRole="header">
+        <Text variant="title" color="heading" align="center" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} size={metrics?.titleSize ?? (title.length > 24 ? 21 : undefined)} accessibilityRole="header">
           {title}
         </Text>
         {subtitle !== undefined ? (
-          <Text variant="subtitle" color="heading" align="center" numberOfLines={1} size={21} lineHeight={24}>
+          <Text variant="subtitle" color="heading" align="center" numberOfLines={1} size={metrics?.subtitleSize ?? 21} lineHeight={metrics?.subtitleLineHeight ?? 24}>
             {subtitle}
           </Text>
         ) : null}
       </View>
-      <View style={[styles.side, styles.sideRight, (rightNode === undefined || rightNode === null) && title.length > 24 ? styles.sideEmpty : null]}>{rightNode}</View>
+      <View style={[styles.side, styles.sideRight, metrics?.sideWidth !== undefined ? { width: metrics.sideWidth } : null, (rightNode === undefined || rightNode === null) && title.length > 24 ? styles.sideEmpty : null]}>{rightNode}</View>
     </View>
   );
 }

@@ -1,0 +1,10 @@
+{
+  "screen": "39b",
+  "variant": "b",
+  "profile": "admin",
+  "route": "AdminBookingsRefunds",
+  "params": {},
+  "clock": "2026-10-05T09:41:00+02:00",
+  "note": "Lámina 39b = «Reservas y devoluciones» (segunda versión).",
+  "seed": "admin-refunds-b"
+}

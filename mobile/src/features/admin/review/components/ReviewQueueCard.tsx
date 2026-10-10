@@ -94,7 +94,7 @@ function ItemRow({ row, testID }: { row: AdminReviewRow; testID: string }): Reac
       <View style={styles.rowIcon}>
         <Icon name="documentOutline" size={26} color={colors.primary} />
       </View>
-      <Text variant="body" color="body" size={17.5} lineHeight={22} letterSpacing={-0.1} numberOfLines={1} style={styles.rowLabel}>
+      <Text variant="body" color="body" size={16.8} lineHeight={22} letterSpacing={-0.1} numberOfLines={1} style={styles.rowLabel}>
         {row.label}
       </Text>
       <RowAccessoryView accessory={accessory} testID={`${testID}.accessory`} />
@@ -128,7 +128,7 @@ export function ReviewQueueCard({ item, canWrite, isOwn, busy, onOpenDossier, on
       <View testID={`${testID}.head`} accessible accessibilityLabel={cardA11yLabel(item)} style={styles.head}>
         <Avatar source={resolvePublicPhoto(item.photoUrl)} name={item.displayName} size={72} />
         <View style={styles.headText}>
-          <Text variant="titleSm" color="heading" size={21} lineHeight={26} letterSpacing={-0.2} numberOfLines={1} style={styles.name}>
+          <Text variant="titleSm" color="heading" size={19} lineHeight={24} letterSpacing={-0.2} numberOfLines={1} style={styles.name}>
             {item.displayName}
           </Text>
           <RoleChip label={chip.label} icon={chip.icon === "car" ? "car" : "person"} testID={`${testID}.role`} />

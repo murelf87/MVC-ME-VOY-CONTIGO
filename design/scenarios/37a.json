@@ -1,0 +1,10 @@
+{
+  "screen": "37a",
+  "variant": "a",
+  "profile": "admin",
+  "route": "AdminSummary",
+  "params": {},
+  "clock": "2026-10-05T09:41:00+02:00",
+  "note": "Lámina 37a = «Panel MVC · Resumen de administración» (Sevilla, Hoy).",
+  "waitFor": "[data-testid='AdminSummary.map'] [data-pv-marker]"
+}

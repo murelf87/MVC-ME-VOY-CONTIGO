@@ -1,0 +1,9 @@
+{
+  "screen": "36a",
+  "variant": "a",
+  "profile": "passenger",
+  "route": "ServiceStatus",
+  "params": {},
+  "clock": "2026-10-05T09:41:00+02:00",
+  "note": "Lámina 36a = «Si algo no va bien»: las cuatro tarjetas de estado y, debajo, el estado del servicio."
+}

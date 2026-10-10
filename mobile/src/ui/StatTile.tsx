@@ -29,12 +29,12 @@ export function StatTile({ icon, iconTone = "blue", value, label, trend, caption
       accessibilityLabel={`${label}: ${value}${trend !== undefined ? `, ${trend.direction === "up" ? "sube" : "baja"} ${trend.text}` : ""}${caption !== undefined ? `. ${caption}` : ""}`}
       style={[styles.tile, style]}
     >
-      <IconTile name={icon} tone={iconTone} size={50} shape="square" iconSize={30} style={styles.icon} />
+      <IconTile name={icon} tone={iconTone} size={52} shape="square" iconSize={31} style={styles.icon} />
       <View style={styles.column}>
         <Text variant="kpi" color="heading" size={26} lineHeight={30} letterSpacing={0}>
           {value}
         </Text>
-        <Text variant="body" color="body" size={15} lineHeight={19} letterSpacing={-0.15} numberOfLines={2}>
+        <Text variant="body" color="body" size={15.5} lineHeight={22} letterSpacing={-0.5} numberOfLines={2}>
           {label}
         </Text>
         {trend !== undefined ? (
@@ -46,7 +46,7 @@ export function StatTile({ icon, iconTone = "blue", value, label, trend, caption
           </View>
         ) : null}
         {caption !== undefined ? (
-          <Text variant="caption" color="muted" size={13} lineHeight={16} letterSpacing={-0.1} style={styles.caption}>
+          <Text variant="caption" color="muted" size={14} lineHeight={16} letterSpacing={-0.2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85} style={styles.caption}>
             {caption}
           </Text>
         ) : null}
@@ -55,7 +55,7 @@ export function StatTile({ icon, iconTone = "blue", value, label, trend, caption
   );
 }
 
-/** Medidas de la 37a: tarjeta de 168 × 101 pt, icono de 50 pt a 9 pt de la esquina, cifra de 26 pt, etiqueta de 15 pt. */
+/** Medidas de la 37a: tarjeta de 168 × 109 pt, icono de 52 pt a 9 pt de la esquina, cifra de 26 pt, etiqueta de 15 pt. */
 const styles = StyleSheet.create({
   tile: {
     flex: 1,
@@ -68,12 +68,12 @@ const styles = StyleSheet.create({
     paddingTop: 9,
     paddingBottom: 12,
     paddingLeft: 9,
-    paddingRight: 6,
-    minHeight: 101,
+    paddingRight: 4,
+    minHeight: 109,
   },
   icon: { boxShadow: `0px 2px 8px ${hexAlpha(colors.shadow, 0.1)}` },
-  column: { flex: 1, marginLeft: 8.5, marginTop: 4 },
-  trend: { flexDirection: "row", alignItems: "center", marginTop: 8 },
+  column: { flex: 1, marginLeft: 8.5, marginTop: 8 },
+  trend: { flexDirection: "row", alignItems: "center", marginTop: 9 },
   trendText: { marginLeft: 3 },
   caption: { marginTop: 8 },
 });

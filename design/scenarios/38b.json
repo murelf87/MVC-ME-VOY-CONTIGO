@@ -1,0 +1,10 @@
+{
+  "screen": "38b",
+  "variant": "b",
+  "profile": "admin",
+  "route": "AdminUsersReview",
+  "params": {},
+  "clock": "2026-10-05T09:41:00+02:00",
+  "note": "Lámina 38b = «Usuarios y revisión» (segunda versión).",
+  "seed": "admin-users-b"
+}
