@@ -50,4 +50,51 @@ export default async function account(s) {
     await s.waitText('Nueva consulta');
     await s.checkForbiddenText('Nueva consulta');
   });
+
+  await s.step('Historial de pagos: filtro por estado y apertura', async () => {
+    await openScreen(s, 'PaymentHistory', {}, { seed: 'money-historial-largo' });
+    await s.waitText('Historial');
+    await s.tap('PaymentHistory.filter.opt-paid');
+    await s.settle();
+    await s.shot('payment-history');
+    await s.checkForbiddenText('Historial de pagos');
+  });
+
+  await s.step('Recibos: lista, filtro, detalle, copiar y versión imprimible', async () => {
+    await openScreen(s, 'ReceiptsList', {}, { seed: 'money-historial-largo' });
+    await s.waitText('Facturas y justificantes');
+    let text = await s.appText();
+    s.expect(text.includes('no son facturas') || text.includes('No son facturas'), 'se dice que no son facturas');
+    await s.tap('ReceiptsList.filter.opt-refund');
+    await s.settle();
+    await s.tap('ReceiptsList.filter.opt-all');
+    await s.settle();
+    await openScreen(s, 'ReceiptDetail', { receiptId: { $ref: 'money.receiptPayment' } }, { seed: 'money-historial-largo' });
+    await s.waitText('Justificante no fiscal');
+    await s.shot('receipt-detail');
+    await s.tap('ReceiptDetail.openPrintable');
+    await s.settle();
+    await s.waitText('Versión imprimible');
+    await s.shot('receipt-printable');
+    await s.tap('ReceiptDetail.printable.close');
+    await s.settle();
+    await s.checkForbiddenText('Recibo');
+  });
+
+  await s.step('Liquidación y cobro: desglose y enlaces', async () => {
+    await openScreen(s, 'PayoutDetail', { payoutId: { $ref: 'money.payoutPaid' } }, { seed: 'money-historial-largo' }, );
+    await s.waitText('Liquidación');
+    await s.shot('payout-detail');
+    await openScreen(s, 'EarningDetail', { bookingId: { $ref: 'money.earningPaidOut' } }, { seed: 'money-historial-largo' });
+    await s.waitText('Detalle del cobro');
+    await s.shot('earning-detail');
+    await s.checkForbiddenText('Detalle del cobro');
+  });
+
+  await s.step('Devoluciones: seguimiento sin prometer nada', async () => {
+    await openScreen(s, 'Refunds', {}, { seed: 'money-historial-largo' });
+    await s.waitText('Mis devoluciones');
+    await s.shot('refunds');
+    await s.checkForbiddenText('Mis devoluciones');
+  });
 }

@@ -61,6 +61,8 @@ export class Session {
     this.page.on('console', (m) => {
       if (m.type() !== 'error') return;
       const text = m.text();
+      // El arnés inyecta su script en todos los marcos; el iframe aislado del justificante imprimible lo bloquea a propósito.
+      if (/Blocked script execution in 'about:srcdoc'/.test(text)) return;
       if (this.allowConsole.some((r) => r.test(text))) return;
       this.consoleErrors.push(text.slice(0, 400));
       this.violations.push(`error de consola: ${text.slice(0, 300)}`);
