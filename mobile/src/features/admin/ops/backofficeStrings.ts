@@ -167,7 +167,7 @@ export const backofficeStrings = {
     statusTabs: { open: "Abiertas", answered: "Respondidas", closed: "Cerradas", all: "Todas" } as Readonly<Record<string, string>>,
     tabsA11y: "Estado de las consultas",
     status: { open: "Esperando respuesta", answered: "Respondida", closed: "Cerrada" } as Readonly<Record<string, string>>,
-    assignedOptions: { any: "Todas las personas", me: "Asignadas a mí", unassigned: "Sin asignar" } as Readonly<Record<string, string>>,
+    assignedOptions: { any: "Cualquiera", me: "Asignadas a mí", unassigned: "Sin asignar" } as Readonly<Record<string, string>>,
     assignedSheet: "Asignación",
     categoryAll: "Todas las categorías",
     categoryLabels: { trip_issue: "Problema con un viaje", payment_issue: "Problema de pago", account_profile: "Cuenta y perfil" } as Readonly<Record<string, string>>,

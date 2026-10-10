@@ -148,4 +148,34 @@ export default async function admin(s) {
     await s.waitText('Borrador guardado');
     await s.checkForbiddenText('Documentos legales');
   });
+
+  await s.step('Atención al cliente: cola, adjunto privado con aviso, responder, asignar y cerrar', async () => {
+    await openScreen(s, 'AdminSupportQueue');
+    await s.waitText('Esperando respuesta');
+    const cards = await s.inApp(() => document.querySelectorAll('[data-testid^="AdminSupportQueue.ticket."]').length);
+    s.expect(cards === 3, `la cola abierta tiene 3 consultas (hay ${cards})`);
+    await s.shot('admin-support-queue');
+    await s.app.locator('[data-testid^="AdminSupportQueue.ticket."]').first().click();
+    await s.waitText('Conversación');
+    await s.app.locator('[data-testid*=".attachment."]').first().click();
+    await s.waitText('Documentación privada');
+    await s.tap('AdminSupportTicket.viewer.notice.confirm');
+    await s.waitText(/Caduca en/);
+    s.expect((await s.inApp(() => document.querySelectorAll('img').length)) > 0, 'el visor pinta el adjunto');
+    await s.shot('admin-support-attachment');
+    await s.tap('AdminSupportTicket.viewer.close');
+    await s.settle();
+    await s.tap('AdminSupportTicket.send');
+    await s.settle();
+    s.expect((await s.appText()).includes('Escribe una respuesta'), 'responder en blanco da error de validación');
+    await s.type('AdminSupportTicket.reply', 'Hola, sentimos lo ocurrido. Estamos revisando tu reserva.');
+    await s.tap('AdminSupportTicket.send');
+    await s.waitText('Respuesta enviada');
+    s.expect((await s.appText()).includes('Respondida'), 'tras responder la consulta figura «Respondida»');
+    await s.shot('admin-support-ticket');
+    await s.tap('AdminSupportTicket.close');
+    await s.tap('AdminSupportTicket.closeDialog.confirm');
+    await s.waitText('La consulta está cerrada');
+    await s.checkForbiddenText('Atención al cliente');
+  });
 }

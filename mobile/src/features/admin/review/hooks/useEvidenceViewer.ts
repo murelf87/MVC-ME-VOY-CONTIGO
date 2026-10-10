@@ -20,18 +20,30 @@ import { adminError, type AdminErrorView } from "../logic/errors";
 import { isImageContentType, remainingSeconds, ttlOf } from "../logic/evidence";
 
 export interface EvidenceTarget {
-  kind: AdminEvidenceKind;
+  /** Un tipo de prueba del expediente, o `support_attachment` (adjunto de una consulta; usa su propio `requester`). */
+  kind: AdminEvidenceKind | "support_attachment";
   id: string;
   /** «Foto de perfil», «Permiso de conducir»… */
   title: string;
   /** Nombre de la persona dueña, para el aviso previo. */
   ownerName: string;
-  purpose: AdminEvidencePurpose;
+  /** Motivo de la revisión (solo pruebas del expediente; los adjuntos de soporte no lo llevan). */
+  purpose?: AdminEvidencePurpose;
 }
 
 /** `closed`: nada a la vista · `notice`: aviso previo («el acceso queda registrado») · `open`: visor. */
 export type EvidencePhase = "closed" | "notice" | "open";
 export type EvidenceStatus = "requesting" | "loading" | "ready" | "expired" | "error";
+
+/** Lo mínimo que el visor necesita de una URL firmada. */
+export interface SignedAccess {
+  url: string;
+  ttlSeconds: number;
+  contentType: string;
+}
+
+/** Pide la URL firmada de un objetivo (el servidor audita el acceso antes de firmar). */
+export type AccessRequester = (target: EvidenceTarget) => Promise<SignedAccess>;
 
 export interface EvidenceViewer {
   phase: EvidencePhase;
@@ -57,7 +69,7 @@ function monotonicNow(): number {
   return typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
 }
 
-export function useEvidenceViewer(): EvidenceViewer {
+export function useEvidenceViewer(requester?: AccessRequester): EvidenceViewer {
   const [phase, setPhase] = useState<EvidencePhase>("closed");
   const [target, setTarget] = useState<EvidenceTarget | null>(null);
   const [status, setStatus] = useState<EvidenceStatus>("requesting");
@@ -71,6 +83,8 @@ export function useEvidenceViewer(): EvidenceViewer {
   const deadline = useRef(0);
   const blobUrl = useRef<string | null>(null);
   const appActive = useAppActive();
+  const requesterRef = useRef(requester);
+  requesterRef.current = requester;
 
   const discardImage = useCallback(() => {
     if (blobUrl.current !== null) {
@@ -89,7 +103,13 @@ export function useEvidenceViewer(): EvidenceViewer {
       setContentType(null);
       setStatus("requesting");
       try {
-        const access = await requestEvidenceAccess(next.kind, next.id, { purpose: next.purpose });
+        const custom = requesterRef.current;
+        const access: SignedAccess =
+          custom !== undefined
+            ? await custom(next)
+            : next.kind === "support_attachment"
+              ? await Promise.reject(new Error("Falta el solicitante del adjunto"))
+              : await requestEvidenceAccess(next.kind, next.id, { purpose: next.purpose ?? "identity_review" });
         if (generation.current !== mine) return;
         deadline.current = monotonicNow() + ttlOf(access.ttlSeconds) * 1000;
         setSecondsLeft(remainingSeconds(deadline.current, monotonicNow()));

@@ -56,7 +56,7 @@ function RunCard({
       {run.status === "paid" && run.paidAt !== null ? <Text variant="body" color="success" size={15} testID={`AdminPayoutRuns.run.${run.id}.paid`}>{s.paidAt(formatDateTime(run.paidAt))}</Text> : null}
       {run.status === "processing" ? <Text variant="body" color="warning" size={15} testID={`AdminPayoutRuns.run.${run.id}.processing`}>{s.processingNote}</Text> : null}
       {reason !== null ? <Text variant="body" color="error" size={15}>{reason}</Text> : null}
-      <Text variant="caption" color="subtle" size={13}>{s.createdAt(formatRelative(run.createdAt))}</Text>
+      <Text variant="caption" color="subtle" size={13}>{s.createdAt(formatRelative(run.createdAt).toLocaleLowerCase("es-ES"))}</Text>
       {executable ? (
         <View style={styles.actions}>
           <Button

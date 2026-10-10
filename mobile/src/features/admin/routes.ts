@@ -21,6 +21,8 @@ import { AdminBookingsRefundsScreen } from "./review/screens/AdminBookingsRefund
 import { AdminPayoutRunsScreen } from "./ops/screens/AdminPayoutRunsScreen";
 import { AdminLegalDocsScreen } from "./ops/screens/AdminLegalDocsScreen";
 import { AdminLegalEditorScreen } from "./ops/screens/AdminLegalEditorScreen";
+import { AdminSupportQueueScreen } from "./ops/screens/AdminSupportQueueScreen";
+import { AdminSupportTicketScreen } from "./ops/screens/AdminSupportTicketScreen";
 import { AdminAlertsScreen, AdminAuditLogScreen, AdminTariffsOpsScreen } from "./ops/screens/OpsPanelScreen";
 
 export type AdminParams = {
@@ -57,6 +59,6 @@ export const adminRoutes: RouteDef[] = [
   defineRoute({ name: "AdminAuditLog", component: AdminAuditLogScreen, access: "staff", title: "Panel · Auditoría" }),
   defineRoute({ name: "AdminLegalDocs", component: AdminLegalDocsScreen, access: "staff", title: "Panel · Documentos legales" }),
   defineRoute({ name: "AdminLegalEditor", component: AdminLegalEditorScreen, access: "staff", title: "Panel · Editar documento legal" }),
-  defineRoute({ name: "AdminSupportQueue", component: PendingScreen, access: "staff", title: "Panel · Atención al cliente" }),
-  defineRoute({ name: "AdminSupportTicket", component: PendingScreen, access: "staff", title: "Panel · Consulta" }),
+  defineRoute({ name: "AdminSupportQueue", component: AdminSupportQueueScreen, access: "staff", title: "Panel · Atención al cliente" }),
+  defineRoute({ name: "AdminSupportTicket", component: AdminSupportTicketScreen, access: "staff", title: "Panel · Consulta" }),
 ];
