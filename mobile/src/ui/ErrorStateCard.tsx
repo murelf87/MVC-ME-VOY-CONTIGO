@@ -36,6 +36,8 @@ export interface ErrorStateCardProps {
   tone?: SurfaceTone;
   icon?: IconName;
   iconTone?: IconTileTone;
+  /** Medidas de la lámina 36a a tamaño completo (texto y botón mayores); el resto de pantallas usan el tamaño normal. */
+  large?: boolean;
   testID?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -50,6 +52,7 @@ export function ErrorStateCard({
   tone,
   icon,
   iconTone,
+  large = false,
   testID,
   style,
 }: ErrorStateCardProps): React.JSX.Element {
@@ -67,19 +70,19 @@ export function ErrorStateCard({
       style={style}
     >
       <View style={styles.head}>
-        <IconTile name={icon ?? preset?.icon ?? "exclaim"} tone={iconTone ?? preset?.tile ?? "solidRed"} size={62} iconSize={34} />
-        <View style={styles.text}>
-          <Text variant="title" color="deep" size={22} lineHeight={26} letterSpacing={-0.5} accessibilityRole="header">
+        <IconTile name={icon ?? preset?.icon ?? "exclaim"} tone={iconTone ?? preset?.tile ?? "solidRed"} size={large ? 71 : 62} iconSize={large ? 39 : 34} />
+        <View style={[styles.text, large ? styles.textLarge : null]}>
+          <Text variant="title" color="deep" size={large ? 24 : 22} lineHeight={large ? 28 : 26} letterSpacing={-0.5} accessibilityRole="header">
             {heading}
           </Text>
-          <Text variant="body" color="deep" size={16} lineHeight={21} letterSpacing={-0.2} style={styles.message}>
+          <Text variant="body" color="deep" size={large ? 17.5 : 16} lineHeight={large ? 23 : 21} letterSpacing={-0.2} style={styles.message}>
             {text}
           </Text>
         </View>
       </View>
       {action !== undefined ? (
         <View style={styles.buttonSlot}>
-          <Button label={action} onPress={onAction} size="md" style={styles.button} testID={testID !== undefined ? `${testID}.action` : undefined} />
+          <Button label={action} onPress={onAction} size="md" style={large ? styles.buttonLarge : styles.button} testID={testID !== undefined ? `${testID}.action` : undefined} />
         </View>
       ) : (
         <View style={styles.bottomPad} />
@@ -92,8 +95,10 @@ export function ErrorStateCard({
 const styles = StyleSheet.create({
   head: { flexDirection: "row", alignItems: "flex-start", paddingTop: 16, paddingHorizontal: 16, paddingBottom: 12 },
   text: { flex: 1, marginLeft: 19, marginTop: -4 },
+  textLarge: { marginLeft: 20, marginTop: 0 },
   message: { marginTop: 3 },
   buttonSlot: { paddingHorizontal: 10, paddingBottom: 11 },
   button: { height: 48, borderRadius: 12 },
+  buttonLarge: { height: 53, borderRadius: 12 },
   bottomPad: { height: 8 },
 });

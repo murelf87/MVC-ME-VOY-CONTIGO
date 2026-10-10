@@ -98,11 +98,11 @@ export function ServiceStatusScreen({ navigation }: AppScreenProps<"ServiceStatu
   const databaseText = t.databaseState[database === "checking" ? "checking" : database === "ok" ? "ready" : database === "down" ? "notReady" : "unknown"];
 
   return (
-    <Screen testID="ServiceStatus" header={<ScreenHeader title={t.title} testID="ServiceStatus.header" />}>
-      <ErrorStateCard testID="ServiceStatus.noSeats" kind="noSeats" actionLabel={t.noSeatsAction} onAction={() => navigation.navigate("MapHome")} style={styles.card} />
-      <ErrorStateCard testID="ServiceStatus.outOfProvince" kind="outOfProvince" actionLabel={t.outOfProvinceAction} onAction={() => navigation.navigate("DefineRoute")} style={styles.card} />
-      <ErrorStateCard testID="ServiceStatus.paymentRejected" kind="paymentRejected" actionLabel={t.paymentAction} onAction={() => navigation.navigate("PaymentMethods")} style={styles.card} />
-      <ErrorStateCard testID="ServiceStatus.gpsOff" kind="gpsOff" actionLabel={t.gpsAction} onAction={() => setSheet(true)} style={styles.card} />
+    <Screen testID="ServiceStatus" paddingX={14} header={<ScreenHeader title={t.title} testID="ServiceStatus.header" />}>
+      <ErrorStateCard large testID="ServiceStatus.noSeats" kind="noSeats" actionLabel={t.noSeatsAction} onAction={() => navigation.navigate("MapHome")} style={styles.card} />
+      <ErrorStateCard large testID="ServiceStatus.outOfProvince" kind="outOfProvince" actionLabel={t.outOfProvinceAction} onAction={() => navigation.navigate("DefineRoute")} style={styles.card} />
+      <ErrorStateCard large testID="ServiceStatus.paymentRejected" kind="paymentRejected" actionLabel={t.paymentAction} onAction={() => navigation.navigate("PaymentMethods")} style={styles.card} />
+      <ErrorStateCard large testID="ServiceStatus.gpsOff" kind="gpsOff" actionLabel={t.gpsAction} onAction={() => setSheet(true)} style={styles.card} />
 
       <Text variant="heading" color="heading" size={20} lineHeight={25} accessibilityRole="header" style={styles.section}>{t.serviceSection}</Text>
       <Text variant="body" color="muted" size={15.5}>{t.serviceIntro}</Text>
