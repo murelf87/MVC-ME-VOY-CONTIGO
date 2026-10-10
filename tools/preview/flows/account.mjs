@@ -97,4 +97,74 @@ export default async function account(s) {
     await s.shot('refunds');
     await s.checkForbiddenText('Mis devoluciones');
   });
+
+  await s.step('36 Si algo no va bien: tarjetas y estado del servicio', async () => {
+    await openScreen(s, 'ServiceStatus', {});
+    await s.waitText('Si algo no va bien');
+    const text = await s.appText();
+    for (const expected of ['No hay plazas', 'Destino fuera de provincia', 'Pago rechazado', 'Sin señal GPS', 'Estado del servicio']) s.expect(text.includes(expected), `se ve «${expected}»`);
+    await s.waitText('Responde con normalidad');
+    await s.shot('service-status');
+    await s.tap('ServiceStatus.gpsOff');
+    await s.settle();
+    await s.shot('service-status-gps');
+    await s.checkForbiddenText('Si algo no va bien');
+  });
+
+  await s.step('Información legal: lista y documento', async () => {
+    await openScreen(s, 'LegalCenter', {});
+    await s.waitText('Información legal');
+    let text = await s.appText();
+    s.expect(text.includes('Términos y condiciones'), 'aparecen los términos');
+    await s.tap('LegalCenter.doc.terms');
+    await s.settle();
+    await s.shot('legal-document');
+    text = await s.appText();
+    s.expect(text.includes('Versión'), 'el documento enseña su versión');
+    await s.checkForbiddenText('Documento legal');
+  });
+
+  await s.step('Descargar mis datos: solicitar y descargar', async () => {
+    await openScreen(s, 'DataExports', {});
+    await s.waitText('Descargar mis datos');
+    await s.tap('DataExports.request');
+    await s.settle();
+    await s.waitText('Solicitud enviada');
+    s.expect((await s.appText()).includes('Solicitada el'), 'la solicitud aparece en el historial');
+    await s.shot('data-exports');
+    await openScreen(s, 'DataExports', {}, { seed: 'help-exports' });
+    await s.waitText('Lista');
+    const text = await s.appText();
+    s.expect(text.includes('Caducada'), 'se ve la copia caducada');
+    await s.shot('data-exports-ready');
+    await s.checkForbiddenText('Descargar mis datos');
+  });
+
+  await s.step('Eliminar cuenta: confirmación escrita y cancelación', async () => {
+    await openScreen(s, 'DeleteAccount', {});
+    await s.waitText('Qué pasará con tus datos');
+    await s.tap('DeleteAccount.submit');
+    await s.settle();
+    s.expect((await s.appText()).includes('Escribe la palabra ELIMINAR'), 'sin la palabra no avanza');
+    await s.type('DeleteAccount.confirm', 'ELIMINAR');
+    await s.tap('DeleteAccount.submit');
+    await s.settle();
+    await s.waitText('¿Seguro que quieres eliminar tu cuenta?');
+    await s.shot('delete-account-confirm');
+  });
+
+  await s.step('Acerca de, Privacidad y datos y Permisos', async () => {
+    await openScreen(s, 'About', {});
+    await s.waitText('Versión de la app');
+    await s.shot('about');
+    await s.checkForbiddenText('Acerca de MVC');
+    await openScreen(s, 'PrivacyData', {});
+    await s.waitText('Privacidad y datos');
+    await s.shot('privacy-data');
+    await s.checkForbiddenText('Privacidad y datos');
+    await openScreen(s, 'AppPermissions', {});
+    await s.waitText('Permisos de la app');
+    await s.shot('app-permissions');
+    await s.checkForbiddenText('Permisos de la app');
+  });
 }

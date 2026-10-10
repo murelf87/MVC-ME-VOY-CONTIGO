@@ -1,9 +1,7 @@
 /**
  * Rutas del slice `account` (lámina 09: pagos y cobros, ajustes, centro de ayuda y estados de error).
  *
- * ANDAMIAJE: cada ruta apunta a `PendingScreen` hasta que el agente del slice escribe la pantalla real. Este fichero
- * es suyo desde ese momento: cambia `component`, ajusta los tipos de `AccountParams` y añade las rutas nuevas
- * (legal, permisos, recibos…) que necesite. Reglas:
+ * Todas las rutas del slice apuntan a su pantalla real (ninguna usa `PendingScreen`). Reglas:
  *  - `AccountParams` es un `type` (no `interface`) y SOLO lleva datos serializables (ids, textos, números).
  *  - Los nombres de ruta son únicos en TODA la app (el registro falla al arrancar si se repiten).
  *  - `access`: "public" (también invitados) · "auth" (por defecto) · "staff".
@@ -15,7 +13,14 @@ import { ReceiptDetailScreen } from "./money/screens/ReceiptDetailScreen";
 import { PayoutDetailScreen } from "./money/screens/PayoutDetailScreen";
 import { EarningDetailScreen } from "./money/screens/EarningDetailScreen";
 import { RefundsScreen } from "./money/screens/RefundsScreen";
-import { PendingScreen } from "@/navigation/PendingScreen";
+import { ServiceStatusScreen } from "./help/screens/ServiceStatusScreen";
+import { LegalCenterScreen } from "./help/screens/LegalCenterScreen";
+import { LegalDocumentScreen } from "./help/screens/LegalDocumentScreen";
+import { DataExportsScreen } from "./help/screens/DataExportsScreen";
+import { DeleteAccountScreen } from "./help/screens/DeleteAccountScreen";
+import { AboutScreen } from "./help/screens/AboutScreen";
+import { PrivacyDataScreen } from "./help/screens/PrivacyDataScreen";
+import { AppPermissionsScreen } from "./help/screens/AppPermissionsScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { HelpCenterScreen } from "./help/screens/HelpCenterScreen";
 import { SupportNewTicketScreen } from "./help/screens/SupportNewTicketScreen";
@@ -58,7 +63,7 @@ export const accountRoutes: RouteDef[] = [
   defineRoute({ name: "PaymentsEarnings", component: PaymentsEarningsScreen, access: "auth", screen: "33", title: "Pagos y cobros" }),
   defineRoute({ name: "Settings", component: SettingsScreen, access: "public", screen: "34", title: "Ajustes" }),
   defineRoute({ name: "HelpCenter", component: HelpCenterScreen, access: "public", screen: "35", title: "Centro de ayuda" }),
-  defineRoute({ name: "ServiceStatus", component: PendingScreen, access: "public", screen: "36", title: "Estados de error" }),
+  defineRoute({ name: "ServiceStatus", component: ServiceStatusScreen, access: "public", screen: "36", title: "Estados de error" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
   defineRoute({ name: "PaymentHistory", component: PaymentHistoryScreen, access: "auth", title: "Historial de pagos" }),
   defineRoute({ name: "PaymentMethods", component: PaymentMethodsScreen, access: "auth", title: "Métodos de pago" }),
@@ -68,14 +73,14 @@ export const accountRoutes: RouteDef[] = [
   defineRoute({ name: "PayoutDetail", component: PayoutDetailScreen, access: "auth", title: "Liquidación", previewParams: { payoutId: { $ref: "money.payoutPaid" } }, previewSeed: "money-historial-largo" }),
   defineRoute({ name: "EarningDetail", component: EarningDetailScreen, access: "auth", title: "Detalle del cobro", previewParams: { bookingId: { $ref: "money.earningPaidOut" } }, previewSeed: "money-historial-largo" }),
   defineRoute({ name: "Refunds", component: RefundsScreen, access: "auth", title: "Mis devoluciones" }),
-  defineRoute({ name: "LegalCenter", component: PendingScreen, access: "public", title: "Información legal" }),
-  defineRoute({ name: "LegalDocument", component: PendingScreen, access: "public", title: "Documento legal" }),
+  defineRoute({ name: "LegalCenter", component: LegalCenterScreen, access: "public", title: "Información legal" }),
+  defineRoute({ name: "LegalDocument", component: LegalDocumentScreen, access: "public", title: "Documento legal", previewParams: { kind: "terms" } }),
   defineRoute({ name: "SupportTickets", component: SupportTicketsScreen, access: "auth", title: "Mis consultas" }),
   defineRoute({ name: "SupportNewTicket", component: SupportNewTicketScreen, access: "auth", title: "Nueva consulta" }),
   defineRoute({ name: "SupportTicketDetail", component: SupportTicketDetailScreen, access: "auth", title: "Consulta", previewParams: { ticketId: { $ref: "help.ticketOpen" } }, previewSeed: "help-tickets" }),
-  defineRoute({ name: "DataExports", component: PendingScreen, access: "auth", title: "Descargar mis datos" }),
-  defineRoute({ name: "DeleteAccount", component: PendingScreen, access: "auth", title: "Eliminar cuenta" }),
-  defineRoute({ name: "About", component: PendingScreen, access: "public", title: "Acerca de MVC" }),
-  defineRoute({ name: "PrivacyData", component: PendingScreen, access: "auth", title: "Privacidad y datos" }),
-  defineRoute({ name: "AppPermissions", component: PendingScreen, access: "public", title: "Permisos de la app" }),
+  defineRoute({ name: "DataExports", component: DataExportsScreen, access: "auth", title: "Descargar mis datos" }),
+  defineRoute({ name: "DeleteAccount", component: DeleteAccountScreen, access: "auth", title: "Eliminar cuenta" }),
+  defineRoute({ name: "About", component: AboutScreen, access: "public", title: "Acerca de MVC" }),
+  defineRoute({ name: "PrivacyData", component: PrivacyDataScreen, access: "auth", title: "Privacidad y datos" }),
+  defineRoute({ name: "AppPermissions", component: AppPermissionsScreen, access: "public", title: "Permisos de la app" }),
 ];
