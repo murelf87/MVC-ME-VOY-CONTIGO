@@ -57,4 +57,21 @@ export default async function auth(s) {
     await s.shot('04-tras-el-alta');
     await s.checkForbiddenText('tras el alta');
   });
+  await s.step('05 · Iniciar sesión: móvil inválido da error; el de una cuenta existente recibe SMS y entra', async () => {
+    await open('SignIn', {}, { profile: 'new' });
+    await s.tap('SignIn.submit');
+    await s.settle();
+    s.expect((await here()) === 'SignIn', 'con el móvil vacío sigue en Iniciar sesión');
+    s.expect(/móvil|teléfono|número/i.test(await s.appText()), 'el móvil vacío muestra un error');
+    await s.type('SignIn.phone', '611000101');
+    await s.tap('SignIn.submit');
+    await s.until(() => window.__mvc.route() === 'VerifyPhone', null, 'Iniciar sesión abre Confirma tu móvil');
+    const sms = await s.inApp(() => window.__mvc.lastSms && window.__mvc.lastSms());
+    const code = String((sms && (sms.code || sms.text || sms.body)) || sms || '').match(/\d{6}/)?.[0];
+    s.expect(!!code, 'el SMS simulado trae un código');
+    await s.type('VerifyPhone.code', code);
+    await s.until(() => !['VerifyPhone', 'SignIn', 'Welcome'].includes(window.__mvc.route()), null, 'tras verificar entra a la app', 15000);
+    await s.shot('05-sesion-iniciada');
+    await s.checkForbiddenText('sesión iniciada');
+  });
 }
