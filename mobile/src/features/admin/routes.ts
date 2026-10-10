@@ -12,6 +12,9 @@
  */
 import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
+import { AdminHomeScreen } from "./review/screens/AdminHomeScreen";
+import { AdminRefundDetailScreen } from "./review/screens/AdminRefundDetailScreen";
+import { AdminUserFileScreen } from "./review/screens/AdminUserFileScreen";
 import { AdminSummaryScreen } from "./review/screens/AdminSummaryScreen";
 import { AdminUsersReviewScreen } from "./review/screens/AdminUsersReviewScreen";
 import { AdminBookingsRefundsScreen } from "./review/screens/AdminBookingsRefundsScreen";
@@ -42,9 +45,9 @@ export const adminRoutes: RouteDef[] = [
   defineRoute({ name: "AdminBookingsRefunds", component: AdminBookingsRefundsScreen, access: "staff", screen: "39", title: "Panel · Reservas y reembolsos" }),
   defineRoute({ name: "AdminTariffsOps", component: AdminTariffsOpsScreen, access: "staff", screen: "40", title: "Panel · Tarifas y operación" }),
   // ── Páginas adicionales de producción (sin lámina: se diseñan en el mismo lenguaje visual)
-  defineRoute({ name: "AdminHome", component: PendingScreen, access: "staff", title: "Panel de administración" }),
-  defineRoute({ name: "AdminUserFile", component: PendingScreen, access: "staff", title: "Panel · Expediente" }),
-  defineRoute({ name: "AdminRefundDetail", component: PendingScreen, access: "staff", title: "Panel · Devolución" }),
+  defineRoute({ name: "AdminHome", component: AdminHomeScreen, access: "staff", title: "Panel de administración" }),
+  defineRoute({ name: "AdminUserFile", component: AdminUserFileScreen, access: "staff", title: "Panel · Expediente" }),
+  defineRoute({ name: "AdminRefundDetail", component: AdminRefundDetailScreen, access: "staff", title: "Panel · Devolución" }),
   defineRoute({ name: "AdminPayoutRuns", component: PendingScreen, access: "staff", title: "Panel · Liquidaciones" }),
   defineRoute({ name: "AdminTariffVersions", component: PendingScreen, access: "staff", title: "Panel · Versiones de tarifa" }),
   defineRoute({ name: "AdminAlerts", component: AdminAlertsScreen, access: "staff", title: "Panel · Alertas" }),
