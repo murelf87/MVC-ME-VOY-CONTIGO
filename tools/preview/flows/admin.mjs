@@ -95,4 +95,57 @@ export default async function admin(s) {
     await s.shot('admin-refund');
     await s.checkForbiddenText('Detalle de devolución');
   });
+
+  await s.step('Liquidaciones: sin proveedor el abono se bloquea; con proveedor queda «En proceso», nunca «Abonada» al instante', async () => {
+    await openScreen(s, 'AdminPayoutRuns');
+    await s.waitText('Pagos aún no disponibles');
+    const blocked = await s.inApp(() => Array.from(document.querySelectorAll('[data-testid$=".blocked"]')).length);
+    s.expect(blocked > 0, 'con proveedor desactivado, cada abono pendiente dice «Bloqueado»');
+    await s.shot('admin-payouts-blocked');
+    await openScreen(s, 'AdminPayoutRuns', {}, { seed: 'admin-payouts-ready' });
+    await s.waitText('Proveedor de pago activo');
+    await s.tap('AdminPayoutRuns.generate');
+    await s.type('AdminPayoutRuns.generateSheet.period', 'abril');
+    await s.tap('AdminPayoutRuns.generateSheet.confirm');
+    await s.settle();
+    s.expect((await s.appText()).includes('Escribe el mes'), 'un mes no válido da error en el campo');
+    await s.type('AdminPayoutRuns.generateSheet.period', '09/2026');
+    await s.tap('AdminPayoutRuns.generateSheet.confirm');
+    await s.waitText('Se han creado 2 liquidaciones');
+    const execute = s.app.locator('[data-testid$=".execute"]').first();
+    await execute.click();
+    await s.tap('AdminPayoutRuns.executeDialog.confirm');
+    await s.waitText('Esperando la confirmación del proveedor');
+    s.expect(!(await s.appText()).includes('Abonada el'), 'pedir el abono no lo da por abonado');
+    await s.shot('admin-payouts-processing');
+    await s.checkForbiddenText('Liquidaciones');
+  });
+
+  await s.step('Documentos legales: ver texto, publicar exige la referencia de revisión legal, nueva versión valida', async () => {
+    await openScreen(s, 'AdminLegalDocs', {}, { seed: 'admin-legal-published' });
+    await s.waitText('Términos y condiciones');
+    s.expect((await s.appText()).includes('Pendiente de revisión legal'), 'los borradores dicen «Pendiente de revisión legal»');
+    await s.app.locator('[data-testid$=".toggle"]').first().click();
+    await s.settle();
+    s.expect((await s.inApp(() => document.querySelectorAll('[data-testid$=".text"]').length)) > 0, 'ver texto muestra las secciones');
+    await s.shot('admin-legal');
+    await s.app.locator('[data-testid^="AdminLegalDocs.doc."][data-testid$=".publish"]').first().click();
+    await s.tap('AdminLegalDocs.publishSheet.confirm');
+    await s.settle();
+    s.expect((await s.appText()).includes('Indica la referencia de la revisión legal'), 'sin referencia no se publica');
+    await s.type('AdminLegalDocs.publishSheet.reference', 'REV-2026-014');
+    await s.tap('AdminLegalDocs.publishSheet.confirm');
+    await s.waitText('Documento publicado');
+    await openScreen(s, 'AdminLegalEditor');
+    await s.tap('AdminLegalEditor.save');
+    await s.settle();
+    s.expect((await s.appText()).includes('El título debe tener'), 'guardar sin título da error de validación');
+    await s.type('AdminLegalEditor.title', 'Términos y condiciones');
+    await s.type('AdminLegalEditor.section.0.heading', 'Objeto');
+    await s.type('AdminLegalEditor.section.0.paragraphs', 'Estas condiciones regulan el uso de MVC.');
+    await s.shot('admin-legal-editor');
+    await s.tap('AdminLegalEditor.save');
+    await s.waitText('Borrador guardado');
+    await s.checkForbiddenText('Documentos legales');
+  });
 }

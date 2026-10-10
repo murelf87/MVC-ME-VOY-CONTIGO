@@ -35,7 +35,7 @@ import type {
   LegalSection,
   PayoutStatus,
 } from "@/api/types";
-import { moneyTables, type EarningRow, type PayoutRow } from "@/features/account/preview/moneyRows";
+import { moneyTables, writeConfig, type EarningRow, type PayoutRow } from "@/features/account/preview/moneyRows";
 import { monthBounds, payoutViewDto } from "@/features/account/preview/moneyViews";
 import {
   attachmentsTable,
@@ -66,7 +66,7 @@ import {
 import { auditAdmin } from "./opsWorld/audit";
 import { iso, isoOrNull, queryOf, sliceOf } from "./opsWorld/common";
 import { authorizeAdmin, authorizeFinance } from "./opsWorld/rbac";
-import { providerEnabled, SETTING_PROVIDER_ENABLED, SETTING_PROVIDER_OUTCOME } from "./reviewWorld/store";
+import { providerEnabled, SETTING_PROVIDER_OUTCOME } from "./reviewWorld/store";
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -904,5 +904,5 @@ export function seedBackoffice(db: PreviewDb, profile: PreviewProfileId, seed: s
   seedLegal(db, seed);
   seedSupport(db, seed);
   // Estado real de hoy: sin proveedor de pago. Las variantes con liquidaciones listas lo activan (SIMULADO).
-  if (seed === "admin-payouts-ready" || seed === "admin-payouts-many" || seed === "admin-payouts-no-account") db.setSetting(SETTING_PROVIDER_ENABLED, true);
+  if (seed === "admin-payouts-ready" || seed === "admin-payouts-many" || seed === "admin-payouts-no-account") writeConfig(db, { provider_enabled: true });
 }
