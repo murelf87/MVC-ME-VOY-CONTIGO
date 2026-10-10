@@ -10,7 +10,6 @@
  *  - Pantalla = componente que recibe `AppScreenProps<"Nombre">`; navega con `useAppNavigation()` y lee los
  *    parámetros con `useAppRoute("Nombre")`.
  */
-import { PendingScreen } from "@/navigation/PendingScreen";
 import { defineRoute, type RouteDef } from "@/navigation/routeDef";
 import { AdminHomeScreen } from "./review/screens/AdminHomeScreen";
 import { AdminRefundDetailScreen } from "./review/screens/AdminRefundDetailScreen";
@@ -19,6 +18,7 @@ import { AdminSummaryScreen } from "./review/screens/AdminSummaryScreen";
 import { AdminUsersReviewScreen } from "./review/screens/AdminUsersReviewScreen";
 import { AdminBookingsRefundsScreen } from "./review/screens/AdminBookingsRefundsScreen";
 import { AdminPayoutRunsScreen } from "./ops/screens/AdminPayoutRunsScreen";
+import { AdminTariffVersionsScreen } from "./ops/screens/AdminTariffVersionsScreen";
 import { AdminLegalDocsScreen } from "./ops/screens/AdminLegalDocsScreen";
 import { AdminLegalEditorScreen } from "./ops/screens/AdminLegalEditorScreen";
 import { AdminSupportQueueScreen } from "./ops/screens/AdminSupportQueueScreen";
@@ -54,7 +54,7 @@ export const adminRoutes: RouteDef[] = [
   defineRoute({ name: "AdminUserFile", component: AdminUserFileScreen, access: "staff", title: "Panel · Expediente" }),
   defineRoute({ name: "AdminRefundDetail", component: AdminRefundDetailScreen, access: "staff", title: "Panel · Devolución" }),
   defineRoute({ name: "AdminPayoutRuns", component: AdminPayoutRunsScreen, access: "staff", title: "Panel · Liquidaciones" }),
-  defineRoute({ name: "AdminTariffVersions", component: PendingScreen, access: "staff", title: "Panel · Versiones de tarifa" }),
+  defineRoute({ name: "AdminTariffVersions", component: AdminTariffVersionsScreen, access: "staff", title: "Panel · Versiones de tarifa" }),
   defineRoute({ name: "AdminAlerts", component: AdminAlertsScreen, access: "staff", title: "Panel · Alertas" }),
   defineRoute({ name: "AdminAuditLog", component: AdminAuditLogScreen, access: "staff", title: "Panel · Auditoría" }),
   defineRoute({ name: "AdminLegalDocs", component: AdminLegalDocsScreen, access: "staff", title: "Panel · Documentos legales" }),

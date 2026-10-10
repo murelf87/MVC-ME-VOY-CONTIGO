@@ -67,7 +67,7 @@ function DocumentCard({
         <StatusPill label={s.statusShort[doc.status] ?? doc.status} tone={TONE[doc.status]} size="sm" />
       </View>
       <Text variant="body" color="body" size={15.5}>{doc.title}</Text>
-      {doc.pendingLegalReview ? <Text variant="body" color="warning" size={15} testID={`AdminLegalDocs.doc.${doc.id}.pending`}>{`${s.status.draft_pending_legal_review}. ${s.noEffect}`}</Text> : null}
+      {doc.pendingLegalReview ? <Text variant="body" color="warning" size={15} testID={`AdminLegalDocs.doc.${doc.id}.reviewNote`}>{`${s.status.draft_pending_legal_review}. ${s.noEffect}`}</Text> : null}
       {doc.publishedAt !== null ? <Text variant="body" color="success" size={15}>{s.published(formatDateTime(doc.publishedAt))}</Text> : null}
       {doc.effectiveFrom !== null && doc.status === "published" ? <Text variant="caption" color="subtle" size={13.5}>{s.effectiveFrom(formatDateTime(doc.effectiveFrom))}</Text> : null}
       {doc.status === "retired" ? <Text variant="caption" color="subtle" size={13.5}>{s.status.retired}</Text> : null}

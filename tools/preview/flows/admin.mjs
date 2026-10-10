@@ -178,4 +178,14 @@ export default async function admin(s) {
     await s.waitText('La consulta está cerrada');
     await s.checkForbiddenText('Atención al cliente');
   });
+
+  await s.step('Versiones de tarifa: lista, activación bloqueada y sin promesas', async () => {
+    await openScreen(s, 'AdminTariffVersions');
+    await s.waitText('Versiones de tarifa');
+    const cards = await s.inApp(() => document.querySelectorAll('[data-testid^="AdminTariffVersions.version."]').length);
+    s.expect(cards > 0, `hay versiones listadas (${cards})`);
+    s.expect((await s.appText()).includes('Por definir'), 'lo no definido figura «Por definir»');
+    await s.shot('admin-tariff-versions');
+    await s.checkForbiddenText('Versiones de tarifa');
+  });
 }
