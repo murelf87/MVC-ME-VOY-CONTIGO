@@ -107,10 +107,10 @@ function DecisionButton({ tone, label, accessibilityLabel, loading, disabled, on
       <View style={[styles.disc, { backgroundColor: t.disc }]}>
         {loading ? <ActivityIndicator color={colors.onPrimary} size="small" /> : <Icon name={t.glyph} size={tone === "accept" ? 26 : 25} color={colors.onPrimary} />}
       </View>
-      <Text variant="button" color={t.label} size={23} lineHeight={28} letterSpacing={-0.6} numberOfLines={1} style={styles.label}>
+      <Text variant="button" color={t.label} size={20} lineHeight={25} letterSpacing={-0.5} numberOfLines={1} style={styles.label}>
         {label}
       </Text>
-      <Icon name="chevronRight" size={26} color={t.chevron} />
+      <Icon name="chevronRight" size={24} color={t.chevron} />
     </Pressable>
   );
 }
@@ -128,5 +128,5 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.45 },
   disc: { width: 39, height: 39, borderRadius: 19.5, alignItems: "center", justifyContent: "center" },
-  label: { flex: 1, marginLeft: 16 },
+  label: { flex: 1, marginLeft: 12 },
 });
